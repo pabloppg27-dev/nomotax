@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contacto | NomoTax</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
+        <span class="logo-text">Nomo<span class="accent">Tax</span></span>
+      </a>
+      <nav class="nav">
+        <div class="nav-item">
+          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">▾</span></button>
+          <div class="mega-menu" id="mega-nacional">
+            <span class="mega-eyebrow">Optimización fiscal España</span>
+            <div class="mega-featured">
+              <a href="nacional.html">Asesoría fiscal y mercantil</a>
+              <a href="nacional.html" class="chip">Ver todo</a>
+            </div>
+            <ul class="mega-list">
+              <li><a href="nacional.html">Estructuras holding <span class="arrow">→</span></a></li>
+              <li><a href="nacional.html">Ley Beckham (impatriados) <span class="arrow">→</span></a></li>
+              <li><a href="nacional.html">Gestoría para autónomos <span class="arrow">→</span></a></li>
+              <li><a href="nacional.html">Gestoría para SLs <span class="arrow">→</span></a></li>
+              <li><a href="nacional.html">Ganancias patrimoniales <span class="arrow">→</span></a></li>
+              <li><a href="nacional.html">Deducciones I+D y Cultura <span class="arrow">→</span></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">▾</span></button>
+          <div class="mega-menu" id="mega-internacional">
+            <span class="mega-eyebrow">Fiscalidad internacional</span>
+            <ul class="mega-list">
+              <li><a href="internacional.html">LLC en EE.UU. <span class="arrow">→</span></a></li>
+              <li><a href="internacional.html">Cambio de residencia <span class="arrow">→</span></a></li>
+              <li><a href="internacional.html">Operaciones corporate <span class="arrow">→</span></a></li>
+              <li><a href="internacional.html">Nómadas digitales <span class="arrow">→</span></a></li>
+            </ul>
+          </div>
+        </div>
+        <a href="consultoria.html">Consultoría</a>
+        <a href="contacto.html" class="active">Contacto</a>
+        <a href="asesoria.html" class="btn">Asesoría gratis</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Contacto</h1>
+      <p>Cuéntanos tu caso y te responderemos lo antes posible.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="contact-layout">
+        <div class="contact-info">
+          <div class="info-block">
+            <h3>Email</h3>
+            <p>info@nomotax.io</p>
+          </div>
+          <div class="info-block">
+            <h3>Teléfono</h3>
+            <p>+34 642 75 76 33</p>
+          </div>
+          <div class="info-block">
+            <h3>Dirección</h3>
+            <p>Calle Ejemplo, 123<br />28001 Madrid, España</p>
+          </div>
+          <div class="info-block">
+            <h3>Horario</h3>
+            <p>Lunes a viernes, 9:00 - 18:00</p>
+          </div>
+        </div>
+
+        <form class="contact-form">
+          <div class="form-group">
+            <label for="name">Nombre</label>
+            <input type="text" id="name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Teléfono</label>
+            <input type="tel" id="phone" name="phone" />
+          </div>
+          <div class="form-group">
+            <label for="message">Mensaje</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="color:#080808; background: var(--color-accent); border:none; cursor:pointer;">Enviar mensaje</button>
+          <p class="form-status" style="margin-top: 16px; color: var(--color-primary); font-weight: 600;"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>NomoTax</h4>
+          <p>Asesoría fiscal nacional e internacional para empresas y particulares.</p>
+        </div>
+        <div>
+          <h4>Navegación</h4>
+          <ul>
+            <li><a href="nacional.html">Nacional</a></li>
+            <li><a href="internacional.html">Internacional</a></li>
+            <li><a href="consultoria.html">Consultoría</a></li>
+            <li><a href="contacto.html">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contacto</h4>
+          <ul>
+            <li>info@nomotax.io</li>
+            <li>+34 642 75 76 33</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 NomoTax. Todos los derechos reservados.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
