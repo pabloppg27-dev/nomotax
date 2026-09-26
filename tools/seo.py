@@ -8,6 +8,8 @@ PAGES = ['index', 'nacional', 'internacional', 'asesoria-fiscal-mercantil-labora
          'estructuras-internacionales', 'nomadas-digitales', 'llc-usa', 'asesoria', 'contacto',
          'aviso-legal', 'privacidad', 'cookies']
 LEGAL = {'aviso-legal', 'privacidad', 'cookies'}
+# Verificación de la propiedad https://nomotax.io/ en Google Search Console (no quitar)
+GOOGLE_VERIFICATION = 'LwWIVOJLVBtlLJwFIJKN_mQ438QYH6qAEiT24XB_MEk'
 BLOCK = re.compile(r'\n?  <!-- seo -->.*?<!-- /seo -->', re.S)
 HREFLANG = re.compile(r'\n?  <link rel="alternate" hreflang="[^"]*" href="[^"]*" />')
 
@@ -56,6 +58,8 @@ def bloque(lang, p, s):
         '<meta property="og:image:height" content="630" />',
         '<meta name="twitter:card" content="summary_large_image" />',
     ]
+    if p == 'index' and lang == 'es':
+        lineas.insert(1, '<meta name="google-site-verification" content="%s" />' % GOOGLE_VERIFICATION)
     if p == 'index':
         lineas.append('<script type="application/ld+json">%s</script>' % datos_estructurados(lang))
     lineas.append('<!-- /seo -->')
