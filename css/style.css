@@ -1516,6 +1516,27 @@ a.service-chip:hover::after {
     display: flex;
   }
 
+  /* Menú desplegable de móvil en blanco */
+  .nav {
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  .nav > a,
+  .nav > .nav-item > .mega-trigger {
+    color: #111110;
+    border-radius: 10px;
+  }
+
+  .nav > a:hover,
+  .nav > a.active,
+  .nav > .nav-item > .mega-trigger:hover,
+  .nav > .nav-item > .mega-trigger.open {
+    color: #111110;
+    background: #f4f4f1;
+  }
+
   /* En móvil el menú sale del flujo: el selector queda junto a la hamburguesa */
   .lang-switch {
     margin-left: auto;
@@ -1685,16 +1706,16 @@ a.service-chip:hover::after {
 
   .mega-featured > a:first-child,
   .mega-list a {
-    color: #e5e5e5;
+    color: #111110;
   }
 
   .mega-list a:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: #f4f4f1;
   }
 
   .mega-all {
-    border-top-color: rgba(255, 255, 255, 0.1);
-    color: var(--color-accent);
+    border-top-color: rgba(0, 0, 0, 0.08);
+    color: #111110;
   }
 
   .mega-menu-wide .mega-grid {
