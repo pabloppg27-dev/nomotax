@@ -1,6 +1,7 @@
 
 ##### index
-txt	NomoTax | Fiscalidad Nacional e Internacional
+txt	NomoTax | Asesoría fiscal nacional e internacional
+@content	Asesoría fiscal nacional e internacional para emprendedores, autónomos y empresas: gestoría online, consultoría, holdings, LLC en EE. UU. y cambio de residencia.
 @aria-label	NomoTax — inicio
 @alt	NomoTax
 txt	Nomo
@@ -342,6 +343,7 @@ txt	toca.
 
 ##### asesoria-fiscal-mercantil-laboral
 txt	Asesoría fiscal, mercantil y laboral | NomoTax
+@content	Gestoría online para autónomos y empresas: fiscal, mercantil, contable y laboral en un solo plan, con tu asesor de siempre. Sin permanencia ni letra pequeña.
 txt	Gestoría online para
 txt	autónomos y empresas
 txt	Todo en uno: Fiscal, Mercantil, Contable y Laboral
@@ -1897,6 +1899,7 @@ txt	¿En qué país?
 
 ##### llc-usa
 txt	LLC en Estados Unidos | NomoTax
+@content	Constituimos tu LLC en Estados Unidos con visión fiscal internacional: constitución, EIN, cuentas bancarias y compliance anual, 100% online y sin intermediarios.
 txt	Monta tu LLC en Estados Unidos con visión fiscal internacional
 txt	Nos encargamos de la constitución, el compliance y la gestión fiscal de tu LLC, coordinando la estructura de Estados Unidos con tu situación fiscal.
 txt	Constitución en estados estratégicos
@@ -2027,6 +2030,7 @@ txt	para gestionar tu solicitud.
 
 ##### asesoria
 txt	Asesoría gratis | NomoTax
+@content	Reserva una asesoría fiscal gratuita de 30 minutos, sin compromiso. Analizamos tu situación fiscal nacional o internacional y el camino más adecuado para ti.
 txt	Asesoría fiscal · Nacional e internacional
 txt	Ponemos tu situación fiscal en orden.
 txt	Reserva una primera sesión con nuestro equipo y analiza tu situación fiscal, tus opciones y el camino más adecuado para ti.
@@ -2040,6 +2044,7 @@ txt	¿Prefieres escribir? WhatsApp
 
 ##### contacto
 txt	Contacto | NomoTax
+@content	Contacta con NomoTax por WhatsApp o por email, o reserva directamente una asesoría fiscal gratuita de 30 minutos.
 txt	Hablemos
 txt	Escríbenos por el canal que prefieras o reserva directamente tu asesoría gratuita de 30 minutos.
 txt	Reserva directa

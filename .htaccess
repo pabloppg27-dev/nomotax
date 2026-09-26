@@ -3,6 +3,10 @@ Options -MultiViews
 DirectoryIndex index.html
 RewriteEngine On
 
+# www.nomotax.io → nomotax.io (una sola versión para Google)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
 # Archivo interno del despliegue: no se sirve
 RewriteRule (^|/)\.ftp-deploy-sync-state\.json$ - [F,L]
 

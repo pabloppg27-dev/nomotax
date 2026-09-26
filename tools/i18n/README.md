@@ -5,7 +5,9 @@ Las páginas de `en/` **no se editan a mano**: se generan a partir de las págin
 - `keys.json` — todos los textos en español que hay que traducir.
 - `translations.json` — diccionario `{"texto en español": "texto en inglés"}`.
 - `extract.py` — vuelve a extraer los textos de las páginas en español.
-- `apply.py` — genera `en/*.html` (traduce textos, ajusta rutas y el selector ES/EN).
+- `apply.py` — genera `en/*.html` (traduce textos, ajusta rutas y el selector ES/EN) y al final ejecuta `tools/seo.py`, que pone en todas las páginas el bloque SEO (canonical, hreflang, Open Graph, datos estructurados) y regenera `sitemap.xml` y `robots.txt`.
+
+Cada página en español necesita su `<meta name="description">`: `seo.py` avisa si falta.
 
 Los textos que genera el JavaScript (errores de formularios, calculadoras) se traducen en `js/main.js` (`NT_EN` y la función `T()`).
 

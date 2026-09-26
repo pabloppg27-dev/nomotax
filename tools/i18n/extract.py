@@ -15,6 +15,8 @@ def has_letters(t): return bool(LETTER.search(html.unescape(t)))
 seen=set(); listing=[]; stats={}
 for p in PAGES:
     s=open(ROOT+p+'.html',encoding='utf-8').read()
+    # El bloque SEO lo genera tools/seo.py en cada idioma
+    s=re.sub(r'\n?  <!-- seo -->.*?<!-- /seo -->','',s,flags=re.S)
     new=0; skip=None
     for tok in TOK.split(s):
         if not tok: continue

@@ -1,4 +1,4 @@
-# Genera /en/*.html a partir de las páginas en español y las traducciones tNN.tsv
+# Genera /en/*.html a partir de las páginas en español y translations.json
 import re, html, json, os, glob
 ROOT=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..'))+'/'
 HERE=os.path.dirname(os.path.abspath(__file__))+'/'
@@ -53,6 +53,8 @@ def fix_attr(page, a, v):
 os.makedirs(ROOT+'en',exist_ok=True)
 for p in PAGES:
     s=open(ROOT+p+'.html',encoding='utf-8').read()
+    # El bloque SEO lo genera tools/seo.py en cada idioma
+    s=re.sub(r'\n?  <!-- seo -->.*?<!-- /seo -->','',s,flags=re.S)
     out=[]; skip=None; last='';
     for tok in TOK.split(s):
         if not tok: out.append(tok); continue
@@ -85,3 +87,6 @@ for p in PAGES:
     s=s.replace(old_sw,new_sw)
     open(ROOT+'en/'+f,'w',encoding='utf-8').write(s)
 print('ok', len(PAGES), 'páginas en /en/')
+
+# Canonical, hreflang, Open Graph, sitemap.xml y robots.txt
+exec(open(ROOT+'tools/seo.py',encoding='utf-8').read(),{'__file__':ROOT+'tools/seo.py'})
