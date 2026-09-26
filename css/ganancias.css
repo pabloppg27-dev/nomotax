@@ -1,0 +1,1125 @@
+/* =============================================
+   GANANCIAS PATRIMONIALES
+   =============================================
+   Depende de style.css y gestoria.css.
+   Paleta de gestoría:
+   --gst-black  #111110   --gst-lima      #CDF564
+   --gst-bg     #f7f7f5   --gst-lima-dark #B3E04D
+   --gst-green-dark #173404
+
+   Secuencia de fondos:
+   hero (negro) → bloque 1 (claro) → bloque 2 (negro)
+   → bloque 3 (claro) → bloque 4 y CTA final (negro).
+   ============================================= */
+
+
+/* ═══════════════════════════════════════════════
+   UTILIDADES COMUNES DE LA PÁGINA
+   ═══════════════════════════════════════════════ */
+
+.gan-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.gan-header {
+  max-width: 720px;
+  margin-bottom: 56px;
+}
+
+.gan-eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gst-green-dark);
+  opacity: 0.6;
+  margin-bottom: 12px;
+}
+
+.gan-h2 {
+  font-weight: 700;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--gst-black);
+  margin-bottom: 14px;
+}
+
+.gan-sub {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.gan-sub strong {
+  color: var(--gst-black);
+  font-weight: 600;
+}
+
+/* Variante sobre fondo negro */
+.gan-header-dark .gan-eyebrow {
+  color: var(--gst-lima);
+  opacity: 1;
+}
+
+.gan-header-dark .gan-h2 {
+  color: #fff;
+}
+
+.gan-header-dark .gan-sub {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.gan-header-dark .gan-sub strong {
+  color: #fff;
+}
+
+.gan-grid-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gst-green-dark);
+  opacity: 0.55;
+  margin-bottom: 20px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BOTÓN CTA  ·  lima solo al pasar el cursor
+   ═══════════════════════════════════════════════ */
+
+.gan-cta-btn {
+  display: inline-block;
+  padding: 14px 40px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gan-cta-btn:hover {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+/* Variante para secciones de fondo claro */
+.gan-cta-btn-light {
+  border-color: rgba(17, 17, 16, 0.2);
+  color: var(--gst-black);
+}
+
+.gan-cta-note {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 0 — HERO
+   ═══════════════════════════════════════════════ */
+
+.gan-hero .gst-hero-inner {
+  align-items: center;
+}
+
+.gan-hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+  margin: -12px 0 32px;
+  max-width: 480px;
+}
+
+.gan-hero-subtitle strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.gan-hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 36px;
+}
+
+/* ── Panel lima de la derecha ── */
+
+.gan-panel {
+  position: relative;
+  background: var(--gst-lima);
+  border-radius: 12px 0 12px 12px;
+  padding: 44px 32px 32px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+.gan-panel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 14px 6px 8px;
+  background: var(--gst-black);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--gst-lima);
+}
+
+.gan-panel-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.gan-panel-badge-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.gan-panel-logo img {
+  height: 46px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.gan-panel-tags {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(23, 52, 4, 0.14);
+}
+
+.gan-panel-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 1 — QUÉ ES  ·  fondo claro
+   ═══════════════════════════════════════════════ */
+
+.gan-que {
+  background: var(--gst-bg);
+  padding: 88px 0;
+}
+
+/* ── Fórmula ── */
+
+.gan-formula {
+  background: var(--gst-black);
+  border-radius: 16px;
+  padding: 36px 36px 32px;
+  margin-bottom: 64px;
+}
+
+.gan-formula-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gst-lima);
+  margin-bottom: 26px;
+}
+
+.gan-formula-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: stretch;
+  gap: 20px;
+}
+
+.gan-formula-term {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}
+
+.gan-formula-term-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.gan-formula-term-desc {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gan-formula-term-desc em {
+  font-style: normal;
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.gan-formula-result {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+}
+
+.gan-formula-result .gan-formula-term-name {
+  color: var(--gst-black);
+}
+
+.gan-formula-result .gan-formula-term-desc {
+  color: rgba(23, 52, 4, 0.75);
+}
+
+.gan-formula-op {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gan-formula-note {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gan-formula-note strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+/* ── Tipos ── */
+
+.gan-tipos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.gan-tipo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 14px;
+  padding: 26px 24px 24px;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.gan-tipo-card:hover {
+  border-color: var(--gst-lima-dark);
+  transform: translateY(-3px);
+}
+
+.gan-tipo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--gst-lima);
+  color: var(--gst-green-dark);
+}
+
+.gan-tipo-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.gan-tipo-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  line-height: 1.3;
+}
+
+.gan-tipo-text {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #666;
+  flex-grow: 1;
+}
+
+.gan-tipo-text strong {
+  color: var(--gst-black);
+  font-weight: 600;
+}
+
+.gan-tipo-key {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gst-green-dark);
+  padding-top: 14px;
+  border-top: 1px solid rgba(17, 17, 16, 0.08);
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 2 — BASE GENERAL O DEL AHORRO  ·  negro
+   ═══════════════════════════════════════════════ */
+
+.gan-base {
+  position: relative;
+  overflow: hidden;
+  background: var(--gst-black);
+  padding: 88px 0;
+}
+
+.gan-base-glow {
+  position: absolute;
+  top: -180px;
+  right: -140px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(205, 245, 100, 0.09) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gan-base-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Dos columnas comparativas ── */
+
+.gan-base-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 64px;
+}
+
+.gan-base-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 30px 28px;
+}
+
+.gan-base-tag {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gan-base-title {
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.gan-base-text {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gan-base-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gan-base-list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.gan-base-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.gan-base-list strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Tarjeta destacada en lima */
+.gan-base-card-lima {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+}
+
+.gan-base-card-lima .gan-base-tag {
+  background: var(--gst-black);
+  color: var(--gst-lima);
+}
+
+.gan-base-card-lima .gan-base-title {
+  color: var(--gst-black);
+}
+
+.gan-base-card-lima .gan-base-text {
+  color: rgba(23, 52, 4, 0.8);
+}
+
+.gan-base-card-lima .gan-base-list {
+  border-top-color: rgba(23, 52, 4, 0.16);
+}
+
+.gan-base-card-lima .gan-base-list li {
+  color: rgba(23, 52, 4, 0.9);
+}
+
+.gan-base-card-lima .gan-base-list li::before {
+  background: rgba(23, 52, 4, 0.4);
+}
+
+.gan-base-card-lima .gan-base-list strong {
+  color: var(--gst-green-dark);
+}
+
+/* ── Escala del ahorro ── */
+
+.gan-escala {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 30px 28px 26px;
+  margin-bottom: 64px;
+}
+
+.gan-escala-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.gan-escala-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.gan-escala-meta {
+  font-size: 0.78rem;
+  color: var(--gst-lima);
+  font-weight: 500;
+}
+
+.gan-escala-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.gan-escala-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.gan-escala-row:last-child {
+  border-bottom: none;
+}
+
+.gan-escala-row-head {
+  padding-bottom: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gan-escala-val {
+  font-family: var(--font-display, inherit);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gst-lima);
+  letter-spacing: -0.02em;
+}
+
+.gan-escala-note {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Particular vs actividad económica ── */
+
+.gan-actividad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  padding: 36px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 64px;
+}
+
+.gan-actividad .gan-eyebrow {
+  color: var(--gst-lima);
+  opacity: 1;
+}
+
+.gan-actividad-title {
+  font-size: 1.32rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.gan-actividad-text {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.gan-actividad-text strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.gan-actividad-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.gan-act-col {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 22px 20px;
+}
+
+.gan-act-col-alt {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gan-act-col-tag {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-lima);
+  margin-bottom: 14px;
+}
+
+.gan-act-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gan-act-list li {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gan-act-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ── Compensación de pérdidas ── */
+
+.gan-compensa-head {
+  max-width: 640px;
+  margin-bottom: 36px;
+}
+
+.gan-compensa-head .gan-eyebrow {
+  color: var(--gst-lima);
+  opacity: 1;
+}
+
+.gan-compensa-title {
+  font-size: 1.32rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.gan-compensa-text {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.gan-compensa-text strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.gan-compensa-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.gan-compensa-step {
+  display: flex;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 24px 22px;
+}
+
+.gan-compensa-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gan-compensa-step h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.gan-compensa-step p {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.gan-compensa-step strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.gan-compensa-alert {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: rgba(205, 245, 100, 0.07);
+  border: 1px solid rgba(205, 245, 100, 0.22);
+  border-radius: 14px;
+  padding: 22px 24px;
+}
+
+.gan-compensa-alert-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.gan-compensa-alert-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.gan-compensa-alert p {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.gan-compensa-alert strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 3 — CASOS HABITUALES  ·  fondo claro
+   ═══════════════════════════════════════════════ */
+
+.gan-casos {
+  background: var(--gst-bg);
+  padding: 88px 0;
+}
+
+.gan-tabla-wrap {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.gan-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.gan-tabla thead th {
+  padding: 18px 22px;
+  background: var(--gst-black);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-lima);
+}
+
+.gan-tabla tbody tr {
+  border-top: 1px solid rgba(17, 17, 16, 0.07);
+  transition: background 160ms ease;
+}
+
+.gan-tabla tbody tr:hover {
+  background: rgba(205, 245, 100, 0.12);
+}
+
+.gan-tabla th[scope="row"] {
+  padding: 20px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  white-space: nowrap;
+}
+
+.gan-tabla td {
+  padding: 20px 22px;
+  font-size: 0.87rem;
+  line-height: 1.65;
+  color: #666;
+  vertical-align: middle;
+}
+
+.gan-tabla td strong {
+  color: var(--gst-black);
+  font-weight: 600;
+}
+
+.gan-tabla td:last-child {
+  min-width: 300px;
+}
+
+.gan-pill {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gan-pill-si {
+  background: var(--gst-lima);
+  color: var(--gst-green-dark);
+}
+
+.gan-pill-parcial {
+  background: rgba(17, 17, 16, 0.07);
+  color: var(--gst-black);
+}
+
+.gan-badge {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 8px;
+  background: var(--gst-black);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gan-badge-alt {
+  background: transparent;
+  border: 1px solid rgba(17, 17, 16, 0.25);
+  color: var(--gst-black);
+}
+
+.gan-tabla-note {
+  margin-top: 22px;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #8a8a85;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 4 — EXENCIONES  ·  fondo negro
+   ═══════════════════════════════════════════════ */
+
+.gan-exenciones {
+  background: var(--gst-black);
+  padding: 88px 0;
+}
+
+.gan-exen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.gan-exen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 30px 26px 26px;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.gan-exen-card:hover {
+  border-color: rgba(205, 245, 100, 0.5);
+  transform: translateY(-3px);
+}
+
+.gan-exen-num {
+  font-family: var(--font-display, inherit);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--gst-lima);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.gan-exen-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+}
+
+.gan-exen-text {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.6);
+  flex-grow: 1;
+}
+
+.gan-exen-law {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.4);
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gan-exen-cta {
+  margin-top: 48px;
+  text-align: center;
+}
+
+
+/* ═══════════════════════════════════════════════
+   CTA FINAL — mismo negro que los bloques
+   ═══════════════════════════════════════════════ */
+
+.page-gan .cta-final {
+  background: var(--gst-black);
+}
+
+.gan-final-text {
+  max-width: 560px;
+  margin: -6px auto 32px;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 980px) {
+  .gan-tipos-grid,
+  .gan-exen-grid,
+  .gan-compensa-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gan-formula-row {
+    grid-template-columns: 1fr;
+  }
+
+  .gan-formula-op {
+    justify-content: flex-start;
+    padding-left: 22px;
+  }
+
+  .gan-actividad {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .gan-que,
+  .gan-base,
+  .gan-casos,
+  .gan-exenciones {
+    padding: 64px 0;
+  }
+
+  .gan-base-cols,
+  .gan-tipos-grid,
+  .gan-exen-grid,
+  .gan-compensa-steps,
+  .gan-actividad-compare {
+    grid-template-columns: 1fr;
+  }
+
+  .gan-formula {
+    padding: 28px 22px 26px;
+  }
+
+  .gan-hero-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .gan-cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Tabla en tarjetas apiladas */
+  .gan-tabla-wrap {
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .gan-tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .gan-tabla,
+  .gan-tabla tbody,
+  .gan-tabla tr,
+  .gan-tabla th,
+  .gan-tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  .gan-tabla tbody tr {
+    background: #fff;
+    border: 1px solid rgba(17, 17, 16, 0.08);
+    border-radius: 14px;
+    padding: 6px 4px 12px;
+    margin-bottom: 14px;
+  }
+
+  .gan-tabla th[scope="row"] {
+    padding: 16px 18px 10px;
+    white-space: normal;
+  }
+
+  .gan-tabla td {
+    padding: 8px 18px;
+  }
+
+  .gan-tabla td:last-child {
+    min-width: 0;
+    padding-top: 12px;
+  }
+
+  .gan-tabla td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #a0a09a;
+    margin-bottom: 6px;
+  }
+
+  .gan-tabla th[scope="row"]::before {
+    content: none;
+  }
+}

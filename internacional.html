@@ -3,50 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fiscalidad Internacional | NomoTax</title>
+  <title>Fiscalidad internacional | NomoTax</title>
+  <meta name="description" content="Fiscalidad internacional con NomoTax: cambio de residencia fiscal, estructuras internacionales en 13 jurisdicciones, nómadas digitales y LLC en EE. UU." />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gestoria.css" />
+  <link rel="stylesheet" href="css/consultoria.css" />
+  <link rel="stylesheet" href="css/estructuras.css" />
+  <link rel="stylesheet" href="css/hub.css" />
 </head>
-<body>
+<body class="page-hub">
 
   <header class="site-header">
     <div class="container">
-      <a href="index.html" class="logo">
+      <a href="index.html" class="logo" aria-label="NomoTax — inicio">
         <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
         <span class="logo-text">Nomo<span class="accent">Tax</span></span>
       </a>
       <nav class="nav">
         <div class="nav-item">
-          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">▾</span></button>
+          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">&#9662;</span></button>
           <div class="mega-menu" id="mega-nacional">
             <span class="mega-eyebrow">Optimización fiscal España</span>
             <div class="mega-featured">
-              <a href="nacional.html">Asesoría fiscal y mercantil</a>
-              <a href="nacional.html" class="chip">Ver todo</a>
+              <a href="asesoria-fiscal-mercantil-laboral.html">Asesoría fiscal, mercantil y laboral</a>
+              <a href="asesoria-fiscal-mercantil-laboral.html" class="chip">Contratar</a>
             </div>
             <ul class="mega-list">
-              <li><a href="nacional.html">Estructuras holding <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Ley Beckham (impatriados) <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Gestoría para autónomos <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Gestoría para SLs <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Ganancias patrimoniales <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Deducciones I+D y Cultura <span class="arrow">→</span></a></li>
+              <li><a href="holding.html">Estructuras holding <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ley-beckham.html">Ley Beckham (impatriados) <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ganancias-patrimoniales.html">Ganancias patrimoniales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="deducciones-id-cultura.html">Deducciones I+D y Cultura <span class="chevron-hover">&rsaquo;</span></a></li>
             </ul>
+            <a href="nacional.html" class="mega-all">Ver todos los servicios <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
         <div class="nav-item">
-          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">▾</span></button>
+          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">&#9662;</span></button>
           <div class="mega-menu" id="mega-internacional">
             <span class="mega-eyebrow">Fiscalidad internacional</span>
             <ul class="mega-list">
-              <li><a href="internacional.html">LLC en EE.UU. <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Cambio de residencia <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Operaciones corporate <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Nómadas digitales <span class="arrow">→</span></a></li>
+              <li><a href="llc-usa.html">LLC en EE.UU. <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="cambio-residencia-fiscal.html">Cambio de residencia fiscal <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="estructuras-internacionales.html">Estructuras internacionales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="nomadas-digitales.html">Nómadas digitales <span class="chevron-hover">&rsaquo;</span></a></li>
             </ul>
+            <a href="internacional.html" class="mega-all">Ver todos los servicios <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
+        <a href="asesoria-fiscal-mercantil-laboral.html">Gestoría</a>
         <a href="consultoria.html">Consultoría</a>
-        <a href="contacto.html">Contacto</a>
         <a href="asesoria.html" class="btn">Asesoría gratis</a>
       </nav>
       <button class="nav-toggle" aria-label="Abrir menú">
@@ -55,82 +60,421 @@
     </div>
   </header>
 
-  <div class="page-header">
-    <div class="container">
-      <h1>Fiscalidad Internacional</h1>
-      <p>Acompañamos a empresas y particulares en su expansión y operativa fuera de España, con seguridad jurídica y fiscal.</p>
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 0 — HERO  ·  fondo negro
+       ═══════════════════════════════════════════════ -->
+  <section class="gst-hero est-hero">
+    <div class="gst-hero-inner">
+
+      <div class="gst-hero-copy">
+        <p class="hero-fc-eyebrow"><span class="dot"></span> Fiscalidad internacional</p>
+
+        <h1 class="gst-hero-h1">Fiscalidad<br> internacional</h1>
+
+        <p class="est-hero-subtitle">Residencia, estructuras y sociedades en el extranjero, vengas de donde vengas. <strong>Un solo equipo, en todos los países.</strong></p>
+
+        <ul class="gst-checks">
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>13 jurisdicciones</span>
+          </li>
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>Residencia y estructura coordinadas</span>
+          </li>
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>Tu gestoría estés donde estés</span>
+          </li>
+        </ul>
+
+        <div class="gst-cta-row">
+          <button type="button" class="gst-cta-pill est-pill-btn" data-cns="asesoria-gratis">
+            <span>Asesoría gratis</span>
+            <span class="gst-cta-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </button>
+          <button type="button" class="gst-cta-pill est-pill-ghost est-pill-btn" data-cns="estudio-fiscal">
+            <span>Estudio fiscal</span>
+            <span class="gst-cta-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </button>
+        </div>
+        <p class="est-hero-note">¿Aún no lo tienes claro? Empieza por la asesoría gratis. ¿Ya sabes lo que quieres? Reserva tu estudio fiscal.</p>
+      </div>
+
+      <div class="gst-hero-panel-wrap">
+        <div class="gst-hero-panel est-panel">
+          <div class="gst-fold-triangle"></div>
+
+          <span class="cns-panel-badge">
+            <span class="cns-panel-badge-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+            INTERNACIONAL · 13 JURISDICCIONES
+          </span>
+
+          <div class="gst-panel-pills">
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+              <span>Cambio de residencia</span>
+            </div>
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5"/><path d="M5 17v-3h14v3"/></svg></span>
+              <span>Estructuras internacionales</span>
+            </div>
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg></span>
+              <span>Nómadas digitales</span>
+            </div>
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></span>
+              <span>LLC en EE. UU.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 1 — SERVICIOS  ·  fondo claro
+       ═══════════════════════════════════════════════ -->
+  <section class="hub-servicios" id="servicios">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-center">
+        <span class="cns-eyebrow">Servicios</span>
+        <h2 class="cns-h2">Todo lo que necesitas fuera de tu país</h2>
+        <p class="cns-sub">Elige el servicio que encaja contigo. <strong>Cada uno tiene su página con el detalle.</strong></p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <div class="hub-grid hub-grid-2">
+        <a href="cambio-residencia-fiscal.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+          <h3 class="hub-card-title">Cambio de residencia fiscal</h3>
+          <p class="hub-card-text">De la salida de tu país a la llegada al nuevo, con bancos y sociedades.</p>
+          <span class="hub-card-tag">Estudio desde 299 €</span>
+          <span class="hub-card-link">Ver servicio <span aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="estructuras-internacionales.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5"/><path d="M5 17v-3h14v3"/></svg></span>
+          <h3 class="hub-card-title">Estructuras internacionales</h3>
+          <p class="hub-card-text">Sociedad, holding o sociedad en la UE, en 13 jurisdicciones.</p>
+          <span class="hub-card-tag">13 jurisdicciones</span>
+          <span class="hub-card-link">Ver servicio <span aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="nomadas-digitales.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg></span>
+          <h3 class="hub-card-title">Nómadas digitales</h3>
+          <p class="hub-card-text">Residencia fiscal clara y estructura para facturar, estés donde estés.</p>
+          <span class="hub-card-tag">Residencia + estructura</span>
+          <span class="hub-card-link">Ver servicio <span aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="llc-usa.html" class="hub-card">
+          <span class="hub-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></span>
+          <h3 class="hub-card-title">LLC en EE. UU.</h3>
+          <p class="hub-card-text">Constitución y compliance anual de tu LLC, con visión fiscal internacional.</p>
+          <span class="hub-card-tag">Desde 590 €</span>
+          <span class="hub-card-link">Ver servicio <span aria-hidden="true">&rarr;</span></span>
+        </a>
+      </div>
+
+      <p class="cns-formatos-note">¿No sabes cuál necesitas? <button type="button" class="est-link-btn" data-cns="asesoria-gratis">Reserva una asesoría gratis</button> y te orientamos.</p>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 2 — CÓMO TRABAJAMOS  ·  fondo negro
+       ═══════════════════════════════════════════════ -->
+  <section class="cns-casos hub-proceso">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-dark">
+        <span class="cns-eyebrow">Cómo trabajamos</span>
+        <h2 class="cns-h2">De la primera llamada a tu día a día</h2>
+        <p class="cns-sub">Un solo equipo en todo el proceso, <strong>y después seguimos contigo.</strong></p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <ol class="est-pasos">
+        <li class="cns-caso est-paso">
+          <span class="cns-paso-num">01</span>
+          <h3 class="cns-caso-title">Asesoría gratis</h3>
+          <p class="cns-caso-text">Vemos tu caso sin coste y te decimos por dónde empezar.</p>
+        </li>
+        <li class="cns-caso est-paso">
+          <span class="cns-paso-num">02</span>
+          <h3 class="cns-caso-title">Estudio fiscal</h3>
+          <p class="cns-caso-text">Analizamos tu situación y te damos una estrategia con números.</p>
+        </li>
+        <li class="cns-caso est-paso">
+          <span class="cns-paso-num">03</span>
+          <h3 class="cns-caso-title">Ejecución</h3>
+          <p class="cns-caso-text">Lo ponemos en marcha: trámites, sociedades y declaraciones.</p>
+        </li>
+        <li class="cns-caso est-paso">
+          <span class="cns-paso-num">04</span>
+          <h3 class="cns-caso-title">Seguimiento</h3>
+          <p class="cns-caso-text">Seguimos a tu lado cada año, como tu gestoría.</p>
+        </li>
+      </ol>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 3 — DOS FORMAS DE EMPEZAR  ·  fondo claro
+       ═══════════════════════════════════════════════ -->
+  <section class="cns-proceso est-servicio">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-center">
+        <span class="cns-eyebrow">Por dónde empezar</span>
+        <h2 class="cns-h2">Dos formas de empezar</h2>
+        <p class="cns-sub">Reserva el día y la hora que te vengan bien. <strong>Te confirmamos la cita en 24&nbsp;horas.</strong></p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <div class="est-decision hub-decision">
+        <article class="est-decision-card">
+          <span class="est-decision-eyebrow">¿Aún no lo tienes claro?</span>
+          <h3 class="est-decision-title">Asesoría gratis</h3>
+          <span class="est-decision-price">Sin coste</span>
+          <p class="est-decision-text">Una primera llamada para ver tu caso y decirte por dónde empezar.</p>
+          <button type="button" class="est-decision-cta" data-cns="asesoria-gratis">Reservar asesoría gratis</button>
+        </article>
+        <article class="est-decision-card est-decision-dark">
+          <span class="est-decision-eyebrow">¿Ya sabes lo que quieres?</span>
+          <h3 class="est-decision-title">Estudio fiscal</h3>
+          <span class="est-decision-price">Desde 299&nbsp;€</span>
+          <p class="est-decision-text">Analizamos tu residencia, tu estructura y tus impuestos en cada país, con números.</p>
+          <button type="button" class="est-decision-cta" data-cns="estudio-fiscal">Reservar estudio fiscal</button>
+        </article>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ CTA FINAL ═══ -->
+  <section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="container cta-final-inner">
+      <span class="cta-final-eyebrow">&mdash; ¿Hablamos? &mdash;</span>
+      <h2 class="cta-final-title">Vengas de donde vengas.<br>Tributa donde <em>toca.</em></h2>
+      <p class="cns-final-text">¿Aún no lo tienes claro? Hablamos gratis. ¿Ya sabes lo que quieres? Empezamos con tu estudio fiscal.</p>
+      <div class="est-final-actions">
+        <button type="button" class="btn btn-primary cta-final-btn cns-final-btn" data-cns="asesoria-gratis">RESERVAR ASESORÍA GRATIS</button>
+        <button type="button" class="cta-final-btn est-final-btn-alt" data-cns="estudio-fiscal">RESERVAR ESTUDIO FISCAL</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL — Asesoría gratis y estudio fiscal
+       Usa el modal de contratación de consultoría
+       (#cns-modal, lógica en main.js).
+       ═══════════════════════════════════════════════ -->
+  <div class="gst-modal-overlay" id="cns-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cns-modal-title">
+    <div class="gst-modal cns-modal">
+      <button class="gst-modal-close" id="cns-modal-close" aria-label="Cerrar">&times;</button>
+
+      <div id="cns-modal-form-step">
+        <span class="cns-modal-price" id="cns-modal-price"></span>
+        <h3 class="gst-modal-title" id="cns-modal-title"></h3>
+        <p class="gst-modal-subtitle" id="cns-modal-subtitle"></p>
+
+        <form class="gst-modal-form" id="cns-form" novalidate>
+
+          <!-- ── Asesoría gratis ── -->
+          <div class="cns-case" data-cns-case="asesoria-gratis" hidden
+               data-title="Reservar asesoría gratis"
+               data-price="Sin coste"
+               data-subtitle="Una primera llamada para ver tu caso y decirte por dónde empezar."
+               data-submit="Reservar asesoría gratis"
+               data-meta="tema,#int-as-fecha,franja"
+               data-success="Te confirmaremos el día y la hora de tu asesoría por email y teléfono en las próximas 24 horas.">
+
+            <label class="gst-modal-label">¿Sobre qué quieres hablar?</label>
+            <div class="gst-modal-options" data-name="tema" data-required data-error="Indica sobre qué quieres hablar.">
+              <button type="button" class="gst-modal-option" data-value="Cambio de residencia">Cambio de residencia</button>
+              <button type="button" class="gst-modal-option" data-value="Estructura internacional">Estructura internacional</button>
+              <button type="button" class="gst-modal-option" data-value="Nómada digital">Nómada digital</button>
+              <button type="button" class="gst-modal-option" data-value="LLC en EE. UU.">LLC en EE. UU.</button>
+              <button type="button" class="gst-modal-option" data-value="Aún no lo sé">Aún no lo sé</button>
+            </div>
+
+            <label class="gst-modal-label" for="int-as-residencia">País de residencia fiscal</label>
+            <input type="text" class="gst-modal-input" id="int-as-residencia" required data-error="Indica tu país de residencia fiscal." placeholder="Ej.: México" />
+
+            <label class="gst-modal-label">Modalidad</label>
+            <div class="gst-modal-options" data-name="modalidad" data-required data-error="Elige si prefieres videollamada o teléfono.">
+              <button type="button" class="gst-modal-option" data-value="Videollamada">Videollamada</button>
+              <button type="button" class="gst-modal-option" data-value="Llamada telefónica">Llamada telefónica</button>
+            </div>
+
+            <label class="gst-modal-label" for="int-as-fecha">Fecha preferida</label>
+            <input type="date" class="gst-modal-input" id="int-as-fecha" required data-min="manana" data-laborable data-error="Elige una fecha para la asesoría." />
+            <p class="cns-modal-hint">De lunes a viernes. Si ese día no hay hueco, te proponemos el más cercano.</p>
+
+            <label class="gst-modal-label">Franja horaria</label>
+            <div class="gst-modal-options" data-name="franja" data-required data-error="Elige una franja horaria.">
+              <button type="button" class="gst-modal-option" data-value="Mañana (9–14 h)">Mañana (9–14 h)</button>
+              <button type="button" class="gst-modal-option" data-value="Tarde (16–19 h)">Tarde (16–19 h)</button>
+            </div>
+
+            <label class="gst-modal-label" for="int-as-detalle">Cuéntanos brevemente <span class="cns-opt">(opcional)</span></label>
+            <textarea class="gst-modal-input" id="int-as-detalle" rows="3" placeholder="Qué tienes ahora y qué te gustaría conseguir."></textarea>
+          </div>
+
+          <!-- ── Estudio fiscal ── -->
+          <div class="cns-case" data-cns-case="estudio-fiscal" hidden
+               data-title="Reservar estudio fiscal"
+               data-price="Desde 299 €"
+               data-subtitle="Analizamos tu residencia, tu estructura y tus impuestos en cada país, con números."
+               data-submit="Reservar estudio fiscal"
+               data-meta="objetivo,#int-es-fecha,franja"
+               data-success="Un asesor revisará tu caso y te confirmará en las próximas 24 horas la fecha de la primera sesión, el precio cerrado y la documentación que necesitamos.">
+
+            <label class="gst-modal-label">¿Qué quieres conseguir?</label>
+            <div class="gst-modal-options" data-name="objetivo" data-required data-error="Indica qué quieres conseguir.">
+              <button type="button" class="gst-modal-option" data-value="Cambiar de residencia">Cambiar de residencia</button>
+              <button type="button" class="gst-modal-option" data-value="Estructura internacional">Estructura internacional</button>
+              <button type="button" class="gst-modal-option" data-value="Facturar como nómada">Facturar como nómada</button>
+              <button type="button" class="gst-modal-option" data-value="Otro">Otro</button>
+            </div>
+
+            <label class="gst-modal-label">Tu perfil</label>
+            <div class="gst-modal-options" data-name="perfil" data-required data-error="Indica tu perfil.">
+              <button type="button" class="gst-modal-option" data-value="Particular">Particular</button>
+              <button type="button" class="gst-modal-option" data-value="Autónomo">Autónomo</button>
+              <button type="button" class="gst-modal-option" data-value="Empresa">Empresa</button>
+              <button type="button" class="gst-modal-option" data-value="No residente">No residente</button>
+            </div>
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="int-es-residencia">País de residencia fiscal</label>
+                <input type="text" class="gst-modal-input" id="int-es-residencia" required data-error="Indica tu país de residencia fiscal." placeholder="Ej.: México" />
+              </div>
+              <div>
+                <label class="gst-modal-label" for="int-es-ingresos">Ingresos anuales</label>
+                <select class="gst-modal-input" id="int-es-ingresos" required data-error="Indica tus ingresos anuales aproximados.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 30.000 €</option>
+                  <option>De 30.000 a 60.000 €</option>
+                  <option>De 60.000 a 150.000 €</option>
+                  <option>De 150.000 a 300.000 €</option>
+                  <option>Más de 300.000 €</option>
+                </select>
+              </div>
+            </div>
+
+            <span class="cns-modal-sep">Primera sesión</span>
+
+            <label class="gst-modal-label">Modalidad</label>
+            <div class="gst-modal-options" data-name="modalidad" data-required data-error="Elige si prefieres videollamada o teléfono.">
+              <button type="button" class="gst-modal-option" data-value="Videollamada">Videollamada</button>
+              <button type="button" class="gst-modal-option" data-value="Llamada telefónica">Llamada telefónica</button>
+            </div>
+
+            <label class="gst-modal-label" for="int-es-fecha">Fecha preferida</label>
+            <input type="date" class="gst-modal-input" id="int-es-fecha" required data-min="manana" data-laborable data-error="Elige una fecha para la primera sesión." />
+            <p class="cns-modal-hint">De lunes a viernes. Si ese día no hay hueco, te proponemos el más cercano.</p>
+
+            <label class="gst-modal-label">Franja horaria</label>
+            <div class="gst-modal-options" data-name="franja" data-required data-error="Elige una franja horaria.">
+              <button type="button" class="gst-modal-option" data-value="Mañana (9–14 h)">Mañana (9–14 h)</button>
+              <button type="button" class="gst-modal-option" data-value="Tarde (16–19 h)">Tarde (16–19 h)</button>
+            </div>
+
+            <label class="gst-modal-label" for="int-es-comentarios">Comentarios <span class="cns-opt">(opcional)</span></label>
+            <textarea class="gst-modal-input" id="int-es-comentarios" rows="3" placeholder="Tu situación en pocas líneas."></textarea>
+          </div>
+
+          <span class="cns-modal-sep">Tus datos</span>
+
+          <label class="gst-modal-label" for="cns-nombre">Nombre y apellidos</label>
+          <input type="text" class="gst-modal-input" id="cns-nombre" name="nombre" autocomplete="name" placeholder="Tu nombre completo" />
+
+          <label class="gst-modal-label" for="cns-email">Correo electrónico</label>
+          <input type="email" class="gst-modal-input" id="cns-email" name="email" autocomplete="email" placeholder="tu@email.com" />
+
+          <label class="gst-modal-label" for="cns-telefono">Teléfono móvil</label>
+          <input type="tel" class="gst-modal-input" id="cns-telefono" name="telefono" autocomplete="tel" placeholder="+34 600 000 000" />
+
+          <p class="cns-modal-error" id="cns-form-error" role="alert" hidden></p>
+
+          <button type="submit" class="gst-modal-submit" id="cns-modal-submit">Enviar solicitud</button>
+          <p class="cns-modal-legal">Al enviar aceptas nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+        </form>
+      </div>
+
+      <div class="cns-modal-success" id="cns-modal-success" hidden>
+        <span class="cns-modal-success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg>
+        </span>
+        <h3 class="cns-modal-success-title">Solicitud enviada</h3>
+        <p class="cns-modal-success-text" id="cns-modal-success-text"></p>
+        <p class="cns-modal-success-meta" id="cns-modal-success-meta"></p>
+        <button type="button" class="gst-modal-submit" id="cns-modal-done">Entendido</button>
+      </div>
+
     </div>
   </div>
 
-  <section>
-    <div class="container">
-      <div class="section-title">
-        <h2>Servicios</h2>
-        <p>Soluciones para negocios y patrimonios con presencia internacional.</p>
-      </div>
-      <div class="grid">
-        <div class="card">
-          <div class="icon">🇺🇸</div>
-          <h3>LLC en EE.UU.</h3>
-          <p>Creación y gestión de tu Limited Liability Company para operar en el mercado estadounidense.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🗺️</div>
-          <h3>Cambio de residencia</h3>
-          <p>Planificación y ejecución del traslado de tu residencia fiscal a otro país de forma segura y eficiente.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🏢</div>
-          <h3>Operaciones corporate</h3>
-          <p>Estructuración de operaciones corporativas transfronterizas: fusiones, adquisiciones y reorganizaciones internacionales.</p>
-        </div>
-        <div class="card">
-          <div class="icon">💻</div>
-          <h3>Nómadas digitales</h3>
-          <p>Asesoramiento fiscal para profesionales y empresas con actividad remota e internacional.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section-alt">
-    <div class="container" style="text-align:center;">
-      <h2 style="color: var(--color-primary); margin-bottom: 16px;">¿Tu negocio opera fuera de España?</h2>
-      <p style="color: var(--color-text-light); margin-bottom: 24px;">Hablemos de tu situación fiscal internacional.</p>
-      <a href="contacto.html" class="btn btn-primary" style="color:#080808; background: var(--color-accent);">Solicitar consulta</a>
-    </div>
-  </section>
-
   <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <h4>NomoTax</h4>
-          <p>Asesoría fiscal nacional e internacional para empresas y particulares.</p>
-        </div>
-        <div>
-          <h4>Navegación</h4>
-          <ul>
-            <li><a href="nacional.html">Nacional</a></li>
-            <li><a href="internacional.html">Internacional</a></li>
-            <li><a href="consultoria.html">Consultoría</a></li>
-            <li><a href="contacto.html">Contacto</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Contacto</h4>
-          <ul>
-            <li>info@nomotax.io</li>
-            <li>+34 642 75 76 33</li>
-          </ul>
-        </div>
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo" aria-label="NomoTax — inicio">
+          <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
+          <span class="logo-text">Nomo<span class="accent">Tax</span></span>
+        </a>
+        <p class="footer-desc">Despacho especializado en fiscalidad internacional para empresarios y autónomos.</p>
+        <div class="footer-social" aria-hidden="true"></div>
       </div>
-      <div class="footer-bottom">
-        &copy; 2026 NomoTax. Todos los derechos reservados.
+      <nav class="footer-nav" aria-label="Footer">
+        <h4 class="footer-heading">Navegación</h4>
+        <ul>
+          <li><a href="nacional.html">Fiscalidad en España</a></li>
+          <li><a href="internacional.html">Fiscalidad internacional</a></li>
+          <li><a href="asesoria-fiscal-mercantil-laboral.html">Gestoría</a></li>
+          <li><a href="consultoria.html">Consultoría</a></li>
+          <li><a href="asesoria.html">Asesoría gratis</a></li>
+        </ul>
+      </nav>
+      <div class="footer-legal">
+        <h4 class="footer-heading">Legal</h4>
+        <ul>
+          <li><a href="aviso-legal.html">Aviso legal</a></li>
+          <li><a href="privacidad.html">Privacidad</a></li>
+          <li><a href="cookies.html">Cookies</a></li>
+        </ul>
       </div>
+      <div class="footer-contact">
+        <h4 class="footer-heading">Contacto</h4>
+        <ul>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 4 12 13 22 4"/></svg></span>
+            <a href="mailto:info@nomotax.io">info@nomotax.io</a>
+          </li>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon footer-wa-icon"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
+            <a href="https://wa.me/34642757633" target="_blank" rel="noopener noreferrer">+34 642 75 76 33</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copyright">&copy; 2026 NomoTax &middot; Disconnected Group LLC &mdash; Todos los derechos reservados</span>
+      <span class="footer-tagline">Fiscalidad sin fronteras.</span>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <a href="https://wa.me/34642757633" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span class="whatsapp-tooltip">¿Tienes dudas? Escríbenos</span>
+  </a>
+
+  <script src="js/main.js?v=20260926c"></script>
 </body>
 </html>

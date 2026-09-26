@@ -1,0 +1,685 @@
+/* =============================================
+   ESTRUCTURAS INTERNACIONALES
+   =============================================
+   Depende de style.css (tarjetas de jurisdicción de
+   la home), gestoria.css (hero, panel lima, modal) y
+   consultoria.css (cabeceras .cns-*, tarjetas oscuras,
+   preguntas frecuentes y modal de contratación).
+   Aquí solo van las piezas propias de esta página.
+   nomadas-digitales.html también reutiliza estos
+   componentes (hero, tarjetas, "Dos formas de empezar").
+
+   Secuencia de fondos:
+   hero (negro) → qué montamos (claro) → jurisdicciones
+   (negro) → sociedad en la UE (claro) → cómo trabajamos
+   (negro) → servicios + preguntas (claro)
+   → CTA final (negro).
+   ============================================= */
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 0 — HERO
+   ═══════════════════════════════════════════════ */
+
+.est-hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+  margin: -12px 0 32px;
+  max-width: 480px;
+}
+
+.est-hero-subtitle strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.est-pill-btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.est-pill-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.est-pill-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.est-pill-ghost .gst-cta-circle {
+  background: var(--gst-lima);
+}
+
+.est-pill-ghost .gst-cta-circle svg {
+  color: var(--gst-black);
+}
+
+.est-panel {
+  gap: 28px;
+  padding-top: 44px;
+}
+
+.est-hero-note {
+  margin-top: 18px;
+  max-width: 460px;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Botón con aspecto de enlace (abre un pop-up desde un texto) */
+.est-link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--gst-black);
+  text-decoration: underline;
+  text-decoration-color: var(--gst-lima-dark);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 1 — QUÉ MONTAMOS  ·  claro
+   ═══════════════════════════════════════════════ */
+
+.est-tipos {
+  background: var(--gst-bg);
+  padding: 96px 0;
+}
+
+/* Flex para centrar la última fila (5 tarjetas en 3 columnas) */
+.est-grid-3 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+}
+
+.est-grid-3 > * {
+  flex: 0 1 calc((100% - 36px) / 3);
+}
+
+.est-tipo {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  padding: 26px 24px;
+  transition: border-color 180ms ease;
+}
+
+.est-tipo:hover {
+  border-color: rgba(17, 17, 16, 0.2);
+}
+
+.est-tipo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  margin-bottom: 16px;
+}
+
+.est-tipo-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.est-tipo-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  margin-bottom: 6px;
+}
+
+.est-tipo-text {
+  font-size: 0.87rem;
+  line-height: 1.6;
+  color: #777;
+}
+
+.est-tipo-text a {
+  color: var(--gst-black);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--gst-lima-dark);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 2 — JURISDICCIONES  ·  negro
+   Tarjetas de la home (style.css) sin cambios.
+   ═══════════════════════════════════════════════ */
+
+.est-jurisdicciones {
+  scroll-margin-top: 72px;
+}
+
+.est-cta-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.est-cta-btn-lima {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-black);
+}
+
+.est-cta-btn-lima:hover {
+  background: #fff;
+  border-color: #fff;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 3 — SOCIEDAD EN LA UE DESDE CASA  ·  claro
+   ═══════════════════════════════════════════════ */
+
+.est-ue {
+  background: var(--gst-bg);
+  padding: 96px 0;
+  scroll-margin-top: 72px;
+}
+
+.est-ue-inner {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.est-ue-copy .cns-sub {
+  margin-bottom: 32px;
+}
+
+.est-ue-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+}
+
+.est-ue-pasos li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: #444;
+}
+
+.est-ue-num {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gst-black);
+  color: var(--gst-lima);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Tarjeta de precio en negro */
+.est-ue-card {
+  background: var(--gst-black);
+  border-radius: 20px;
+  padding: 34px 30px 30px;
+}
+
+.est-ue-card-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-lima);
+  margin-bottom: 18px;
+}
+
+.est-ue-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  background: var(--gst-lima);
+}
+
+.est-ue-desde,
+.est-ue-unit {
+  font-size: 0.9rem;
+  color: var(--gst-green-dark);
+}
+
+.est-ue-amount {
+  font-size: 2.6rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--gst-black);
+}
+
+.est-ue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-bottom: 28px;
+}
+
+.est-ue-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.est-ue-cta {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.est-ue-cta:hover {
+  background: #fff;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 4 — CÓMO TRABAJAMOS  ·  negro
+   ═══════════════════════════════════════════════ */
+
+.est-pasos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  list-style: none;
+  margin-bottom: 28px;
+}
+
+.est-paso .cns-paso-num {
+  margin-bottom: 16px;
+}
+
+.est-paso .cns-caso-text {
+  margin-bottom: 0;
+}
+
+.est-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px;
+  border: 1px solid rgba(205, 245, 100, 0.25);
+  border-radius: 14px;
+  background: rgba(205, 245, 100, 0.06);
+}
+
+.est-aviso-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--gst-lima);
+}
+
+.est-aviso-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.est-aviso p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.est-aviso strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.est-aviso a {
+  color: var(--gst-lima);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 5 — SERVICIOS  ·  claro
+   ═══════════════════════════════════════════════ */
+
+/* ── ¿Por dónde empezar? Asesoría gratis / estudio fiscal ── */
+
+.est-decision {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto 72px;
+}
+
+.est-decision-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.1);
+  border-radius: 20px;
+  padding: 32px 30px 30px;
+}
+
+.est-decision-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-green-dark);
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+
+.est-decision-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--gst-black);
+  margin-bottom: 12px;
+}
+
+.est-decision-price {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--gst-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gst-black);
+  margin-bottom: 16px;
+}
+
+.est-decision-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 26px;
+}
+
+.est-decision-cta {
+  width: 100%;
+  margin-top: auto;
+  padding: 14px 24px;
+  border: 1px solid var(--gst-black);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--gst-black);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.est-decision-cta:hover {
+  background: var(--gst-black);
+  color: #fff;
+}
+
+.est-decision-dark {
+  background: var(--gst-black);
+  border-color: var(--gst-black);
+}
+
+.est-decision-dark .est-decision-eyebrow {
+  color: var(--gst-lima);
+  opacity: 1;
+}
+
+.est-decision-dark .est-decision-title {
+  color: #fff;
+}
+
+.est-decision-dark .est-decision-price {
+  background: var(--gst-lima);
+}
+
+.est-decision-dark .est-decision-text {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.est-decision-dark .est-decision-cta {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+}
+
+.est-decision-dark .est-decision-cta:hover {
+  background: #fff;
+  border-color: #fff;
+  color: var(--gst-black);
+}
+
+/* ── Servicios sueltos ── */
+
+.est-servicios-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--gst-black);
+  margin-bottom: 20px;
+}
+
+.est-servicios {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.est-serv {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  padding: 26px 22px 22px;
+}
+
+.est-serv-name {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--gst-black);
+  margin-bottom: 8px;
+}
+
+.est-serv-text {
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: #777;
+  margin-bottom: 18px;
+}
+
+.est-serv-price {
+  display: block;
+  margin-top: auto;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--gst-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gst-black);
+}
+
+.est-serv-price strong {
+  font-size: 1.1rem;
+}
+
+.est-serv-cta {
+  width: 100%;
+  padding: 11px 20px;
+  border: 1px solid var(--gst-black);
+  border-radius: 10px;
+  background: var(--gst-black);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.est-serv-cta:hover {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.est-faq {
+  margin-top: 88px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   CTA FINAL
+   ═══════════════════════════════════════════════ */
+
+.page-est .cta-final {
+  background: var(--gst-black);
+}
+
+.est-final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.est-final-btn-alt {
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.est-final-btn-alt:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 1040px) {
+
+  .est-grid-3 > * {
+    flex-basis: calc((100% - 18px) / 2);
+  }
+
+  .est-pasos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+
+  .est-ue-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .est-ue-card {
+    max-width: 480px;
+  }
+
+  .est-servicios {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 760px) {
+
+  .est-tipos,
+  .est-ue {
+    padding: 64px 0;
+  }
+
+  .est-grid-3 > * {
+    flex-basis: 100%;
+  }
+
+  .est-pasos,
+  .est-decision {
+    grid-template-columns: 1fr;
+  }
+
+  .est-decision {
+    margin-bottom: 56px;
+  }
+
+  .est-decision-card {
+    padding: 28px 22px 24px;
+  }
+
+  .est-final-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .est-faq {
+    margin-top: 64px;
+  }
+
+  .est-aviso {
+    padding: 18px 18px;
+  }
+
+  .est-hero .gst-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .est-hero .gst-cta-pill {
+    justify-content: space-between;
+  }
+}

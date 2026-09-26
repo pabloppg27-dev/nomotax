@@ -3,50 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Consultoría | NomoTax</title>
+  <title>Consultoría fiscal | NomoTax</title>
+  <meta name="description" content="Consultoría fiscal a medida: dictamen fiscal exprés, sesiones de asesoramiento personalizado desde 79 €/hora y estudios fiscales completos desde 299 €." />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gestoria.css" />
+  <link rel="stylesheet" href="css/consultoria.css" />
 </head>
-<body>
+<body class="page-cns">
 
   <header class="site-header">
     <div class="container">
-      <a href="index.html" class="logo">
+      <a href="index.html" class="logo" aria-label="NomoTax — inicio">
         <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
         <span class="logo-text">Nomo<span class="accent">Tax</span></span>
       </a>
       <nav class="nav">
         <div class="nav-item">
-          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">▾</span></button>
+          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">&#9662;</span></button>
           <div class="mega-menu" id="mega-nacional">
             <span class="mega-eyebrow">Optimización fiscal España</span>
             <div class="mega-featured">
-              <a href="nacional.html">Asesoría fiscal y mercantil</a>
-              <a href="nacional.html" class="chip">Ver todo</a>
+              <a href="asesoria-fiscal-mercantil-laboral.html">Asesoría fiscal, mercantil y laboral</a>
+              <a href="asesoria-fiscal-mercantil-laboral.html" class="chip">Contratar</a>
             </div>
             <ul class="mega-list">
-              <li><a href="nacional.html">Estructuras holding <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Ley Beckham (impatriados) <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Gestoría para autónomos <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Gestoría para SLs <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Ganancias patrimoniales <span class="arrow">→</span></a></li>
-              <li><a href="nacional.html">Deducciones I+D y Cultura <span class="arrow">→</span></a></li>
+              <li><a href="holding.html">Estructuras holding <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ley-beckham.html">Ley Beckham (impatriados) <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ganancias-patrimoniales.html">Ganancias patrimoniales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="deducciones-id-cultura.html">Deducciones I+D y Cultura <span class="chevron-hover">&rsaquo;</span></a></li>
             </ul>
+            <a href="nacional.html" class="mega-all">Ver todos los servicios <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
         <div class="nav-item">
-          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">▾</span></button>
+          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">&#9662;</span></button>
           <div class="mega-menu" id="mega-internacional">
             <span class="mega-eyebrow">Fiscalidad internacional</span>
             <ul class="mega-list">
-              <li><a href="internacional.html">LLC en EE.UU. <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Cambio de residencia <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Operaciones corporate <span class="arrow">→</span></a></li>
-              <li><a href="internacional.html">Nómadas digitales <span class="arrow">→</span></a></li>
+              <li><a href="llc-usa.html">LLC en EE.UU. <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="cambio-residencia-fiscal.html">Cambio de residencia fiscal <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="estructuras-internacionales.html">Estructuras internacionales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="nomadas-digitales.html">Nómadas digitales <span class="chevron-hover">&rsaquo;</span></a></li>
             </ul>
+            <a href="internacional.html" class="mega-all">Ver todos los servicios <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
+        <a href="asesoria-fiscal-mercantil-laboral.html">Gestoría</a>
         <a href="consultoria.html" class="active">Consultoría</a>
-        <a href="contacto.html">Contacto</a>
         <a href="asesoria.html" class="btn">Asesoría gratis</a>
       </nav>
       <button class="nav-toggle" aria-label="Abrir menú">
@@ -55,92 +58,940 @@
     </div>
   </header>
 
-  <div class="page-header">
-    <div class="container">
-      <h1>Consultoría</h1>
-      <p>Más allá del cumplimiento fiscal: te ayudamos a planificar y tomar decisiones estratégicas para tu negocio.</p>
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 0 — HERO  ·  fondo negro
+       ═══════════════════════════════════════════════ -->
+  <section class="gst-hero cns-hero">
+    <div class="gst-hero-inner">
+
+      <!-- Izquierda: copy -->
+      <div class="gst-hero-copy">
+        <p class="hero-fc-eyebrow"><span class="dot"></span> Consultoría fiscal</p>
+
+        <h1 class="gst-hero-h1">Consultoría fiscal<br> a tu medida</h1>
+
+        <p class="cns-hero-subtitle">Resolvemos una duda puntual, te acompañamos en una sesión uno a uno o analizamos tu situación completa. Tú eliges el formato y <strong>conoces el precio antes de empezar</strong>.</p>
+
+        <ul class="gst-checks">
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>Especialistas en fiscalidad nacional e internacional</span>
+          </li>
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>Precio cerrado antes de empezar</span>
+          </li>
+          <li>
+            <span class="gst-check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <span>Conclusiones siempre por escrito</span>
+          </li>
+        </ul>
+
+        <div class="gst-cta-row">
+          <a href="#formatos" class="gst-cta-pill">
+            <span>Ver formatos</span>
+            <span class="gst-cta-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </a>
+          <a href="#casos" class="gst-cta-pill">
+            <span>Tu caso concreto</span>
+            <span class="gst-cta-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Derecha: panel lima -->
+      <div class="gst-hero-panel-wrap">
+        <div class="gst-hero-panel cns-panel">
+          <div class="gst-fold-triangle"></div>
+
+          <span class="cns-panel-badge">
+            <span class="cns-panel-badge-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+            </span>
+            CONSULTORÍA · 1:1
+          </span>
+
+          <div class="gst-panel-logo">
+            <img src="img/logo.png" alt="NomoTax" />
+          </div>
+
+          <div class="gst-panel-pills">
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></span>
+              <span>Dictamen exprés en 48–72&nbsp;h</span>
+            </div>
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></span>
+              <span>Sesión 1:1 · 79&nbsp;€/hora</span>
+            </div>
+            <div class="gst-panel-pill">
+              <span class="gst-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+              <span>Estudio completo · desde 299&nbsp;€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 1 — FORMATOS  ·  fondo claro
+       ═══════════════════════════════════════════════ -->
+  <section class="cns-formatos" id="formatos">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-center">
+        <span class="cns-eyebrow">Formatos</span>
+        <h2 class="cns-h2">Elige cómo quieres que te ayudemos</h2>
+        <p class="cns-sub">De una pregunta concreta a un análisis completo de tu situación. En los tres casos hablas con un <strong>asesor especialista</strong> y te llevas las conclusiones por escrito.</p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <div class="cns-formatos-grid">
+
+        <!-- Dictamen fiscal exprés -->
+        <article class="cns-formato">
+          <span class="cns-formato-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+          </span>
+          <h3 class="cns-formato-name">Dictamen fiscal exprés</h3>
+          <p class="cns-formato-tagline">Una cuestión concreta, respondida por escrito y con fundamento.</p>
+          <div class="cns-formato-price">
+            <span class="cns-price-desde">Desde</span>
+            <span class="cns-price-amount">49</span>
+            <span class="cns-price-unit">€</span>
+          </div>
+          <ul class="cns-formato-list">
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Respuesta por escrito en 48–72&nbsp;h</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Normativa y criterio de Hacienda aplicables</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Conclusión clara y qué hacer a continuación</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Una aclaración posterior incluida</li>
+          </ul>
+          <button type="button" class="cns-formato-cta" data-cns="dictamen">Contratar</button>
+        </article>
+
+        <!-- Sesión personalizada -->
+        <article class="cns-formato">
+          <span class="cns-formato-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+          </span>
+          <h3 class="cns-formato-name">Sesión personalizada</h3>
+          <p class="cns-formato-tagline">Asesoramiento fiscal uno a uno para resolver tus dudas en directo.</p>
+          <div class="cns-formato-price">
+            <span class="cns-price-amount">79</span>
+            <span class="cns-price-unit">€ / hora</span>
+          </div>
+          <ul class="cns-formato-list">
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Por videollamada o por teléfono</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Revisamos tu documentación antes de la sesión</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Resumen escrito con los próximos pasos</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Eliges día y franja horaria</li>
+          </ul>
+          <button type="button" class="cns-formato-cta" data-cns="sesion">Contratar</button>
+        </article>
+
+        <!-- Estudio fiscal completo -->
+        <article class="cns-formato cns-formato-featured">
+          <span class="cns-badge">Más completo</span>
+          <span class="cns-formato-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </span>
+          <h3 class="cns-formato-name">Estudio fiscal completo</h3>
+          <p class="cns-formato-tagline">Tu situación analizada a fondo, con números y una estrategia.</p>
+          <div class="cns-formato-price">
+            <span class="cns-price-desde">Desde</span>
+            <span class="cns-price-amount">299</span>
+            <span class="cns-price-unit">€</span>
+          </div>
+          <ul class="cns-formato-list">
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Análisis de tu situación personal o empresarial</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Comparativa de escenarios con el cálculo de impuestos</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Informe escrito con la estrategia recomendada</li>
+            <li><span class="cns-tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg></span>Sesión de presentación del informe incluida</li>
+          </ul>
+          <button type="button" class="cns-formato-cta" data-cns="estudio">Contratar</button>
+        </article>
+
+      </div>
+
+      <p class="cns-formatos-note">¿No sabes cuál elegir? <a href="asesoria.html">Pide una asesoría gratuita</a> y te orientamos.</p>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 2 — CONSULTORÍA POR SITUACIÓN  ·  fondo negro
+       ═══════════════════════════════════════════════ -->
+  <section class="cns-casos" id="casos">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-dark">
+        <span class="cns-eyebrow">Consultoría por situación</span>
+        <h2 class="cns-h2">Tu caso concreto, resuelto por especialistas</h2>
+        <p class="cns-sub">Las situaciones que más nos consultan, con un servicio pensado para cada una. <strong>Precio cerrado</strong> antes de empezar.</p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <div class="cns-casos-grid">
+
+        <!-- ¿Autónomo o sociedad? -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+          </span>
+          <h3 class="cns-caso-title">¿Autónomo o sociedad?</h3>
+          <p class="cns-caso-text">Comparamos lo que pagarías como autónomo y como SL con tus números reales, y te decimos a partir de qué punto compensa dar el salto.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>99&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="autonomo-sl">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Venta de inmueble, herencia o donación -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Venta de inmueble, herencia o donación</h3>
+          <p class="cns-caso-text">Calculamos el impuesto antes de firmar y buscamos las reducciones y exenciones que te corresponden según tu comunidad autónoma.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>149&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="operacion">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Criptomonedas -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Criptomonedas</h3>
+          <p class="cns-caso-text">Calculamos tus ganancias y pérdidas por exchange y ejercicio, y te dejamos preparado lo que declarar en la Renta y en el modelo 721 si te afecta.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>99&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="cripto">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Requerimientos y defensa ante Hacienda -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <span class="cns-caso-flag">Plazos cortos</span>
+          <h3 class="cns-caso-title">Requerimientos y defensa ante Hacienda</h3>
+          <p class="cns-caso-text">Contestamos requerimientos, presentamos alegaciones a propuestas de liquidación o sanción y recurrimos cuando procede.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>149&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="requerimiento">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Consulta vinculante a la DGT -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4Z"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Consulta vinculante a la DGT</h3>
+          <p class="cns-caso-text">Redactamos y presentamos tu consulta a la Dirección General de Tributos, para que Hacienda fije por escrito cómo tributa tu operación.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>129&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="dgt">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Revisión y segunda opinión -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Revisión y segunda opinión</h3>
+          <p class="cns-caso-text">Revisamos una declaración ya presentada o una decisión que estás a punto de tomar. Si hay un error, te decimos cómo corregirlo.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>79&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="revision">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Cambio de residencia fiscal -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Cambio de residencia fiscal</h3>
+          <p class="cns-caso-text">Te mudas a otro país: dónde tributas, qué pasa con tus rentas y cómo planificar la fecha del cambio en origen y en destino.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price">Desde <strong>299&nbsp;€</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="residencia">Contratar</button>
+          </div>
+        </article>
+
+        <!-- Due diligence y reestructuraciones -->
+        <article class="cns-caso">
+          <span class="cns-caso-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </span>
+          <h3 class="cns-caso-title">Due diligence y reestructuraciones</h3>
+          <p class="cns-caso-text">Revisión fiscal en compraventas de empresas, entrada de inversores, fusiones y reorganizaciones societarias.</p>
+          <div class="cns-caso-foot">
+            <span class="cns-caso-price cns-caso-price-quote"><strong>A presupuesto</strong></span>
+            <button type="button" class="cns-caso-cta" data-cns="due-diligence">Contratar</button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       BLOQUE 3 — CÓMO FUNCIONA + PREGUNTAS  ·  fondo claro
+       ═══════════════════════════════════════════════ -->
+  <section class="cns-proceso">
+    <div class="cns-inner">
+
+      <div class="cns-header cns-header-center">
+        <span class="cns-eyebrow">Cómo funciona</span>
+        <h2 class="cns-h2">De tu pregunta a un plan de acción</h2>
+        <p class="cns-sub">Sin idas y venidas: sabes qué vas a recibir, cuándo y cuánto cuesta antes de que empecemos.</p>
+        <span class="gst-incluye-accent"></span>
+      </div>
+
+      <ol class="cns-pasos">
+        <li class="cns-paso">
+          <span class="cns-paso-num">01</span>
+          <h3 class="cns-paso-title">Eliges el servicio</h3>
+          <p class="cns-paso-text">Pulsa en contratar y cuéntanos tu caso en el formulario. Te lleva dos minutos.</p>
+        </li>
+        <li class="cns-paso">
+          <span class="cns-paso-num">02</span>
+          <h3 class="cns-paso-title">Te confirmamos precio y fecha</h3>
+          <p class="cns-paso-text">Un asesor revisa tu solicitud y te confirma el precio cerrado y, si es una sesión, el día y la hora.</p>
+        </li>
+        <li class="cns-paso">
+          <span class="cns-paso-num">03</span>
+          <h3 class="cns-paso-title">Nos envías la documentación</h3>
+          <p class="cns-paso-text">Solo la que hace falta para tu caso. Te decimos exactamente qué necesitamos.</p>
+        </li>
+        <li class="cns-paso">
+          <span class="cns-paso-num">04</span>
+          <h3 class="cns-paso-title">Recibes tu respuesta</h3>
+          <p class="cns-paso-text">Dictamen, sesión o informe, siempre con conclusiones claras y los siguientes pasos por escrito.</p>
+        </li>
+      </ol>
+
+      <div class="cns-faq">
+        <h3 class="cns-faq-title">Preguntas frecuentes</h3>
+
+        <div class="cns-faq-list">
+          <details class="cns-faq-item">
+            <summary>¿Qué diferencia hay entre el dictamen exprés y la sesión?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>El dictamen es para una pregunta concreta que se puede responder por escrito. La sesión es mejor cuando tienes varias dudas relacionadas o quieres ir contrastando opciones en directo con el asesor.</p>
+            </div>
+          </details>
+
+          <details class="cns-faq-item">
+            <summary>¿Cómo es la sesión de asesoramiento?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>Por videollamada o por teléfono, como prefieras. Antes de la sesión revisamos la documentación que nos envíes para aprovechar la hora al máximo, y después te mandamos un resumen por escrito con lo que hemos visto y los próximos pasos.</p>
+            </div>
+          </details>
+
+          <details class="cns-faq-item">
+            <summary>¿El precio puede cambiar?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>Los precios que ves son el punto de partida. Antes de empezar revisamos tu caso y te confirmamos el precio final por escrito. Si vemos que necesita más trabajo del previsto, te lo decimos antes y tú decides.</p>
+            </div>
+          </details>
+
+          <details class="cns-faq-item">
+            <summary>Me ha llegado una notificación de Hacienda, ¿es urgente?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>Normalmente sí. Para contestar un requerimiento o alegar a una propuesta de liquidación suele haber 10 días hábiles, y para recurrir una liquidación, un mes. Los plazos cuentan desde el día siguiente a la notificación, así que escríbenos cuanto antes.</p>
+            </div>
+          </details>
+
+          <details class="cns-faq-item">
+            <summary>¿Qué documentación tengo que preparar?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>Depende del caso: tu última declaración de la Renta, escrituras, extractos del exchange, la notificación de Hacienda… Cuando recibamos tu solicitud te diremos exactamente qué necesitamos, sin pedirte nada de más.</p>
+            </div>
+          </details>
+
+          <details class="cns-faq-item">
+            <summary>¿Y si no sé qué servicio necesito?<span class="cns-faq-icon" aria-hidden="true"></span></summary>
+            <div class="cns-faq-answer">
+              <p>Pide una <a href="asesoria.html">asesoría gratuita</a>. Vemos tu caso en una primera llamada y te recomendamos el formato que encaja, o te decimos si no necesitas ninguno.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ CTA FINAL ═══ -->
+  <section class="cta-final">
+    <div class="cta-final-glow"></div>
+    <div class="container cta-final-inner">
+      <span class="cta-final-eyebrow">&mdash; ¿Hablamos? &mdash;</span>
+      <h2 class="cta-final-title">Las decisiones fiscales<br>se toman <em>antes</em>, no después</h2>
+      <p class="cns-final-text">Una hora con un asesor puede ahorrarte un error que cuesta mucho más. Reserva tu sesión y sal con un plan claro.</p>
+      <button type="button" class="btn btn-primary cta-final-btn cns-final-btn" data-cns="sesion">RESERVAR SESIÓN</button>
+      <span class="cns-final-alt">¿Prefieres una primera toma de contacto? <a href="asesoria.html">Asesoría gratis</a></span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL — Contratar servicio de consultoría
+       Un bloque .cns-case por servicio. El título, el
+       precio, el subtítulo, el texto del botón y el
+       mensaje final se leen de sus data-*.
+       ═══════════════════════════════════════════════ -->
+  <div class="gst-modal-overlay" id="cns-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cns-modal-title">
+    <div class="gst-modal cns-modal">
+      <button class="gst-modal-close" id="cns-modal-close" aria-label="Cerrar">&times;</button>
+
+      <!-- Paso 1: formulario -->
+      <div id="cns-modal-form-step">
+        <span class="cns-modal-price" id="cns-modal-price"></span>
+        <h3 class="gst-modal-title" id="cns-modal-title"></h3>
+        <p class="gst-modal-subtitle" id="cns-modal-subtitle"></p>
+
+        <form class="gst-modal-form" id="cns-form" novalidate>
+
+          <!-- ── Dictamen fiscal exprés ── -->
+          <div class="cns-case" data-cns-case="dictamen" hidden
+               data-title="Dictamen fiscal exprés"
+               data-price="Desde 49 €"
+               data-subtitle="Plantea tu cuestión y te la respondemos por escrito en 48–72 h."
+               data-submit="Solicitar dictamen"
+               data-success="Un asesor revisará tu consulta y te confirmará el precio cerrado en las próximas 24 horas. Recibirás el dictamen por escrito en 48–72 h desde la confirmación.">
+            <label class="gst-modal-label">¿Sobre qué es tu consulta?</label>
+            <div class="gst-modal-options" data-name="materia" data-required data-error="Indica sobre qué es tu consulta.">
+              <button type="button" class="gst-modal-option" data-value="IRPF">IRPF</button>
+              <button type="button" class="gst-modal-option" data-value="Sociedades">Sociedades</button>
+              <button type="button" class="gst-modal-option" data-value="IVA">IVA</button>
+              <button type="button" class="gst-modal-option" data-value="Herencias y donaciones">Herencias y donaciones</button>
+              <button type="button" class="gst-modal-option" data-value="No residentes">No residentes</button>
+              <button type="button" class="gst-modal-option" data-value="Otro">Otro</button>
+            </div>
+
+            <label class="gst-modal-label" for="cns-dic-pregunta">Tu pregunta</label>
+            <textarea class="gst-modal-input" id="cns-dic-pregunta" rows="4" required data-error="Escribe la pregunta que quieres resolver." placeholder="Explica brevemente tu situación y la pregunta concreta que quieres resolver."></textarea>
+
+            <label class="gst-modal-label">¿Tienes algún plazo?</label>
+            <div class="gst-modal-options" data-name="plazo" data-required data-error="Indica si tienes algún plazo.">
+              <button type="button" class="gst-modal-option" data-value="Sin plazo">Sin plazo</button>
+              <button type="button" class="gst-modal-option" data-value="Esta semana">Esta semana</button>
+              <button type="button" class="gst-modal-option" data-value="Urgente">Urgente</button>
+            </div>
+          </div>
+
+          <!-- ── Sesión de asesoramiento personalizado ── -->
+          <div class="cns-case" data-cns-case="sesion" hidden
+               data-title="Reservar sesión personalizada"
+               data-price="79 € / hora"
+               data-subtitle="Elige cuándo te viene bien y te confirmamos la cita por email y teléfono."
+               data-submit="Reservar sesión"
+               data-success="Te confirmaremos el día y la hora de tu sesión por email y teléfono en las próximas 24 horas. Si quieres, ve preparando la documentación sobre la que quieras hablar.">
+            <label class="gst-modal-label">Duración</label>
+            <div class="gst-modal-options" data-name="duracion" data-required data-error="Elige la duración de la sesión.">
+              <button type="button" class="gst-modal-option" data-value="1 hora · 79 €">1 hora · 79 €</button>
+              <button type="button" class="gst-modal-option" data-value="2 horas · 158 €">2 horas · 158 €</button>
+            </div>
+
+            <label class="gst-modal-label">Modalidad</label>
+            <div class="gst-modal-options" data-name="modalidad" data-required data-error="Elige si prefieres videollamada o teléfono.">
+              <button type="button" class="gst-modal-option" data-value="Videollamada">Videollamada</button>
+              <button type="button" class="gst-modal-option" data-value="Llamada telefónica">Llamada telefónica</button>
+            </div>
+
+            <label class="gst-modal-label" for="cns-ses-fecha">Fecha preferida</label>
+            <input type="date" class="gst-modal-input" id="cns-ses-fecha" required data-min="manana" data-laborable data-error="Elige una fecha para la sesión." />
+            <p class="cns-modal-hint">De lunes a viernes. Si ese día no hay hueco, te proponemos el más cercano.</p>
+
+            <label class="gst-modal-label">Franja horaria</label>
+            <div class="gst-modal-options" data-name="franja" data-required data-error="Elige una franja horaria.">
+              <button type="button" class="gst-modal-option" data-value="Mañana (9–14 h)">Mañana (9–14 h)</button>
+              <button type="button" class="gst-modal-option" data-value="Tarde (16–19 h)">Tarde (16–19 h)</button>
+            </div>
+
+            <label class="gst-modal-label" for="cns-ses-tema">¿De qué quieres hablar?</label>
+            <textarea class="gst-modal-input" id="cns-ses-tema" rows="3" required data-error="Cuéntanos brevemente de qué quieres hablar." placeholder="Cuéntanos el tema para que el asesor llegue preparado."></textarea>
+          </div>
+
+          <!-- ── Estudio fiscal completo ── -->
+          <div class="cns-case" data-cns-case="estudio" hidden
+               data-title="Estudio fiscal completo"
+               data-price="Desde 299 €"
+               data-subtitle="Cuéntanos tu situación y te confirmamos el alcance del estudio y su precio cerrado."
+               data-submit="Solicitar estudio"
+               data-success="Un asesor te contactará en las próximas 24 horas para confirmar el alcance del estudio, el precio cerrado y la documentación que necesitamos.">
+            <label class="gst-modal-label">Tu perfil</label>
+            <div class="gst-modal-options" data-name="perfil" data-required data-error="Indica tu perfil.">
+              <button type="button" class="gst-modal-option" data-value="Particular">Particular</button>
+              <button type="button" class="gst-modal-option" data-value="Autónomo">Autónomo</button>
+              <button type="button" class="gst-modal-option" data-value="Empresa">Empresa</button>
+              <button type="button" class="gst-modal-option" data-value="No residente">No residente</button>
+            </div>
+
+            <label class="gst-modal-label">¿Qué quieres conseguir?</label>
+            <div class="gst-modal-options" data-name="objetivo" data-required data-error="Indica qué quieres conseguir con el estudio.">
+              <button type="button" class="gst-modal-option" data-value="Optimizar mis impuestos">Optimizar mis impuestos</button>
+              <button type="button" class="gst-modal-option" data-value="Planificar una operación">Planificar una operación</button>
+              <button type="button" class="gst-modal-option" data-value="Ordenar mi patrimonio">Ordenar mi patrimonio</button>
+              <button type="button" class="gst-modal-option" data-value="Otro">Otro</button>
+            </div>
+
+            <label class="gst-modal-label" for="cns-est-ingresos">Ingresos anuales aproximados</label>
+            <select class="gst-modal-input" id="cns-est-ingresos" required data-error="Indica tus ingresos anuales aproximados.">
+              <option value="">Selecciona un tramo</option>
+              <option>Menos de 30.000 €</option>
+              <option>De 30.000 a 60.000 €</option>
+              <option>De 60.000 a 150.000 €</option>
+              <option>De 150.000 a 300.000 €</option>
+              <option>Más de 300.000 €</option>
+            </select>
+
+            <label class="gst-modal-label" for="cns-est-situacion">Describe tu situación</label>
+            <textarea class="gst-modal-input" id="cns-est-situacion" rows="4" required data-error="Describe brevemente tu situación." placeholder="Fuentes de ingresos, sociedades, inmuebles, inversiones, lo que te preocupa…"></textarea>
+          </div>
+
+          <!-- ── ¿Autónomo o sociedad? ── -->
+          <div class="cns-case" data-cns-case="autonomo-sl" hidden
+               data-title="¿Autónomo o sociedad?"
+               data-price="Desde 99 €"
+               data-subtitle="Con estos datos preparamos la comparativa con tus números reales."
+               data-submit="Solicitar comparativa">
+            <label class="gst-modal-label">¿Cuál es tu situación ahora?</label>
+            <div class="gst-modal-options" data-name="situacion" data-required data-error="Indica tu situación actual.">
+              <button type="button" class="gst-modal-option" data-value="Aún no he empezado">Aún no he empezado</button>
+              <button type="button" class="gst-modal-option" data-value="Ya soy autónomo">Ya soy autónomo</button>
+              <button type="button" class="gst-modal-option" data-value="Ya tengo sociedad">Ya tengo sociedad</button>
+            </div>
+
+            <label class="gst-modal-label" for="cns-asl-actividad">Actividad</label>
+            <input type="text" class="gst-modal-input" id="cns-asl-actividad" required data-error="Indica a qué te dedicas." placeholder="Ej.: consultoría, e-commerce, diseño…" />
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-asl-facturacion">Facturación anual prevista</label>
+                <select class="gst-modal-input" id="cns-asl-facturacion" required data-error="Indica tu facturación anual prevista.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 40.000 €</option>
+                  <option>De 40.000 a 70.000 €</option>
+                  <option>De 70.000 a 120.000 €</option>
+                  <option>De 120.000 a 250.000 €</option>
+                  <option>Más de 250.000 €</option>
+                </select>
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-asl-gastos">Gastos anuales aprox.</label>
+                <select class="gst-modal-input" id="cns-asl-gastos" required data-error="Indica tus gastos anuales aproximados.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 10.000 €</option>
+                  <option>De 10.000 a 30.000 €</option>
+                  <option>De 30.000 a 60.000 €</option>
+                  <option>Más de 60.000 €</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="gst-modal-label" for="cns-asl-ccaa">Comunidad autónoma de residencia</label>
+            <select class="gst-modal-input" id="cns-asl-ccaa" data-cns-ccaa required data-error="Indica tu comunidad autónoma."></select>
+          </div>
+
+          <!-- ── Venta de inmueble, herencia o donación ── -->
+          <div class="cns-case" data-cns-case="operacion" hidden
+               data-title="Venta de inmueble, herencia o donación"
+               data-price="Desde 149 €"
+               data-subtitle="Calculamos el impuesto y las reducciones que te corresponden antes de firmar."
+               data-submit="Solicitar planificación">
+            <label class="gst-modal-label">Tipo de operación</label>
+            <div class="gst-modal-options" data-name="operacion" data-required data-error="Indica el tipo de operación.">
+              <button type="button" class="gst-modal-option" data-value="Venta de inmueble">Venta de inmueble</button>
+              <button type="button" class="gst-modal-option" data-value="Herencia">Herencia</button>
+              <button type="button" class="gst-modal-option" data-value="Donación">Donación</button>
+            </div>
+
+            <div data-cns-show="operacion:Herencia">
+              <p class="cns-modal-note">El Impuesto sobre Sucesiones se presenta en <strong>6 meses desde el fallecimiento</strong>. Si ya ha pasado parte de ese plazo, indícalo en los comentarios.</p>
+            </div>
+
+            <div data-cns-show="operacion:Herencia|Donación">
+              <label class="gst-modal-label" for="cns-ope-parentesco">Parentesco</label>
+              <select class="gst-modal-input" id="cns-ope-parentesco" required data-error="Indica el parentesco.">
+                <option value="">Selecciona</option>
+                <option>Hijo/a o descendiente</option>
+                <option>Cónyuge</option>
+                <option>Padre/madre o ascendiente</option>
+                <option>Hermano/a, sobrino/a o tío/a</option>
+                <option>Otro o sin parentesco</option>
+              </select>
+            </div>
+
+            <label class="gst-modal-label">¿Cuándo está prevista?</label>
+            <div class="gst-modal-options" data-name="cuando" data-required data-error="Indica cuándo está prevista la operación.">
+              <button type="button" class="gst-modal-option" data-value="Ya ha ocurrido">Ya ha ocurrido</button>
+              <button type="button" class="gst-modal-option" data-value="En menos de 3 meses">En menos de 3 meses</button>
+              <button type="button" class="gst-modal-option" data-value="Más adelante">Más adelante</button>
+            </div>
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-ope-valor">Valor aproximado</label>
+                <select class="gst-modal-input" id="cns-ope-valor" required data-error="Indica el valor aproximado.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 150.000 €</option>
+                  <option>De 150.000 a 400.000 €</option>
+                  <option>De 400.000 a 1.000.000 €</option>
+                  <option>Más de 1.000.000 €</option>
+                </select>
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-ope-ccaa">Comunidad autónoma</label>
+                <select class="gst-modal-input" id="cns-ope-ccaa" data-cns-ccaa required data-error="Indica la comunidad autónoma."></select>
+              </div>
+            </div>
+
+            <label class="gst-modal-label" for="cns-ope-comentarios">Comentarios <span class="cns-opt">(opcional)</span></label>
+            <textarea class="gst-modal-input" id="cns-ope-comentarios" rows="3" placeholder="Cualquier detalle que debamos saber."></textarea>
+          </div>
+
+          <!-- ── Criptomonedas ── -->
+          <div class="cns-case" data-cns-case="cripto" hidden
+               data-title="Fiscalidad de criptomonedas"
+               data-price="Desde 99 €"
+               data-subtitle="Con estos datos estimamos el volumen de trabajo y te damos un precio cerrado."
+               data-submit="Solicitar informe cripto">
+            <label class="gst-modal-label">Ejercicios a revisar <span class="cns-opt">(puedes marcar varios)</span></label>
+            <div class="cns-multi" data-name="ejercicios" data-required data-error="Marca al menos un ejercicio.">
+              <button type="button" class="gst-modal-option" data-value="2025" aria-pressed="false">2025</button>
+              <button type="button" class="gst-modal-option" data-value="2024" aria-pressed="false">2024</button>
+              <button type="button" class="gst-modal-option" data-value="2023" aria-pressed="false">2023</button>
+              <button type="button" class="gst-modal-option" data-value="2022" aria-pressed="false">2022</button>
+            </div>
+
+            <label class="gst-modal-label">Qué operaciones haces <span class="cns-opt">(puedes marcar varias)</span></label>
+            <div class="cns-multi" data-name="actividad" data-required data-error="Marca qué tipo de operaciones haces.">
+              <button type="button" class="gst-modal-option" data-value="Compraventa" aria-pressed="false">Compraventa</button>
+              <button type="button" class="gst-modal-option" data-value="Permutas entre cripto" aria-pressed="false">Permutas entre cripto</button>
+              <button type="button" class="gst-modal-option" data-value="Staking" aria-pressed="false">Staking</button>
+              <button type="button" class="gst-modal-option" data-value="DeFi" aria-pressed="false">DeFi</button>
+              <button type="button" class="gst-modal-option" data-value="NFT" aria-pressed="false">NFT</button>
+              <button type="button" class="gst-modal-option" data-value="Minería" aria-pressed="false">Minería</button>
+            </div>
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-cri-exchanges">Exchanges y wallets</label>
+                <input type="text" class="gst-modal-input" id="cns-cri-exchanges" required data-error="Indica los exchanges o wallets que usas." placeholder="Binance, Coinbase, Ledger…" />
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-cri-operaciones">Nº de operaciones al año</label>
+                <select class="gst-modal-input" id="cns-cri-operaciones" required data-error="Indica cuántas operaciones haces al año.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 100</option>
+                  <option>De 100 a 1.000</option>
+                  <option>Más de 1.000</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="gst-modal-label">¿Más de 50.000 € en exchanges extranjeros a 31 de diciembre?</label>
+            <div class="gst-modal-options" data-name="m721" data-required data-error="Indica si superas los 50.000 € en exchanges extranjeros.">
+              <button type="button" class="gst-modal-option" data-value="Sí">Sí</button>
+              <button type="button" class="gst-modal-option" data-value="No">No</button>
+              <button type="button" class="gst-modal-option" data-value="No lo sé">No lo sé</button>
+            </div>
+            <p class="cns-modal-hint">Es el umbral a partir del cual hay que presentar el modelo 721.</p>
+          </div>
+
+          <!-- ── Requerimientos y defensa ante Hacienda ── -->
+          <div class="cns-case" data-cns-case="requerimiento" hidden
+               data-title="Requerimientos y defensa ante Hacienda"
+               data-price="Desde 149 €"
+               data-subtitle="Revisamos tu notificación con prioridad: en estos casos los plazos cuentan."
+               data-submit="Solicitar defensa"
+               data-success="Revisamos tu caso con prioridad. Un asesor te contactará en las próximas 24 horas para ver los plazos y pedirte una copia de la notificación.">
+            <label class="gst-modal-label">¿Qué has recibido?</label>
+            <div class="gst-modal-options" data-name="tipo" data-required data-error="Indica qué tipo de notificación has recibido.">
+              <button type="button" class="gst-modal-option" data-value="Requerimiento de información">Requerimiento</button>
+              <button type="button" class="gst-modal-option" data-value="Propuesta de liquidación">Propuesta de liquidación</button>
+              <button type="button" class="gst-modal-option" data-value="Liquidación">Liquidación</button>
+              <button type="button" class="gst-modal-option" data-value="Sanción">Sanción</button>
+              <button type="button" class="gst-modal-option" data-value="Inicio de inspección">Inspección</button>
+              <button type="button" class="gst-modal-option" data-value="Otro">Otro</button>
+            </div>
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-req-fecha">Fecha de notificación</label>
+                <input type="date" class="gst-modal-input" id="cns-req-fecha" required data-max="hoy" data-error="Indica la fecha en que recibiste la notificación." />
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-req-impuesto">Impuesto</label>
+                <select class="gst-modal-input" id="cns-req-impuesto" required data-error="Indica el impuesto afectado.">
+                  <option value="">Selecciona</option>
+                  <option>IRPF</option>
+                  <option>IVA</option>
+                  <option>Impuesto sobre Sociedades</option>
+                  <option>Sucesiones y Donaciones</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+            </div>
+            <p class="cns-modal-hint">El plazo para responder cuenta desde el día siguiente a la notificación.</p>
+
+            <label class="gst-modal-label" for="cns-req-detalle">Cuéntanos brevemente</label>
+            <textarea class="gst-modal-input" id="cns-req-detalle" rows="3" required data-error="Cuéntanos brevemente qué te piden." placeholder="Qué te piden o qué te reclaman, y el importe si aparece."></textarea>
+          </div>
+
+          <!-- ── Consulta vinculante a la DGT ── -->
+          <div class="cns-case" data-cns-case="dgt" hidden
+               data-title="Consulta vinculante a la DGT"
+               data-price="Desde 129 €"
+               data-subtitle="Estudiamos tu operación y te decimos si tiene sentido plantearla a la DGT antes de redactarla."
+               data-submit="Solicitar consulta vinculante">
+            <label class="gst-modal-label">¿En qué punto está la operación?</label>
+            <div class="gst-modal-options" data-name="estado" data-required data-error="Indica en qué punto está la operación.">
+              <button type="button" class="gst-modal-option" data-value="Planificada">Planificada</button>
+              <button type="button" class="gst-modal-option" data-value="Realizada, aún sin declarar">Realizada, aún sin declarar</button>
+            </div>
+            <p class="cns-modal-hint">La consulta tiene que presentarse antes de que acabe el plazo para declarar la operación.</p>
+
+            <label class="gst-modal-label" for="cns-dgt-impuesto">Impuesto</label>
+            <select class="gst-modal-input" id="cns-dgt-impuesto" required data-error="Indica el impuesto afectado.">
+              <option value="">Selecciona</option>
+              <option>IRPF</option>
+              <option>Impuesto sobre Sociedades</option>
+              <option>IVA</option>
+              <option>Sucesiones y Donaciones</option>
+              <option>No residentes</option>
+              <option>Otro</option>
+            </select>
+
+            <label class="gst-modal-label" for="cns-dgt-operacion">Describe la operación</label>
+            <textarea class="gst-modal-input" id="cns-dgt-operacion" rows="4" required data-error="Describe brevemente la operación." placeholder="Qué quieres hacer, quién interviene y qué duda tienes sobre cómo tributa."></textarea>
+          </div>
+
+          <!-- ── Revisión y segunda opinión ── -->
+          <div class="cns-case" data-cns-case="revision" hidden
+               data-title="Revisión y segunda opinión"
+               data-price="Desde 79 €"
+               data-subtitle="Dinos qué quieres que revisemos y te confirmamos el precio cerrado."
+               data-submit="Solicitar revisión">
+            <label class="gst-modal-label">¿Qué quieres que revisemos?</label>
+            <div class="gst-modal-options" data-name="objeto" data-required data-error="Indica qué quieres que revisemos.">
+              <button type="button" class="gst-modal-option" data-value="Declaración de la Renta">Declaración de la Renta</button>
+              <button type="button" class="gst-modal-option" data-value="Impuesto sobre Sociedades">Impuesto sobre Sociedades</button>
+              <button type="button" class="gst-modal-option" data-value="Declaraciones de IVA">Declaraciones de IVA</button>
+              <button type="button" class="gst-modal-option" data-value="Una decisión u operación">Una decisión u operación</button>
+            </div>
+
+            <div data-cns-show="objeto:Declaración de la Renta|Impuesto sobre Sociedades|Declaraciones de IVA">
+              <div class="cns-row">
+                <div>
+                  <label class="gst-modal-label" for="cns-rev-ejercicio">Ejercicio</label>
+                  <select class="gst-modal-input" id="cns-rev-ejercicio" required data-error="Indica el ejercicio.">
+                    <option value="">Selecciona</option>
+                    <option>2025</option>
+                    <option>2024</option>
+                    <option>2023</option>
+                    <option>2022</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="gst-modal-label" for="cns-rev-presentada">¿Ya está presentada?</label>
+                  <select class="gst-modal-input" id="cns-rev-presentada" required data-error="Indica si ya está presentada.">
+                    <option value="">Selecciona</option>
+                    <option>Sí, ya presentada</option>
+                    <option>No, aún sin presentar</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <label class="gst-modal-label" for="cns-rev-detalle">¿Qué te preocupa?</label>
+            <textarea class="gst-modal-input" id="cns-rev-detalle" rows="3" required data-error="Cuéntanos qué te preocupa." placeholder="Lo que no te cuadra o la decisión que quieres contrastar."></textarea>
+          </div>
+
+          <!-- ── Cambio de residencia fiscal ── -->
+          <div class="cns-case" data-cns-case="residencia" hidden
+               data-title="Cambio de residencia fiscal"
+               data-price="Desde 299 €"
+               data-subtitle="Te ayudamos a planificar el cambio antes de que se produzca."
+               data-submit="Solicitar estudio de residencia">
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-res-origen">País de origen</label>
+                <input type="text" class="gst-modal-input" id="cns-res-origen" required data-error="Indica tu país de origen." placeholder="Ej.: México" />
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-res-destino">País de destino</label>
+                <input type="text" class="gst-modal-input" id="cns-res-destino" required data-error="Indica el país de destino (o si aún lo estás decidiendo)." placeholder="Ej.: Portugal, o aún no lo sé" />
+              </div>
+            </div>
+
+            <label class="gst-modal-label" for="cns-res-fecha">¿Cuándo?</label>
+            <select class="gst-modal-input" id="cns-res-fecha" required data-error="Indica cuándo está previsto el cambio.">
+              <option value="">Selecciona</option>
+              <option>Ya me he mudado</option>
+              <option>En menos de 3 meses</option>
+              <option>En 3 a 12 meses</option>
+              <option>Aún sin fecha</option>
+            </select>
+
+            <label class="gst-modal-label">Tu situación profesional</label>
+            <div class="gst-modal-options" data-name="profesion" data-required data-error="Indica tu situación profesional.">
+              <button type="button" class="gst-modal-option" data-value="Empleado">Empleado</button>
+              <button type="button" class="gst-modal-option" data-value="Autónomo o freelance">Autónomo o freelance</button>
+              <button type="button" class="gst-modal-option" data-value="Empresario">Empresario</button>
+              <button type="button" class="gst-modal-option" data-value="Inversor o rentista">Inversor o rentista</button>
+              <button type="button" class="gst-modal-option" data-value="Jubilado">Jubilado</button>
+            </div>
+
+            <label class="gst-modal-label">¿Tienes sociedades o participaciones en empresas?</label>
+            <div class="gst-modal-options" data-name="sociedades" data-required data-error="Indica si tienes sociedades o participaciones en empresas.">
+              <button type="button" class="gst-modal-option" data-value="Sí">Sí</button>
+              <button type="button" class="gst-modal-option" data-value="No">No</button>
+            </div>
+            <p class="cns-modal-hint">Algunos países aplican un impuesto de salida sobre acciones y participaciones. ¿Necesitas también bancos o reestructurar tus sociedades? Mira el <a href="cambio-residencia-fiscal.html">acompañamiento integral</a>.</p>
+          </div>
+
+          <!-- ── Due diligence y reestructuraciones ── -->
+          <div class="cns-case" data-cns-case="due-diligence" hidden
+               data-title="Due diligence y reestructuraciones"
+               data-price="A presupuesto"
+               data-subtitle="Cuéntanos la operación y te enviamos un presupuesto cerrado."
+               data-submit="Solicitar presupuesto"
+               data-success="Un asesor te contactará en las próximas 24 horas para concretar el alcance de la operación y enviarte el presupuesto.">
+            <label class="gst-modal-label">Tipo de operación</label>
+            <div class="gst-modal-options" data-name="operacion" data-required data-error="Indica el tipo de operación.">
+              <button type="button" class="gst-modal-option" data-value="Compra de empresa">Compra de empresa</button>
+              <button type="button" class="gst-modal-option" data-value="Venta de empresa">Venta de empresa</button>
+              <button type="button" class="gst-modal-option" data-value="Entrada de inversores">Entrada de inversores</button>
+              <button type="button" class="gst-modal-option" data-value="Fusión o escisión">Fusión o escisión</button>
+              <button type="button" class="gst-modal-option" data-value="Reorganización del grupo">Reorganización del grupo</button>
+            </div>
+
+            <div class="cns-row">
+              <div>
+                <label class="gst-modal-label" for="cns-dd-facturacion">Facturación de la empresa</label>
+                <select class="gst-modal-input" id="cns-dd-facturacion" required data-error="Indica la facturación de la empresa.">
+                  <option value="">Selecciona</option>
+                  <option>Menos de 1 M€</option>
+                  <option>De 1 a 10 M€</option>
+                  <option>Más de 10 M€</option>
+                </select>
+              </div>
+              <div>
+                <label class="gst-modal-label" for="cns-dd-cierre">Cierre previsto</label>
+                <select class="gst-modal-input" id="cns-dd-cierre" required data-error="Indica cuándo está previsto el cierre.">
+                  <option value="">Selecciona</option>
+                  <option>En menos de 1 mes</option>
+                  <option>En 1 a 3 meses</option>
+                  <option>En más de 3 meses</option>
+                  <option>Aún sin fecha</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="gst-modal-label" for="cns-dd-empresa">Empresa o sociedad <span class="cns-opt">(opcional)</span></label>
+            <input type="text" class="gst-modal-input" id="cns-dd-empresa" placeholder="Denominación social" />
+
+            <label class="gst-modal-label" for="cns-dd-detalle">Describe la operación</label>
+            <textarea class="gst-modal-input" id="cns-dd-detalle" rows="3" required data-error="Describe brevemente la operación." placeholder="Partes, calendario y qué necesitas que revisemos."></textarea>
+          </div>
+
+          <!-- ── Datos de contacto (comunes a todos) ── -->
+          <span class="cns-modal-sep">Tus datos</span>
+
+          <label class="gst-modal-label" for="cns-nombre">Nombre y apellidos</label>
+          <input type="text" class="gst-modal-input" id="cns-nombre" name="nombre" autocomplete="name" placeholder="Tu nombre completo" />
+
+          <label class="gst-modal-label" for="cns-email">Correo electrónico</label>
+          <input type="email" class="gst-modal-input" id="cns-email" name="email" autocomplete="email" placeholder="tu@email.com" />
+
+          <label class="gst-modal-label" for="cns-telefono">Teléfono móvil</label>
+          <input type="tel" class="gst-modal-input" id="cns-telefono" name="telefono" autocomplete="tel" placeholder="+34 600 000 000" />
+
+          <p class="cns-modal-error" id="cns-form-error" role="alert" hidden></p>
+
+          <button type="submit" class="gst-modal-submit" id="cns-modal-submit">Solicitar</button>
+          <p class="cns-modal-legal">Al enviar aceptas nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+        </form>
+      </div>
+
+      <!-- Paso 2: confirmación -->
+      <div class="cns-modal-success" id="cns-modal-success" hidden>
+        <span class="cns-modal-success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7.5"/></svg>
+        </span>
+        <h3 class="cns-modal-success-title">Solicitud enviada</h3>
+        <p class="cns-modal-success-text" id="cns-modal-success-text"></p>
+        <p class="cns-modal-success-meta" id="cns-modal-success-meta"></p>
+        <button type="button" class="gst-modal-submit" id="cns-modal-done">Entendido</button>
+      </div>
+
     </div>
   </div>
 
-  <section>
-    <div class="container">
-      <div class="section-title">
-        <h2>Servicios</h2>
-        <p>Asesoramiento estratégico a medida de cada cliente.</p>
-      </div>
-      <div class="grid">
-        <div class="card">
-          <div class="icon">📊</div>
-          <h3>Planificación fiscal estratégica</h3>
-          <p>Diseño de estrategias a medio y largo plazo para optimizar la carga fiscal del negocio.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🔀</div>
-          <h3>Reestructuraciones societarias</h3>
-          <p>Fusiones, escisiones y reorganizaciones empresariales con impacto fiscal controlado.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🧬</div>
-          <h3>Sucesión y patrimonio familiar</h3>
-          <p>Planificación de la transmisión patrimonial y protocolos familiares.</p>
-        </div>
-        <div class="card">
-          <div class="icon">💼</div>
-          <h3>Due diligence fiscal</h3>
-          <p>Revisión fiscal en procesos de compraventa e inversión empresarial.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🚀</div>
-          <h3>Startups e inversión</h3>
-          <p>Estructuras fiscales eficientes para proyectos en crecimiento y rondas de inversión.</p>
-        </div>
-        <div class="card">
-          <div class="icon">🤝</div>
-          <h3>Segunda opinión fiscal</h3>
-          <p>Revisión independiente de decisiones fiscales ya tomadas o en estudio.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section-alt">
-    <div class="container" style="text-align:center;">
-      <h2 style="color: var(--color-primary); margin-bottom: 16px;">¿Necesitas una visión estratégica de tu fiscalidad?</h2>
-      <p style="color: var(--color-text-light); margin-bottom: 24px;">Agenda una primera sesión de consultoría con nuestro equipo.</p>
-      <a href="contacto.html" class="btn btn-primary" style="color:#080808; background: var(--color-accent);">Solicitar consulta</a>
-    </div>
-  </section>
-
   <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <h4>NomoTax</h4>
-          <p>Asesoría fiscal nacional e internacional para empresas y particulares.</p>
-        </div>
-        <div>
-          <h4>Navegación</h4>
-          <ul>
-            <li><a href="nacional.html">Nacional</a></li>
-            <li><a href="internacional.html">Internacional</a></li>
-            <li><a href="consultoria.html">Consultoría</a></li>
-            <li><a href="contacto.html">Contacto</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4>Contacto</h4>
-          <ul>
-            <li>info@nomotax.io</li>
-            <li>+34 642 75 76 33</li>
-          </ul>
-        </div>
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo" aria-label="NomoTax — inicio">
+          <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
+          <span class="logo-text">Nomo<span class="accent">Tax</span></span>
+        </a>
+        <p class="footer-desc">Despacho especializado en fiscalidad internacional para empresarios y autónomos.</p>
+        <div class="footer-social" aria-hidden="true"></div>
       </div>
-      <div class="footer-bottom">
-        &copy; 2026 NomoTax. Todos los derechos reservados.
+      <nav class="footer-nav" aria-label="Footer">
+        <h4 class="footer-heading">Navegación</h4>
+        <ul>
+          <li><a href="nacional.html">Fiscalidad en España</a></li>
+          <li><a href="internacional.html">Fiscalidad internacional</a></li>
+          <li><a href="asesoria-fiscal-mercantil-laboral.html">Gestoría</a></li>
+          <li><a href="consultoria.html">Consultoría</a></li>
+          <li><a href="asesoria.html">Asesoría gratis</a></li>
+        </ul>
+      </nav>
+      <div class="footer-legal">
+        <h4 class="footer-heading">Legal</h4>
+        <ul>
+          <li><a href="aviso-legal.html">Aviso legal</a></li>
+          <li><a href="privacidad.html">Privacidad</a></li>
+          <li><a href="cookies.html">Cookies</a></li>
+        </ul>
       </div>
+      <div class="footer-contact">
+        <h4 class="footer-heading">Contacto</h4>
+        <ul>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 4 12 13 22 4"/></svg></span>
+            <a href="mailto:info@nomotax.io">info@nomotax.io</a>
+          </li>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon footer-wa-icon"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
+            <a href="https://wa.me/34642757633" target="_blank" rel="noopener noreferrer">+34 642 75 76 33</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copyright">&copy; 2026 NomoTax &middot; Disconnected Group LLC &mdash; Todos los derechos reservados</span>
+      <span class="footer-tagline">Fiscalidad sin fronteras.</span>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <a href="https://wa.me/34642757633" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span class="whatsapp-tooltip">¿Tienes dudas? Escríbenos</span>
+  </a>
+
+  <script src="js/main.js?v=20260926c"></script>
 </body>
 </html>

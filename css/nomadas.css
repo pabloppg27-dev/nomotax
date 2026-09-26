@@ -1,0 +1,123 @@
+/* =============================================
+   NÓMADAS DIGITALES
+   =============================================
+   Depende de style.css, gestoria.css (hero, panel
+   lima, modal), consultoria.css (cabeceras .cns-*,
+   tarjetas oscuras, preguntas frecuentes, modal de
+   contratación) y estructuras.css (botones del hero,
+   tarjetas blancas, "Dos formas de empezar",
+   servicios y CTA final con dos botones).
+   Aquí solo van las piezas propias de esta página.
+
+   Secuencia de fondos:
+   hero (negro) → el mito (claro) → qué hacemos (negro)
+   → cómo trabajas (claro) → jurisdicciones (negro)
+   → empezar + preguntas (claro) → CTA final (negro).
+   ============================================= */
+
+
+/* ── Enlaces dentro de las tarjetas oscuras ── */
+
+.nmd-caso-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.nmd-caso-links a {
+  padding: 6px 14px;
+  border: 1px solid rgba(205, 245, 100, 0.35);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gst-lima);
+  transition: all 0.2s;
+}
+
+.nmd-caso-links a:hover {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.nmd-servicios .cns-caso-text {
+  margin-bottom: 0;
+}
+
+
+/* ── Franja de jurisdicciones: todas con el mismo peso ── */
+
+.nmd-flags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 920px;
+  margin: 0 auto;
+  list-style: none;
+}
+
+.nmd-flags li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.nmd-flag {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.nmd-flags-link {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.nmd-flags-link a {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gst-lima);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+
+/* ── "También puedes contratar": una sola tarjeta centrada ── */
+
+.nmd-servicios-uno {
+  grid-template-columns: 1fr;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+
+/* ── CTA final ── */
+
+.page-nmd .cta-final {
+  background: var(--gst-black);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 760px) {
+
+  .nmd-flags {
+    gap: 8px;
+  }
+
+  .nmd-flags li {
+    padding: 8px 14px 8px 12px;
+    font-size: 0.82rem;
+  }
+}

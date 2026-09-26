@@ -1,0 +1,1383 @@
+/* =============================================
+   LLC EN ESTADOS UNIDOS — página dedicada
+   =============================================
+   Reutiliza variables y componentes de gestoria.css
+   (--gst-black, --gst-lima, --gst-lima-dark, --gst-green-dark)
+   y de style.css (.btn, .btn-primary, .btn-outline,
+   .hero-fc-eyebrow, .hero-fc-actions, .gst-hero*, .gst-checks,
+   .gst-panel-*, .gst-lima-label, .gst-lima-pill, .gst-incluye*,
+   .gst-tl-*, .cta-final*).
+   Aquí solo se añade lo específico de esta página.
+   ============================================= */
+
+/* ── Subtítulo del hero ── */
+
+.llc-hero-subtitle {
+  font-size: 0.96rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+  max-width: 48ch;
+  margin-bottom: 32px;
+}
+
+/* ── Panel de marca (composición derecha) ── */
+
+.llc-panel {
+  position: relative;
+  background: var(--gst-lima);
+  border-radius: 12px 0 12px 12px;
+  padding: 44px 32px 36px;
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+/* Identificador "LLC · USA" + bandera sutil */
+
+.llc-panel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gst-black);
+  color: var(--gst-lima);
+  padding: 7px 16px 7px 8px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Bandera EE. UU. minimalista — solo negro + lima, sin rojo/azul */
+.llc-flag {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 14px;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--gst-lima) 0px, var(--gst-lima) 2px,
+    var(--gst-black) 2px, var(--gst-black) 4px
+  );
+}
+
+.llc-flag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 58%;
+  height: 57%;
+  background: var(--gst-black);
+}
+
+.llc-flag::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 3px;
+  height: 3px;
+  background: var(--gst-lima);
+  border-radius: 50%;
+  box-shadow:
+    6px 0 0 var(--gst-lima),
+    0 4px 0 var(--gst-lima),
+    6px 4px 0 var(--gst-lima);
+}
+
+/* Logo — mismo tratamiento que gst-panel-logo, ligeramente mayor */
+.llc-panel-logo {
+  width: 94px;
+  height: 94px;
+}
+
+.llc-panel-logo img {
+  width: 94px;
+  height: 94px;
+  border-radius: 22px;
+  object-fit: contain;
+}
+
+/* Estados donde constituimos */
+
+.llc-panel-states {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.llc-states-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   BLOQUE — ¿Por qué constituir una LLC en EE. UU.?
+   Reutiliza .gst-cerca / .gst-cerca-inner / .gst-cerca-visual /
+   .gst-cerca-lima / .gst-cerca-card / .gst-card-fold / .gst-card-badge /
+   .gst-cerca-text / .gst-cerca-h2 / .gst-lima-label / .gst-lima-pills /
+   .gst-lima-pill (gestoria.css, mismo fondo var(--gst-bg) que Bloque 1
+   de la página de Asesoría fiscal, mercantil y laboral).
+   Aquí solo se añade lo específico de este bloque.
+   ═══════════════════════════════════════════════ */
+
+/* Bloque lima — Constituimos.
+   padding-top propio (mayor que el del Bloque 1 de referencia) para
+   que "CONSTITUIMOS" quede siempre por debajo del borde inferior de
+   la tarjeta negra y no se solape con ella. */
+
+.llc-why-lima {
+  padding-top: 168px;
+}
+
+/* Tarjeta negra — constitución de la empresa (concepto propio,
+   no repite el hero: sello + documento + detalle USA sutil) */
+
+.llc-why-card {
+  width: 208px;
+  padding: 30px 22px 22px;
+  gap: 16px;
+}
+
+.llc-why-flag {
+  position: absolute;
+  top: 40px;
+  right: 18px;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.llc-why-seal {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(205, 245, 100, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gst-lima);
+  flex-shrink: 0;
+}
+
+.llc-why-seal svg {
+  width: 30px;
+  height: 30px;
+}
+
+.llc-why-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+}
+
+.llc-why-lines span {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.llc-why-lines span:nth-child(1) { width: 88%; }
+.llc-why-lines span:nth-child(2) { width: 68%; }
+.llc-why-lines span:nth-child(3) { width: 46%; }
+
+.llc-why-badge {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 9px 14px;
+}
+
+/* Columna derecha — título + lista de beneficios */
+
+.llc-why-text .gst-cerca-h2 {
+  margin-bottom: 44px;
+}
+
+.llc-why-list {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.llc-why-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.llc-why-num {
+  flex-shrink: 0;
+  width: 46px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--gst-lima-dark);
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.llc-why-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.llc-why-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.llc-why-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--gst-lima-dark);
+}
+
+.llc-why-heading h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gst-black);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.llc-why-body p {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 46ch;
+}
+
+/* ═══════════════════════════════════════════════
+   BLOQUE — Tu LLC Lista en 5 Simples Pasos
+   Mismo fondo claro (var(--gst-bg)) que el bloque anterior.
+   Círculos y línea en lima ácido (sustituye al azul de referencia).
+   ═══════════════════════════════════════════════ */
+
+.llc-steps {
+  background: var(--gst-bg);
+  /* padding-bottom mayor que el top: arriba se agrupa con el bloque
+     "¿Por qué...?", abajo abre paso al cambio de fondo claro → negro
+     del bloque de Planes LLC. */
+  padding: 32px 0 88px;
+}
+
+.llc-steps-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.llc-steps-title {
+  font-weight: 700;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  color: var(--gst-black);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+.llc-steps-subtitle {
+  font-size: 0.98rem;
+  color: #666;
+  line-height: 1.7;
+  max-width: 620px;
+  margin: 0 auto 72px;
+}
+
+.llc-steps-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.llc-steps-line {
+  position: absolute;
+  top: 28px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: rgba(205, 245, 100, 0.6);
+  z-index: 0;
+}
+
+.llc-step {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.llc-step-num {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  font-size: 1.3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.llc-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  margin: 0;
+}
+
+.llc-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.llc-step-desc {
+  font-size: 0.86rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 220px;
+}
+
+/* ═══════════════════════════════════════════════
+   ESPACIADO ENTRE BLOQUES — solo en esta página
+   (.page-llc). Cada sección aporta el mismo padding
+   en el borde que toca a la siguiente (32px en
+   escritorio, bloques más agrupados), para que la
+   separación visual entre cualquier par de bloques
+   sea siempre la misma: hero → "¿Por qué...?" →
+   "5 pasos" → CTA final.
+   ═══════════════════════════════════════════════ */
+
+.page-llc .gst-hero {
+  /* Separación amplia entre el hero y el Bloque 1: es el cambio de
+     fondo (negro → claro) más importante de la página y necesita aire. */
+  padding-bottom: 150px;
+}
+
+.llc-why {
+  /* 72px + 150px del hero + ~18px del desajuste de altura entre las dos
+     columnas del hero (align-items: center, la columna del panel es más
+     alta que la del texto) ≈ 240px de separación visual real. */
+  padding-top: 72px;
+}
+
+.llc-why .gst-cerca-inner {
+  padding-bottom: 32px;
+}
+
+.page-llc .cta-final {
+  padding-top: 32px;
+  background: var(--gst-black);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .llc-panel {
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .llc-hero-subtitle {
+    max-width: 100%;
+  }
+
+  .llc-panel {
+    max-width: 100%;
+    padding: 36px 24px 30px;
+    gap: 24px;
+  }
+
+  .llc-panel-logo,
+  .llc-panel-logo img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .llc-panel-logo img {
+    border-radius: 18px;
+  }
+
+  .hero-fc-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .llc-panel-badge {
+    font-size: 0.7rem;
+    padding: 6px 14px 6px 7px;
+  }
+}
+
+/* ── Bloque "¿Por qué constituir una LLC en EE. UU.?" ──
+   En móvil se mantiene la superposición tarjeta negra + bloque lima
+   (a diferencia del comportamiento por defecto de .gst-cerca, que
+   aplana la composición). */
+
+@media (max-width: 900px) {
+  .llc-why-text .gst-cerca-h2 {
+    margin-bottom: 36px;
+  }
+
+  .page-llc .gst-hero {
+    padding-bottom: 104px;
+  }
+
+  .llc-why {
+    padding-top: 72px;
+  }
+
+  .llc-why .gst-cerca-inner {
+    padding-bottom: 24px;
+  }
+
+  .page-llc .cta-final {
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .llc-why .gst-cerca-visual {
+    position: relative;
+    display: block;
+    min-height: 300px;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .llc-why .gst-cerca-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 168px;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 18px;
+    gap: 12px;
+    border-radius: 12px 0 12px 12px;
+    order: 0;
+  }
+
+  .llc-why .gst-card-fold {
+    display: block;
+    width: 26px;
+    height: 26px;
+  }
+
+  .llc-why-flag {
+    top: 32px;
+    right: 14px;
+  }
+
+  .llc-why-seal {
+    width: 52px;
+    height: 52px;
+  }
+
+  .llc-why-seal svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .llc-why-lines span {
+    height: 2px;
+  }
+
+  .llc-why-badge {
+    font-size: 0.66rem;
+    padding: 8px 10px;
+  }
+
+  .llc-why .gst-cerca-lima {
+    margin-top: 60px;
+    margin-left: 36px;
+    width: calc(100% - 36px);
+    padding: 140px 16px 18px;
+    min-height: 190px;
+  }
+
+  .llc-why-list {
+    gap: 28px;
+  }
+
+  .llc-why-item {
+    gap: 16px;
+  }
+
+  .llc-why-num {
+    font-size: 1.5rem;
+    width: 38px;
+  }
+}
+
+@media (max-width: 480px) {
+  .llc-why .gst-cerca-visual {
+    max-width: 100%;
+  }
+
+  .llc-why .gst-cerca-card {
+    width: 148px;
+    padding: 20px 14px 16px;
+  }
+
+  .llc-why-seal {
+    width: 46px;
+    height: 46px;
+  }
+
+  .llc-why-seal svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .llc-why-badge {
+    font-size: 0.62rem;
+    padding: 7px 9px;
+  }
+
+  .llc-why .gst-cerca-lima {
+    margin-left: 28px;
+    width: calc(100% - 28px);
+    padding: 120px 14px 16px;
+    min-height: 170px;
+  }
+
+  .llc-why-num {
+    font-size: 1.3rem;
+    width: 32px;
+  }
+
+  .llc-why-item {
+    gap: 12px;
+  }
+}
+
+/* ── Bloque "Tu LLC Lista en 5 Simples Pasos" ──
+   En tablet: 2-3 columnas envolventes, sin línea conectora.
+   En móvil: lista vertical de un paso por fila. */
+
+@media (max-width: 900px) {
+  .llc-steps {
+    padding: 24px 0 64px;
+  }
+
+  .llc-steps-subtitle {
+    margin-bottom: 56px;
+  }
+
+  .llc-steps-line {
+    display: none;
+  }
+
+  .llc-steps-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 40px;
+  }
+
+  .llc-step {
+    flex: 0 1 40%;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .llc-steps-row {
+    flex-direction: column;
+    row-gap: 32px;
+  }
+
+  .llc-step {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .llc-step-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .llc-step-num {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .llc-step-desc {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-llc .gst-hero {
+    padding-bottom: 80px;
+  }
+
+  .llc-why {
+    padding-top: 56px;
+  }
+
+  .llc-why .gst-cerca-inner {
+    padding-bottom: 20px;
+  }
+
+  .page-llc .cta-final {
+    padding-top: 20px;
+  }
+
+  .llc-steps {
+    padding: 20px 0 52px;
+  }
+
+  .llc-steps-title {
+    font-size: 1.5rem;
+  }
+
+  .llc-steps-subtitle {
+    margin-bottom: 44px;
+  }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .llc-panel-badge {
+    transition: none;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 3 — SELECTOR DE SERVICIO + PLANES LLC
+   Reutiliza los componentes de la sección de planes
+   de Gestoría (.gst-area-selector, .gst-planes-sl,
+   .gst-plan-card…) y sólo ajusta lo propio de esta
+   página: 2 planes comparables y lista de features.
+   ═══════════════════════════════════════════════ */
+
+/* ── Transición fondo claro → negro ── */
+.llc-area-selector {
+  padding: 104px 0 0;
+}
+
+/* ── Sección de planes ── */
+.llc-planes {
+  padding: 40px 0 88px;
+}
+
+.llc-planes .gst-planes-sl-header {
+  max-width: 960px;
+  margin-bottom: 52px;
+}
+
+.llc-planes .gst-planes-sl-header p {
+  max-width: 620px;
+  margin: 0;
+}
+
+/* ── Grid: dos cards enfrentadas ── */
+.llc-planes-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 960px;
+  align-items: stretch;
+}
+
+/* ── Card ── */
+.llc-plan-card {
+  padding: 36px 32px 34px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.llc-plan-card.gst-plan-featured {
+  /* El borde se mantiene en 1px (Gestoría usa 1.5px en su grid de 3) para que
+     ambas cards tengan exactamente la misma geometría interna y las filas de
+     características queden alineadas al píxel. El grosor extra se simula con
+     un anillo en box-shadow, que no ocupa espacio. */
+  border-width: 1px;
+  background:
+    linear-gradient(180deg, rgba(205, 245, 100, 0.08) 0%, rgba(255, 255, 255, 0.03) 42%);
+  box-shadow:
+    0 0 0 1px var(--gst-lima),
+    0 24px 64px -28px rgba(205, 245, 100, 0.35);
+}
+
+.llc-plan-card .gst-plan-name {
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 14px;
+}
+
+.llc-plan-card.gst-plan-featured .gst-plan-name {
+  color: #fff;
+}
+
+/* ── Precio (lima, grande) ── */
+.llc-plan-price-box {
+  padding-bottom: 22px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.llc-plan-price {
+  display: block;
+  font-size: clamp(2.6rem, 4.6vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--gst-lima);
+}
+
+.llc-plan-currency {
+  font-size: 0.42em;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.llc-plan-price-note {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.llc-plan-claim {
+  margin: 0 0 22px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── Lista de características ── */
+.llc-plan-feat {
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.llc-plan-feat li {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.llc-plan-feat li.is-off {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.llc-plan-feat li.is-plus {
+  color: #fff;
+  font-weight: 500;
+}
+
+.llc-plan-feat-icon {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.llc-plan-feat li.is-on > .llc-plan-feat-icon {
+  background: rgba(205, 245, 100, 0.14);
+  color: var(--gst-lima);
+}
+
+.llc-plan-feat li.is-off > .llc-plan-feat-icon {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.llc-plan-feat li.is-plus > .llc-plan-feat-icon {
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+/* ── Acciones ── */
+.llc-plan-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.llc-plan-actions .gst-plan-cta {
+  margin-top: 0;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.llc-plan-cta-alt {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.llc-plan-cta-alt:hover {
+  color: var(--gst-lima);
+  border-color: var(--gst-lima);
+}
+
+/* ── Barra de tasas estatales ──
+   Fondo negro (el mismo de la sección) con el rectángulo perfilado en lima.
+   El lima queda reservado para el borde del contenedor y para las pastillas
+   de cada estado. */
+.llc-tasas {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  max-width: 960px;
+  margin: 44px auto 0;
+  padding: 22px 32px;
+  border-radius: 22px;
+  background: transparent;
+  border: 1.5px solid var(--gst-lima);
+}
+
+.llc-tasas-label {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gst-lima);
+  letter-spacing: -0.01em;
+}
+
+.llc-tasas-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.llc-tasa {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  background: var(--gst-lima);
+  border-radius: 999px;
+  padding: 9px 20px;
+  white-space: nowrap;
+}
+
+.llc-tasa-state {
+  font-size: 0.88rem;
+  color: var(--gst-black);
+}
+
+.llc-tasa-fee {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  letter-spacing: -0.01em;
+}
+
+/* ── Cláusula de precio ── */
+.llc-planes-legal {
+  max-width: 960px;
+  margin: 44px auto 0;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.llc-planes-terms {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+
+.llc-planes-fineprint {
+  max-width: 580px;
+  margin: 0 auto;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .llc-area-selector {
+    padding-top: 80px;
+  }
+
+  .llc-planes {
+    padding: 32px 0 72px;
+  }
+
+  .llc-planes .gst-planes-sl-header {
+    margin-bottom: 40px;
+  }
+
+  /* Se mantienen las dos columnas: neutraliza la regla de
+     Gestoría pensada para grids de 3 cards. */
+  .llc-planes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .llc-planes-grid .gst-plan-card:last-child {
+    grid-column: auto;
+    max-width: none;
+    justify-self: stretch;
+  }
+
+  .llc-plan-card {
+    padding: 30px 24px 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .llc-area-selector {
+    padding-top: 64px;
+  }
+
+  .llc-planes {
+    padding: 28px 0 64px;
+  }
+
+  .llc-planes-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .llc-planes-grid .gst-plan-card:last-child {
+    max-width: none;
+  }
+
+  .llc-plan-card {
+    padding: 30px 24px 28px;
+  }
+
+  .llc-plan-price {
+    font-size: 2.6rem;
+  }
+
+  .llc-planes-legal {
+    margin-top: 36px;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════
+   MODAL — Solicitud de constitución de LLC
+   Reutiliza .gst-modal-* (gestoria.css). Aquí solo
+   el selector de estado con tasa + etiqueta de
+   anonimato y la pantalla de confirmación.
+   ═══════════════════════════════════════════════ */
+
+.llc-modal {
+  max-width: 560px;
+}
+
+.llc-modal-hint {
+  margin: -12px 0 24px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ── Selector de estado ── */
+.llc-modal-states {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.llc-state-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 13px 15px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.llc-state-opt:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.llc-state-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.llc-state-name {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.llc-state-fee {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--gst-lima);
+  letter-spacing: -0.01em;
+}
+
+.llc-state-tag {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gst-lima);
+  background: rgba(205, 245, 100, 0.12);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* Estado seleccionado */
+.llc-state-opt.gst-option-selected {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+}
+
+.llc-state-opt.gst-option-selected .llc-state-name,
+.llc-state-opt.gst-option-selected .llc-state-fee {
+  color: var(--gst-black);
+}
+
+.llc-state-opt.gst-option-selected .llc-state-tag {
+  color: var(--gst-green-dark);
+  background: rgba(23, 52, 4, 0.16);
+}
+
+/* ── Error de validación ── */
+.llc-modal-error {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #ff8f6b;
+}
+
+/* ── Pantalla de confirmación ── */
+.llc-modal-success {
+  text-align: center;
+  padding: 16px 4px 4px;
+}
+
+.llc-modal-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.llc-modal-success-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.llc-modal-success-title {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #fff;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.llc-modal-success-text {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 auto 18px;
+  max-width: 400px;
+}
+
+.llc-modal-success-text strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.llc-modal-success-meta {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0 auto 28px;
+  max-width: 400px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .llc-tasas {
+    gap: 20px;
+    padding: 20px 24px;
+    border-radius: 18px;
+  }
+
+  .llc-tasas-list {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .llc-tasas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .llc-tasas-label {
+    font-size: 1rem;
+  }
+
+  .llc-tasas-list {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .llc-tasa {
+    padding: 8px 16px;
+  }
+
+  .llc-modal-states {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .llc-modal-states {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   PACKS ANUALES — Gestión y cumplimiento
+   Reutiliza al 100% los componentes de Planes LLC
+   (.gst-plan-card, .llc-plan-price-box, .llc-plan-feat,
+   .llc-planes-legal…). Solo se añaden: la línea de
+   "servicio anual", el sufijo "/ año" en el precio y
+   las cards compactas de servicios individuales.
+   ═══════════════════════════════════════════════ */
+
+.llc-packs {
+  padding-top: 72px;
+}
+
+.llc-packs-meta {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gst-lima);
+  letter-spacing: 0.01em;
+}
+
+.llc-plan-price-period {
+  font-size: 0.36em;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0;
+}
+
+/* ── Servicios individuales ── */
+.llc-addons {
+  max-width: 1140px;
+  margin: 72px auto 0;
+}
+
+.llc-addons-header {
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 36px;
+}
+
+.llc-addons-header h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  font-weight: 400;
+  color: #fff;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.llc-addons-header p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.llc-addons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.llc-addon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.llc-addon-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.005em;
+}
+
+.llc-addon-price {
+  margin-top: 10px;
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--gst-lima);
+}
+
+.llc-addon-currency {
+  font-size: 0.6em;
+  font-weight: 400;
+}
+
+.llc-addon-desc {
+  flex: 1;
+  margin: 12px 0 20px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.llc-addon-cta {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.llc-addon-cta:hover {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.llc-addons-fineprint {
+  max-width: 640px;
+  margin: 28px auto 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .llc-packs {
+    padding-top: 56px;
+  }
+
+  .llc-addons {
+    margin-top: 56px;
+  }
+}
+
+@media (max-width: 640px) {
+  .llc-packs {
+    padding-top: 48px;
+  }
+
+  .llc-addons {
+    margin-top: 44px;
+  }
+
+  .llc-addons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .llc-addon-card {
+    padding: 20px 18px;
+  }
+}

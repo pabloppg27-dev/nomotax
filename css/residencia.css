@@ -1,0 +1,618 @@
+/* =============================================
+   CAMBIO DE RESIDENCIA FISCAL
+   =============================================
+   Depende de style.css, gestoria.css (hero, panel
+   lima, timeline, modal) y consultoria.css (cabeceras
+   .cns-*, tarjetas de servicio, tarjetas oscuras,
+   preguntas frecuentes y modal de contratación).
+   Aquí solo van las piezas propias de esta página.
+
+   Secuencia de fondos:
+   hero (negro) → proceso (claro) → todo lo que se
+   mueve contigo (negro) → reglas (claro) → perfiles
+   (negro) → servicio + preguntas (claro)
+   → CTA final (negro).
+   ============================================= */
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 0 — HERO
+   ═══════════════════════════════════════════════ */
+
+.rsd-hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+  margin: -12px 0 32px;
+  max-width: 500px;
+}
+
+.rsd-hero-subtitle strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+.rsd-pill-btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rsd-pill-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.rsd-pill-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rsd-pill-ghost .gst-cta-circle {
+  background: var(--gst-lima);
+}
+
+.rsd-pill-ghost .gst-cta-circle svg {
+  color: var(--gst-black);
+}
+
+/* ── Panel: ruta origen → destino ── */
+
+.rsd-panel {
+  gap: 28px;
+  padding-top: 44px;
+}
+
+.rsd-route {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.rsd-route-node {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--gst-black);
+}
+
+.rsd-route-node-end {
+  text-align: right;
+}
+
+.rsd-route-label {
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.rsd-route-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gst-lima);
+  white-space: nowrap;
+}
+
+.rsd-route-line {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2px;
+  min-width: 40px;
+  background-image: linear-gradient(90deg, var(--gst-green-dark) 50%, transparent 50%);
+  background-size: 10px 2px;
+}
+
+.rsd-route-plane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--gst-green-dark);
+  transform: rotate(45deg);
+}
+
+.rsd-route-plane svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 1 — EL PROCESO  ·  claro
+   Reutiliza la timeline de gestoría; la tarjeta
+   lleva una lista en vez de un párrafo.
+   ═══════════════════════════════════════════════ */
+
+.rsd-proceso {
+  background: var(--gst-bg);
+  padding: 96px 0;
+  scroll-margin-top: 72px;
+}
+
+.rsd-proceso .gst-tl-num {
+  color: var(--gst-green-dark);
+  opacity: 0.6;
+}
+
+.rsd-tl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  text-align: left;
+}
+
+.rsd-tl-list li {
+  position: relative;
+  padding-left: 16px;
+  color: #666;
+}
+
+.rsd-tl-list li::before {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gst-lima-dark);
+}
+
+/* Fase 05: la gestoría continua, destacada en negro */
+.rsd-tl-final .gst-tl-dot {
+  background: var(--gst-black);
+  color: var(--gst-lima);
+}
+
+.rsd-tl-final .gst-tl-card-text {
+  background: var(--gst-black);
+  border-color: var(--gst-black);
+}
+
+.rsd-tl-final .rsd-tl-list li {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.rsd-tl-final .rsd-tl-list li::before {
+  background: var(--gst-lima);
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUES 2 y 4 — TARJETAS OSCURAS  ·  negro
+   Reutilizan .cns-casos y .cns-caso de consultoría.
+   ═══════════════════════════════════════════════ */
+
+/* Flex en vez de grid para centrar la última fila cuando queda
+   incompleta (5 tarjetas en "Todo lo que se mueve contigo"). */
+.rsd-grid-3 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+}
+
+.rsd-grid-3 > * {
+  flex: 0 1 calc((100% - 36px) / 3);
+}
+
+.rsd-contigo .cns-caso-text,
+.rsd-perfil .cns-caso-text {
+  margin-bottom: 0;
+}
+
+.rsd-contigo .cns-caso-text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.rsd-caso-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.rsd-caso-links a {
+  padding: 6px 14px;
+  border: 1px solid rgba(205, 245, 100, 0.35);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gst-lima);
+  transition: all 0.2s;
+}
+
+.rsd-caso-links a:hover {
+  background: var(--gst-lima);
+  border-color: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 3 — LAS REGLAS  ·  claro
+   ═══════════════════════════════════════════════ */
+
+.rsd-reglas {
+  background: var(--gst-bg);
+  padding: 96px 0;
+}
+
+.rsd-block-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--gst-black);
+  margin-bottom: 20px;
+}
+
+/* ── Criterios de residencia ── */
+
+.rsd-criterios {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 56px;
+}
+
+.rsd-criterio {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  padding: 26px 22px;
+}
+
+.rsd-criterio-icon,
+.rsd-riesgo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  margin-bottom: 16px;
+}
+
+.rsd-criterio-icon svg,
+.rsd-riesgo-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.rsd-criterio-title,
+.rsd-riesgo-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--gst-black);
+  margin-bottom: 8px;
+}
+
+.rsd-criterio-text,
+.rsd-riesgo-text {
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: #777;
+}
+
+/* ── Doble residencia: tarjeta negra con el desempate ── */
+
+.rsd-tie {
+  position: relative;
+  overflow: hidden;
+  background: var(--gst-black);
+  border-radius: 20px;
+  padding: 44px 44px 38px;
+  margin-bottom: 56px;
+}
+
+.rsd-tie-glow {
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(198, 255, 0, 0.08) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.rsd-tie-body {
+  position: relative;
+  z-index: 1;
+}
+
+.rsd-tie-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.rsd-tie-intro {
+  max-width: 640px;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 28px;
+}
+
+.rsd-tie-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  list-style: none;
+  margin-bottom: 26px;
+}
+
+.rsd-tie-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Flecha hacia el siguiente criterio */
+.rsd-tie-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -11px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--gst-lima);
+  border-right: 2px solid var(--gst-lima);
+  transform: translateY(-50%) rotate(45deg);
+  z-index: 1;
+}
+
+.rsd-tie-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.rsd-tie-step strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.rsd-tie-step span:last-child {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.rsd-tie-note {
+  max-width: 720px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rsd-tie-note strong {
+  color: var(--gst-lima);
+  font-weight: 600;
+}
+
+/* ── Riesgos ── */
+
+.rsd-riesgos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.rsd-riesgo {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  padding: 26px 22px;
+}
+
+/* ── Errores frecuentes ── */
+
+.rsd-errores {
+  background: #fff;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  padding: 30px 32px;
+}
+
+.rsd-errores-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gst-black);
+  margin-bottom: 18px;
+}
+
+.rsd-errores-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 32px;
+}
+
+.rsd-errores-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #444;
+}
+
+.rsd-x {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--gst-black);
+  color: var(--gst-lima);
+}
+
+.rsd-x svg {
+  width: 10px;
+  height: 10px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   BLOQUE 5 — SERVICIO  ·  claro
+   ═══════════════════════════════════════════════ */
+
+.rsd-servicio {
+  scroll-margin-top: 72px;
+}
+
+.rsd-servicios-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* Misma altura de caja que un precio numérico (2.4rem × 1) */
+.rsd-price-text {
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+
+.rsd-faq {
+  margin-top: 88px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   CTA FINAL
+   ═══════════════════════════════════════════════ */
+
+.page-rsd .cta-final {
+  background: var(--gst-black);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 1040px) {
+
+  .rsd-grid-3 > * {
+    flex-basis: calc((100% - 18px) / 2);
+  }
+
+  .rsd-criterios,
+  .rsd-riesgos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rsd-tie-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* En 2×2 las flechas laterales no guían: fuera */
+  .rsd-tie-step::after {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+
+  .rsd-proceso,
+  .rsd-reglas {
+    padding: 64px 0;
+  }
+
+  .rsd-grid-3 > * {
+    flex-basis: 100%;
+  }
+
+  .rsd-criterios,
+  .rsd-riesgos,
+  .rsd-servicios-grid,
+  .rsd-errores-list {
+    grid-template-columns: 1fr;
+  }
+
+  .rsd-servicios-grid {
+    max-width: 520px;
+    gap: 28px;
+  }
+
+  .rsd-tie {
+    padding: 32px 22px 28px;
+  }
+
+  .rsd-tie-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .rsd-errores {
+    padding: 24px 22px;
+  }
+
+  .rsd-faq {
+    margin-top: 64px;
+  }
+
+  .rsd-hero .gst-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rsd-hero .gst-cta-pill {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 420px) {
+
+  .rsd-route {
+    gap: 8px;
+  }
+
+  .rsd-route-node {
+    padding: 10px 12px;
+  }
+
+  .rsd-route-name {
+    font-size: 0.8rem;
+  }
+}

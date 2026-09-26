@@ -1,0 +1,149 @@
+/* =============================================
+   PÁGINAS HUB — Fiscalidad en España (nacional.html)
+   y Fiscalidad internacional (internacional.html)
+   =============================================
+   Depende de style.css, gestoria.css (hero, panel
+   lima, modal), consultoria.css (cabeceras .cns-*,
+   tarjetas oscuras, modal de contratación) y
+   estructuras.css (botones del hero, pasos, "Dos
+   formas de empezar", CTA final con dos botones).
+   Aquí solo van las tarjetas de servicio.
+
+   Secuencia de fondos:
+   hero (negro) → servicios (claro) → cómo trabajamos
+   (negro) → dos formas de empezar (claro)
+   → CTA final (negro).
+   ============================================= */
+
+.hub-servicios {
+  background: var(--gst-bg);
+  padding: 96px 0;
+  scroll-margin-top: 72px;
+}
+
+/* Flex para centrar la última fila si queda incompleta */
+.hub-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.hub-grid > * {
+  flex: 0 1 calc((100% - 40px) / 3);
+}
+
+.hub-grid-2 {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hub-grid-2 > * {
+  flex-basis: calc((100% - 20px) / 2);
+}
+
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px 26px 24px;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--gst-black);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.hub-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(17, 17, 16, 0.2);
+  box-shadow: 0 18px 40px -24px rgba(17, 17, 16, 0.35);
+}
+
+.hub-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 18px;
+  border-radius: 11px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.hub-card-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.hub-card-title {
+  margin-bottom: 8px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--gst-black);
+}
+
+.hub-card-text {
+  margin-bottom: 18px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #777;
+}
+
+.hub-card-tag {
+  margin-bottom: 20px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--gst-bg);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gst-green-dark);
+}
+
+.hub-card-link {
+  margin-top: auto;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--gst-black);
+}
+
+.hub-card:hover .hub-card-link {
+  text-decoration: underline;
+  text-decoration-color: var(--gst-lima-dark);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.hub-decision {
+  margin-bottom: 0;
+}
+
+.page-hub .cta-final {
+  background: var(--gst-black);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 1040px) {
+
+  .hub-grid > * {
+    flex-basis: calc((100% - 20px) / 2);
+  }
+}
+
+@media (max-width: 760px) {
+
+  .hub-servicios {
+    padding: 64px 0;
+  }
+
+  .hub-grid > *,
+  .hub-grid-2 > * {
+    flex-basis: 100%;
+  }
+}

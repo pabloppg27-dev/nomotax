@@ -1,2 +1,5 @@
 .DS_Store
 .claude/
+
+# Documentos privados: no se publican en la web
+img/*.pdf

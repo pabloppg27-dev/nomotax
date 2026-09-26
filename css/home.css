@@ -1,0 +1,992 @@
+/* =============================================
+   HOME — piezas nuevas
+   =============================================
+   Depende de style.css (estructura de la home),
+   gestoria.css (paleta --gst-* y modal) y
+   consultoria.css (modal de contratación).
+
+   · Diseños que sustituyen a las fotos (.hv-*)
+   · Bloque Gestoría + Consultoría (fondo claro)
+   · CTA final con dos caminos
+   ============================================= */
+
+.page-home #servicios {
+  scroll-margin-top: 72px;
+}
+
+
+/* ═══════════════════════════════════════════════
+   DISEÑOS DE LOS BLOQUES (en lugar de fotos)
+   ═══════════════════════════════════════════════ */
+
+.editorial-media .hv {
+  position: relative;
+  height: 100%;
+  min-height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 36px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: var(--gst-black);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.hv-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(205, 245, 100, 0.12) 0%, transparent 62%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hv-stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ── Piezas comunes ── */
+
+.hv-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 22px 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.7);
+}
+
+.hv-line {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: #ecece8;
+}
+
+.hv-pill-lima {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.hv-pill-lima svg {
+  width: 12px;
+  height: 12px;
+}
+
+.hv-card-lima {
+  position: relative;
+  padding: 18px 18px 14px;
+  border-radius: 12px 0 12px 12px;
+  background: var(--gst-lima);
+  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* Pliegue de esquina, el mismo motivo que los paneles lima */
+.hv-fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--gst-lima-dark);
+}
+
+.hv-fold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gst-black);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.hv-card-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-green-dark);
+}
+
+.hv-globe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 380px;
+  height: 380px;
+  transform: translate(-50%, -50%);
+  fill: none;
+  stroke: rgba(205, 245, 100, 0.1);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+/* ── 01 · España: declaración + carga fiscal ── */
+
+.hv-es .hv-stage {
+  padding-bottom: 64px;
+}
+
+.hv-es-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.hv-es-pills span,
+.hv-res-steps span {
+  padding: 5px 11px;
+  border: 1px solid rgba(205, 245, 100, 0.35);
+  border-radius: 999px;
+  background: rgba(205, 245, 100, 0.06);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--gst-lima);
+}
+
+.hv-es-doc {
+  width: 80%;
+  transform: rotate(-2.5deg);
+}
+
+.hv-doc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.hv-doc-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--gst-black);
+  color: var(--gst-lima);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.hv-doc-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gst-black);
+}
+
+.hv-doc-year {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+/* Resultado a la izquierda: la tarjeta lima tapa el lado derecho */
+.hv-doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed #ddd;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #777;
+}
+
+.hv-es-chart {
+  position: absolute;
+  right: -2%;
+  bottom: 0;
+  width: 42%;
+  transform: rotate(3deg);
+}
+
+.hv-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 92px;
+}
+
+.hv-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+
+.hv-bar {
+  display: block;
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+}
+
+.hv-bar-before {
+  height: 70px;
+  background: var(--gst-black);
+}
+
+.hv-bar-after {
+  height: 28px;
+  background: #fff;
+}
+
+.hv-bar-col small {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--gst-green-dark);
+}
+
+/* ── 02 · Estructuras internacionales: organigrama ── */
+
+.hv-org {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hv-org-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 28px;
+  border: 1.5px solid var(--gst-lima);
+  border-radius: 14px;
+  background: var(--gst-black);
+  box-shadow: 0 0 0 6px rgba(205, 245, 100, 0.06);
+}
+
+.hv-org-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.hv-org-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hv-org-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.hv-org-sub {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.hv-org-stem {
+  width: 2px;
+  height: 28px;
+  background: var(--gst-lima);
+}
+
+.hv-org-children {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding-top: 26px;
+}
+
+/* Conector horizontal entre las tres sociedades */
+.hv-org-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 2px;
+  background: var(--gst-lima);
+}
+
+.hv-org-child {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.7);
+}
+
+.hv-org-child::before {
+  content: '';
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  width: 2px;
+  height: 26px;
+  background: var(--gst-lima);
+  transform: translateX(-50%);
+}
+
+.hv-flag {
+  margin-bottom: 4px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.hv-org-child strong {
+  font-size: 0.9rem;
+  color: var(--gst-black);
+}
+
+.hv-org-child small {
+  font-size: 0.66rem;
+  color: #888;
+}
+
+.hv-org-badge {
+  margin-top: 24px;
+}
+
+/* ── 03 · Residencia fiscal: ruta origen → destino ── */
+
+.hv-res-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.hv-route {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hv-route-node {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.7);
+}
+
+.hv-route-node small {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.hv-route-node strong {
+  font-size: 0.9rem;
+  color: var(--gst-black);
+  white-space: nowrap;
+}
+
+.hv-route-node-end {
+  text-align: right;
+  background: var(--gst-lima);
+}
+
+.hv-route-node-end small {
+  color: var(--gst-green-dark);
+}
+
+.hv-route-line {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--gst-lima) 50%, transparent 50%);
+  background-size: 10px 2px;
+}
+
+.hv-route-plane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--gst-lima);
+  border-radius: 50%;
+  background: var(--gst-black);
+  color: var(--gst-lima);
+  transform: rotate(45deg);
+}
+
+.hv-route-plane svg {
+  width: 17px;
+  height: 17px;
+}
+
+.hv-days {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hv-ring {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  transform: rotate(-90deg);
+}
+
+.hv-ring circle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 5;
+}
+
+/* 183 de 365 días: la mitad del círculo (2π·18 ≈ 113) */
+.hv-ring .hv-ring-fill {
+  stroke: var(--gst-lima);
+  stroke-linecap: round;
+  stroke-dasharray: 113.1;
+  stroke-dashoffset: 56.4;
+}
+
+.hv-days-copy strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.hv-days-copy small {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.hv-res-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hv-res-steps .hv-arrow {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+}
+
+/* ── 04 · LLC: certificado de constitución ── */
+
+.hv-stars {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(205, 245, 100, 0.22) 1.2px, transparent 1.6px);
+  background-size: 26px 26px;
+  -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 55%);
+  mask-image: linear-gradient(135deg, #000 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Franjas en la parte baja */
+.hv-llc::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40%;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0 12px, transparent 12px 24px);
+  pointer-events: none;
+}
+
+.hv-llc-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hv-cert {
+  width: 78%;
+  padding: 26px 24px 22px;
+  align-items: flex-start;
+  border-radius: 10px;
+  outline: 1px solid #e3e3dc;
+  outline-offset: -10px;
+  transform: rotate(-1.5deg);
+}
+
+.hv-cert-kicker {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.hv-cert-big {
+  margin: 2px 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--gst-black);
+}
+
+.hv-cert-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.hv-seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--gst-lima);
+}
+
+.hv-seal svg {
+  width: 20px;
+  height: 20px;
+}
+
+.hv-sign {
+  width: 45%;
+  height: 1px;
+  background: #bbb;
+}
+
+.hv-ein {
+  position: absolute;
+  top: -14px;
+  right: 4%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--gst-lima);
+  border-radius: 999px;
+  background: var(--gst-black);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transform: rotate(4deg);
+}
+
+.hv-ein-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gst-lima);
+  color: var(--gst-black);
+}
+
+.hv-ein-check svg {
+  width: 10px;
+  height: 10px;
+}
+
+.hv-states {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.hv-states span {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gst-lima);
+}
+
+
+/* ═══════════════════════════════════════════════
+   GESTORÍA + CONSULTORÍA  ·  fondo claro
+   ═══════════════════════════════════════════════ */
+
+.home-gestoria {
+  background: var(--gst-bg);
+  padding: 120px 0;
+}
+
+.home-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 max(5vw, 24px);
+}
+
+.home-eyebrow-dark {
+  color: var(--gst-green-dark);
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
+
+.home-title-dark {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  color: var(--gst-black);
+  margin-bottom: 16px;
+}
+
+/* Subrayado lima en vez de texto lima (sobre claro no se leería) */
+.home-title-dark em {
+  color: var(--gst-black);
+  background: linear-gradient(transparent 62%, var(--gst-lima) 62%);
+  padding: 0 4px;
+}
+
+.home-gst-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px 40px;
+  margin-bottom: 48px;
+}
+
+.home-gst-sub {
+  max-width: 520px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #666;
+}
+
+.home-gst-all {
+  flex-shrink: 0;
+  padding: 12px 24px;
+  border: 1px solid var(--gst-black);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gst-black);
+  transition: all 0.2s;
+}
+
+.home-gst-all:hover {
+  background: var(--gst-black);
+  color: #fff;
+}
+
+.home-gst-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.home-gst-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 30px 28px 26px;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--gst-black);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.home-gst-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(17, 17, 16, 0.2);
+  box-shadow: 0 18px 40px -24px rgba(17, 17, 16, 0.35);
+}
+
+.home-gst-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gst-green-dark);
+}
+
+.home-gst-price {
+  font-size: 2.6rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.home-gst-price small {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #777;
+}
+
+.home-gst-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #666;
+}
+
+.home-gst-link {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.home-gst-card-dark {
+  border-color: var(--gst-black);
+  background: var(--gst-black);
+  color: #fff;
+}
+
+.home-gst-card-dark:hover {
+  border-color: var(--gst-lima);
+}
+
+.home-gst-card-dark .home-gst-name,
+.home-gst-card-dark .home-gst-link {
+  color: var(--gst-lima);
+}
+
+.home-gst-card-dark .home-gst-price small {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.home-gst-card-dark .home-gst-text {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ── Consultoría: franja negra dentro del bloque claro ── */
+
+.home-cns {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  gap: 40px;
+  margin-top: 40px;
+  padding: 44px 48px;
+  border-radius: 22px;
+  background: var(--gst-black);
+}
+
+.home-cns .home-eyebrow {
+  margin-bottom: 14px;
+}
+
+.home-cns-title {
+  margin-bottom: 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #fff;
+}
+
+.home-cns-text {
+  margin-bottom: 22px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.home-cns-link {
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--gst-lima);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  transition: color 0.2s;
+}
+
+.home-cns-link:hover {
+  color: var(--gst-lima);
+}
+
+.home-cns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-cns-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.home-cns-list a:hover {
+  border-color: rgba(205, 245, 100, 0.45);
+  background: rgba(205, 245, 100, 0.06);
+}
+
+.home-cns-list strong {
+  font-weight: 700;
+  color: var(--gst-lima);
+  white-space: nowrap;
+}
+
+
+/* ═══════════════════════════════════════════════
+   CTA FINAL · dos caminos
+   ═══════════════════════════════════════════════ */
+
+.home-final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.home-final-btn-alt {
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-final-btn-alt:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+
+  .editorial-media .hv {
+    min-height: 380px;
+    padding: 48px 24px;
+  }
+
+  .home-gst-grid {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+
+  .home-cns {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 36px 28px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .home-gestoria {
+    padding: 72px 0;
+  }
+
+  .home-gst-head {
+    margin-bottom: 32px;
+  }
+
+  .home-final-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .editorial-media .hv {
+    min-height: 340px;
+    padding: 40px 16px;
+  }
+
+  .hv-es-doc,
+  .hv-cert {
+    width: 88%;
+  }
+
+  .hv-route {
+    gap: 6px;
+  }
+
+  .hv-route-node {
+    padding: 10px 12px;
+  }
+
+  .hv-route-node strong {
+    font-size: 0.78rem;
+  }
+
+  .hv-org-top {
+    padding: 14px 20px;
+  }
+
+  .home-cns-list a {
+    padding: 16px 18px;
+    font-size: 0.88rem;
+  }
+}
