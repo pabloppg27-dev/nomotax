@@ -199,6 +199,41 @@ ul {
   outline-offset: 3px;
 }
 
+/* Selector de idioma ES / EN: pequeño, a la derecha del menú */
+.nav {
+  margin-left: auto;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 18px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+.lang-switch a {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: #8f938f;
+  transition: color var(--transition), background var(--transition);
+}
+
+.lang-switch a:hover {
+  color: #fff;
+}
+
+.lang-switch a.is-active {
+  background: var(--color-accent);
+  color: var(--color-black);
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -1479,6 +1514,12 @@ a.service-chip:hover::after {
 
   .nav.open {
     display: flex;
+  }
+
+  /* En móvil el menú sale del flujo: el selector queda junto a la hamburguesa */
+  .lang-switch {
+    margin-left: auto;
+    margin-right: 14px;
   }
 
   .nav > a::after,

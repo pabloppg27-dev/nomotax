@@ -959,6 +959,14 @@
 
 @media (max-width: 480px) {
 
+  .hv-cert-kicker,
+  .hv-doc-year,
+  .hv-bar-col small,
+  .hv-route-node small,
+  .hv-card-label {
+    font-size: 0.68rem;
+  }
+
   .editorial-media .hv {
     min-height: 340px;
     padding: 40px 16px;

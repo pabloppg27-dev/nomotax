@@ -1,3 +1,64 @@
+/* ============================================================
+   IDIOMA — la web existe en español (raíz) y en inglés (/en/).
+   Los textos de las páginas se traducen en el HTML; aquí solo
+   los que genera el JavaScript. T("texto en español") devuelve
+   la traducción en las páginas en inglés y el original en el resto.
+   ============================================================ */
+var NT_LANG = (document.documentElement.lang || "es").slice(0, 2);
+// Fechas en el idioma de la página; los importes siempre en formato europeo (100.000 €)
+var NT_LOCALE = NT_LANG === "en" ? "en-GB" : "es-ES";
+var NT_EN = {
+  "Gracias, hemos recibido tu mensaje. Te contactaremos en breve.": "Thank you, we have received your message. We will be in touch shortly.",
+  "¡Gracias! Un asesor de NomoTax se pondrá en contacto contigo por teléfono en las próximas 24 horas. Está atento/a a una llamada desde el +34 642 75 76 33.": "Thank you! A NomoTax adviser will call you within the next 24 hours. Keep an eye out for a call from +34 642 75 76 33.",
+  "Plan anual": "Annual plan",
+  "Plan mensual": "Monthly plan",
+  "Por favor, selecciona el tipo de sociedad y cuándo la necesitas.": "Please select the type of company and when you need it.",
+  "Por favor, selecciona el tipo de sociedad.": "Please select the type of company.",
+  "Por favor, indica si requieres alta de autónomo.": "Please tell us whether you need to register as self-employed.",
+  "Indica el nombre que quieres para tu LLC.": "Enter the name you want for your LLC.",
+  "Selecciona cuándo quieres tenerla constituida.": "Select when you want it incorporated.",
+  "Selecciona el estado donde quieres constituirla.": "Select the state where you want to form it.",
+  "Indica tu nombre y apellidos.": "Enter your full name.",
+  "Indica un correo electrónico válido.": "Enter a valid email address.",
+  "Indica un teléfono móvil válido.": "Enter a valid mobile number.",
+  "Indica el nombre de tu LLC.": "Enter your LLC's name.",
+  "Indica un EIN válido (formato 12-3456789).": "Enter a valid EIN (format 12-3456789).",
+  "Requiere certificado del ICAA (o del órgano competente de tu comunidad) o del INAEM para artes escénicas y musicales, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo.": "Requires a certificate from the ICAA (or the competent regional body) or from INAEM for performing arts and music, and a financing agreement notified to the Spanish Tax Agency (AEAT) before the end of the tax period.",
+  "Requiere informe motivado vinculante del Ministerio de Ciencia, Innovación y Universidades sobre el proyecto, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo.": "Requires a binding reasoned report on the project from the Ministry of Science, Innovation and Universities, and a financing agreement notified to the Spanish Tax Agency (AEAT) before the end of the tax period.",
+  "Lo que pagarías de IRPF": "What you would pay in personal income tax (IRPF)",
+  "Lo que pagarías de Impuesto de Sociedades": "What you would pay in Corporate Income Tax",
+  "Autónomo · IRPF": "Self-employed · IRPF",
+  "Empresa · Impuesto de Sociedades": "Company · Corporate Income Tax",
+  "Selecciona qué tipo de proyecto te interesa.": "Select the type of project you are interested in.",
+  " · aportación estimada ": " · estimated contribution ",
+  " · ahorro neto ": " · net saving ",
+  "Cultura": "Culture",
+  "I+D": "R&D",
+  "Todavía no lo sé": "Not sure yet",
+  "Tributa al 24% + 47%": "Taxed at 24% + 47%",
+  "Tributa al 24%": "Taxed at 24%",
+  "Exentas": "Exempt",
+  "Incluidas arriba": "Included above",
+  "Empieza por tu salario": "Start with your salary",
+  "Pon tus cifras": "Enter your figures",
+  "Con tus ingresos reales verás la diferencia entre los dos regímenes.": "With your real income you'll see the difference between the two regimes.",
+  "Te ahorras cada año": "You save every year",
+  " en los seis años que dura el régimen.": " over the six years the regime lasts.",
+  "Con estos números": "With these numbers",
+  "No te compensa": "It doesn't pay off",
+  "El régimen general sale ": "The standard regime is ",
+  " más barato al año. Conviene revisarlo con tu caso completo.": " cheaper per year. It's worth reviewing with your full case.",
+  "Un asesor especialista revisará tu caso y te contactará en las próximas 24 horas con el precio cerrado y los siguientes pasos.": "A specialist adviser will review your case and contact you within 24 hours with a fixed price and the next steps.",
+  "Selecciona": "Select",
+  "Completa todos los campos.": "Please complete all fields.",
+  "Elige una fecha a partir de mañana.": "Choose a date from tomorrow onwards.",
+  "La fecha de notificación no puede ser posterior a hoy.": "The notification date cannot be later than today.",
+  "Elige un día de lunes a viernes.": "Choose a weekday (Monday to Friday)."
+};
+function T(texto) {
+  return NT_LANG === "en" && NT_EN.hasOwnProperty(texto) ? NT_EN[texto] : texto;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   var toggle = document.querySelector(".nav-toggle");
   var nav = document.querySelector(".nav");
@@ -100,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       var status = form.querySelector(".form-status");
       if (status) {
-        status.textContent = "Gracias, hemos recibido tu mensaje. Te contactaremos en breve.";
+        status.textContent = T("Gracias, hemos recibido tu mensaje. Te contactaremos en breve.");
       }
       form.reset();
     });
@@ -181,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* ===== Mensaje de confirmación tras enviar cualquier formulario ===== */
-  var SUCCESS_MSG = "¡Gracias! Un asesor de NomoTax se pondrá en contacto contigo por teléfono en las próximas 24 horas. Está atento/a a una llamada desde el +34 642 75 76 33.";
+  var SUCCESS_MSG = T("¡Gracias! Un asesor de NomoTax se pondrá en contacto contigo por teléfono en las próximas 24 horas. Está atento/a a una llamada desde el +34 642 75 76 33.");
 
   /* ===== Modal — Solicitar Alta ===== */
   var modalAlta = document.getElementById("modal-alta");
@@ -213,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.addEventListener("click", function () {
       var toggleEmpresa = document.getElementById("toggle-anual");
       var isAnnual = toggleEmpresa && toggleEmpresa.getAttribute("aria-pressed") === "true";
-      openAltaModal(btn.getAttribute("data-plan"), isAnnual ? "Plan anual" : "Plan mensual");
+      openAltaModal(btn.getAttribute("data-plan"), isAnnual ? T("Plan anual") : T("Plan mensual"));
     });
   });
 
@@ -258,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btn.addEventListener("click", function () {
       var toggleAuto = document.getElementById("toggle-anual-auto");
       var isAnnual = toggleAuto && toggleAuto.getAttribute("aria-pressed") === "true";
-      openAltaAutoModal(btn.getAttribute("data-plan"), isAnnual ? "Plan anual" : "Plan mensual");
+      openAltaAutoModal(btn.getAttribute("data-plan"), isAnnual ? T("Plan anual") : T("Plan mensual"));
     });
   });
 
@@ -360,7 +421,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var cuando = formConstituir.querySelector("#field-cuando .gst-option-selected");
 
       if (!tipo || !cuando) {
-        alert("Por favor, selecciona el tipo de sociedad y cuándo la necesitas.");
+        alert(T("Por favor, selecciona el tipo de sociedad y cuándo la necesitas."));
         return;
       }
 
@@ -380,7 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var tipo = formAlta.querySelector("#alta-field-tipo .gst-option-selected");
 
       if (!tipo) {
-        alert("Por favor, selecciona el tipo de sociedad.");
+        alert(T("Por favor, selecciona el tipo de sociedad."));
         return;
       }
 
@@ -400,7 +461,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var alta = formAltaAuto.querySelector("#auto-field-alta .gst-option-selected");
 
       if (!alta) {
-        alert("Por favor, indica si requieres alta de autónomo.");
+        alert(T("Por favor, indica si requieres alta de autónomo."));
         return;
       }
 
@@ -522,22 +583,22 @@ document.addEventListener("DOMContentLoaded", function () {
         var telefono = document.getElementById("llc-telefono");
 
         if (!nombreLlc.value.trim()) {
-          return llcShowError("Indica el nombre que quieres para tu LLC.");
+          return llcShowError(T("Indica el nombre que quieres para tu LLC."));
         }
         if (!plazo) {
-          return llcShowError("Selecciona cuándo quieres tenerla constituida.");
+          return llcShowError(T("Selecciona cuándo quieres tenerla constituida."));
         }
         if (!estado) {
-          return llcShowError("Selecciona el estado donde quieres constituirla.");
+          return llcShowError(T("Selecciona el estado donde quieres constituirla."));
         }
         if (!nombre.value.trim()) {
-          return llcShowError("Indica tu nombre y apellidos.");
+          return llcShowError(T("Indica tu nombre y apellidos."));
         }
         if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-          return llcShowError("Indica un correo electrónico válido.");
+          return llcShowError(T("Indica un correo electrónico válido."));
         }
         if (telefono.value.replace(/\D/g, "").length < 9) {
-          return llcShowError("Indica un teléfono móvil válido.");
+          return llcShowError(T("Indica un teléfono móvil válido."));
         }
 
         if (llcSuccessMeta) {
@@ -635,19 +696,19 @@ document.addEventListener("DOMContentLoaded", function () {
         var telefono = document.getElementById("pack-telefono");
 
         if (!nombreLlc.value.trim()) {
-          return packShowError("Indica el nombre de tu LLC.");
+          return packShowError(T("Indica el nombre de tu LLC."));
         }
         if (ein.value.replace(/\D/g, "").length !== 9) {
-          return packShowError("Indica un EIN válido (formato 12-3456789).");
+          return packShowError(T("Indica un EIN válido (formato 12-3456789)."));
         }
         if (!nombre.value.trim()) {
-          return packShowError("Indica tu nombre y apellidos.");
+          return packShowError(T("Indica tu nombre y apellidos."));
         }
         if (!email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-          return packShowError("Indica un correo electrónico válido.");
+          return packShowError(T("Indica un correo electrónico válido."));
         }
         if (telefono.value.replace(/\D/g, "").length < 9) {
-          return packShowError("Indica un teléfono móvil válido.");
+          return packShowError(T("Indica un teléfono móvil válido."));
         }
 
         if (packSuccessMeta) {
@@ -786,8 +847,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var outReq = document.getElementById("ded-out-req");
 
   var REQUISITOS = {
-    cultura: "Requiere certificado del ICAA (o del órgano competente de tu comunidad) o del INAEM para artes escénicas y musicales, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo.",
-    idi: "Requiere informe motivado vinculante del Ministerio de Ciencia, Innovación y Universidades sobre el proyecto, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo."
+    cultura: T("Requiere certificado del ICAA (o del órgano competente de tu comunidad) o del INAEM para artes escénicas y musicales, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo."),
+    idi: T("Requiere informe motivado vinculante del Ministerio de Ciencia, Innovación y Universidades sobre el proyecto, y contrato de financiación comunicado a la AEAT antes de finalizar el periodo impositivo.")
   };
 
   var estado = {
@@ -822,8 +883,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (outCuotaLabel) {
       outCuotaLabel.textContent = estado.impuesto === "irpf"
-        ? "Lo que pagarías de IRPF"
-        : "Lo que pagarías de Impuesto de Sociedades";
+        ? T("Lo que pagarías de IRPF")
+        : T("Lo que pagarías de Impuesto de Sociedades");
     }
     if (outCuota) outCuota.textContent = eur.format(r.cuota);
     if (outAportacion) outAportacion.textContent = eur.format(r.aportacion);
@@ -925,8 +986,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var ahorro = document.getElementById("ded-modal-ahorro");
       if (perfil) {
         perfil.textContent = estado.impuesto === "irpf"
-          ? "Autónomo · IRPF"
-          : "Empresa · Impuesto de Sociedades";
+          ? T("Autónomo · IRPF")
+          : T("Empresa · Impuesto de Sociedades");
       }
       if (benef) benef.textContent = eur.format(estado.beneficio);
       if (aport) aport.textContent = eur.format(ultimo.aportacion);
@@ -998,18 +1059,18 @@ document.addEventListener("DOMContentLoaded", function () {
       var email = document.getElementById("ded-email");
       var telefono = document.getElementById("ded-telefono");
 
-      if (!interes) return mostrarError("Selecciona qué tipo de proyecto te interesa.");
-      if (!nombre.value.trim()) return mostrarError("Indica tu nombre y apellidos.");
+      if (!interes) return mostrarError(T("Selecciona qué tipo de proyecto te interesa."));
+      if (!nombre.value.trim()) return mostrarError(T("Indica tu nombre y apellidos."));
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-        return mostrarError("Indica un correo electrónico válido.");
+        return mostrarError(T("Indica un correo electrónico válido."));
       }
       if (telefono.value.replace(/\D/g, "").length < 9) {
-        return mostrarError("Indica un teléfono móvil válido.");
+        return mostrarError(T("Indica un teléfono móvil válido."));
       }
 
       if (successMeta && ultimo) {
-        successMeta.textContent = interes + " · aportación estimada " +
-          eur.format(ultimo.aportacion) + " · ahorro neto " + eur.format(ultimo.ahorro);
+        successMeta.textContent = T(interes) + T(" · aportación estimada ") +
+          eur.format(ultimo.aportacion) + T(" · ahorro neto ") + eur.format(ultimo.ahorro);
       }
 
       if (formStep) formStep.hidden = true;
@@ -1114,15 +1175,15 @@ document.addEventListener("DOMContentLoaded", function () {
   function render() {
     var r = calcular();
 
-    out.tagSalario.textContent = r.excede ? "Tributa al 24% + 47%" : "Tributa al 24%";
+    out.tagSalario.textContent = r.excede ? T("Tributa al 24% + 47%") : T("Tributa al 24%");
 
     out.bkSalario.textContent = eur.format(r.cuotaSalarioBk);
     out.bkAhorro.textContent = eur.format(r.cuotaAhorroBk);
-    out.bkExt.textContent = r.rentaExtranjera > 0 ? "Exentas" : eur.format(0);
+    out.bkExt.textContent = r.rentaExtranjera > 0 ? T("Exentas") : eur.format(0);
 
     out.gnGeneral.textContent = eur.format(r.cuotaGeneral);
     out.gnAhorro.textContent = eur.format(r.cuotaAhorroGn);
-    out.gnExt.textContent = r.rentaExtranjera > 0 ? "Incluidas arriba" : eur.format(0);
+    out.gnExt.textContent = r.rentaExtranjera > 0 ? T("Incluidas arriba") : eur.format(0);
     out.gnTotal.textContent = eur.format(r.totalGn);
     out.bkTotal.textContent = eur.format(r.totalBk);
 
@@ -1133,19 +1194,19 @@ document.addEventListener("DOMContentLoaded", function () {
     out.veredicto.classList.toggle("bk-verdict-bad", !ganaBeckham);
 
     if (sinDatos) {
-      out.veredictoLabel.textContent = "Empieza por tu salario";
-      out.veredictoValor.textContent = "Pon tus cifras";
-      out.veredictoNota.textContent = "Con tus ingresos reales verás la diferencia entre los dos regímenes.";
+      out.veredictoLabel.textContent = T("Empieza por tu salario");
+      out.veredictoValor.textContent = T("Pon tus cifras");
+      out.veredictoNota.textContent = T("Con tus ingresos reales verás la diferencia entre los dos regímenes.");
     } else if (ganaBeckham) {
-      out.veredictoLabel.textContent = "Te ahorras cada año";
+      out.veredictoLabel.textContent = T("Te ahorras cada año");
       out.veredictoValor.textContent = eur.format(r.diferencia);
       out.veredictoNota.textContent = eur.format(r.diferencia * 6) +
-        " en los seis años que dura el régimen.";
+        T(" en los seis años que dura el régimen.");
     } else {
-      out.veredictoLabel.textContent = "Con estos números";
-      out.veredictoValor.textContent = "No te compensa";
-      out.veredictoNota.textContent = "El régimen general sale " +
-        eur.format(Math.abs(r.diferencia)) + " más barato al año. Conviene revisarlo con tu caso completo.";
+      out.veredictoLabel.textContent = T("Con estos números");
+      out.veredictoValor.textContent = T("No te compensa");
+      out.veredictoNota.textContent = T("El régimen general sale ") +
+        eur.format(Math.abs(r.diferencia)) + T(" más barato al año. Conviene revisarlo con tu caso completo.");
     }
   }
 
@@ -1190,7 +1251,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
   var actual = null;
 
-  var EXITO_POR_DEFECTO = "Un asesor especialista revisará tu caso y te contactará en las próximas 24 horas con el precio cerrado y los siguientes pasos.";
+  var EXITO_POR_DEFECTO = T("Un asesor especialista revisará tu caso y te contactará en las próximas 24 horas con el precio cerrado y los siguientes pasos.");
 
   var CCAA = [
     "Andalucía", "Aragón", "Asturias", "Baleares", "Canarias", "Cantabria",
@@ -1201,7 +1262,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /* Rellenar los selects de comunidad autónoma */
   modal.querySelectorAll("[data-cns-ccaa]").forEach(function (sel) {
-    var html = '<option value="">Selecciona</option>';
+    var html = '<option value="">' + T("Selecciona") + '</option>';
     CCAA.forEach(function (c) { html += "<option>" + c + "</option>"; });
     sel.innerHTML = html;
   });
@@ -1343,7 +1404,7 @@ document.addEventListener("DOMContentLoaded", function () {
     for (var i = 0; i < campos.length; i++) {
       var campo = campos[i];
       if (!visible(campo)) continue;
-      var error = campo.getAttribute("data-error") || "Completa todos los campos.";
+      var error = campo.getAttribute("data-error") || T("Completa todos los campos.");
 
       if (campo.hasAttribute("data-required")) {
         if (!campo.querySelector(".gst-option-selected")) return error;
@@ -1351,11 +1412,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       if (!campo.value.trim()) return error;
       if (campo.type === "date") {
-        if (campo.min && campo.value < campo.min) return "Elige una fecha a partir de mañana.";
-        if (campo.max && campo.value > campo.max) return "La fecha de notificación no puede ser posterior a hoy.";
+        if (campo.min && campo.value < campo.min) return T("Elige una fecha a partir de mañana.");
+        if (campo.max && campo.value > campo.max) return T("La fecha de notificación no puede ser posterior a hoy.");
         if (campo.hasAttribute("data-laborable")) {
           var dia = new Date(campo.value + "T12:00:00").getDay();
-          if (dia === 0 || dia === 6) return "Elige un día de lunes a viernes.";
+          if (dia === 0 || dia === 6) return T("Elige un día de lunes a viernes.");
         }
       }
     }
@@ -1364,7 +1425,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function fechaLarga(valor) {
     var d = new Date(valor + "T12:00:00");
-    return d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+    return d.toLocaleDateString(NT_LOCALE, { weekday: "long", day: "numeric", month: "long" });
   }
 
   if (form) {
@@ -1380,12 +1441,12 @@ document.addEventListener("DOMContentLoaded", function () {
       var email = document.getElementById("cns-email");
       var telefono = document.getElementById("cns-telefono");
 
-      if (!nombre.value.trim()) return mostrarError("Indica tu nombre y apellidos.");
+      if (!nombre.value.trim()) return mostrarError(T("Indica tu nombre y apellidos."));
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-        return mostrarError("Indica un correo electrónico válido.");
+        return mostrarError(T("Indica un correo electrónico válido."));
       }
       if (telefono.value.replace(/\D/g, "").length < 9) {
-        return mostrarError("Indica un teléfono móvil válido.");
+        return mostrarError(T("Indica un teléfono móvil válido."));
       }
 
       /* Resumen bajo la confirmación: servicio y precio, las opciones de

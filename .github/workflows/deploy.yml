@@ -25,3 +25,4 @@ jobs:
             **/.claude/**
             **/.DS_Store
             **/README.md
+            tools/**

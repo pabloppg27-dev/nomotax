@@ -3,10 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="img/favicon-192.png" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+  <link rel="alternate" hreflang="es" href="https://nomotax.io/contacto.html" />
+  <link rel="alternate" hreflang="en" href="https://nomotax.io/en/contacto.html" />
   <title>Contacto | NomoTax</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/legal.css" />
 </head>
-<body>
+<body class="page-legal">
 
   <header class="site-header">
     <div class="container">
@@ -49,61 +55,53 @@
         <a href="consultoria.html">Consultoría</a>
         <a href="asesoria.html" class="btn">Asesoría gratis</a>
       </nav>
+      <div class="lang-switch" role="navigation" aria-label="Idioma">
+        <a href="contacto.html" class="is-active" lang="es" aria-current="true">ES</a>
+        <a href="en/contacto.html" lang="en" hreflang="en">EN</a>
+      </div>
       <button class="nav-toggle" aria-label="Abrir menú">
         <span></span><span></span><span></span>
       </button>
     </div>
   </header>
 
-  <div class="page-header">
-    <div class="container">
-      <h1>Contacto</h1>
-      <p>Cuéntanos tu caso y te responderemos lo antes posible.</p>
+  <!-- ═══ CABECERA ═══ -->
+  <section class="legal-hero">
+    <div class="legal-inner">
+      <p class="hero-fc-eyebrow"><span class="dot"></span> Contacto</p>
+      <h1 class="legal-h1">Hablemos</h1>
+      <p class="legal-updated">Escríbenos por el canal que prefieras o reserva directamente tu asesoría gratuita de 30 minutos.</p>
     </div>
-  </div>
+  </section>
 
-  <section>
-    <div class="container">
-      <div class="contact-layout">
-        <div class="contact-info">
-          <div class="info-block">
-            <h3>Email</h3>
-            <p>info@nomotax.io</p>
-          </div>
-          <div class="info-block">
-            <h3>Teléfono</h3>
-            <p>+34 642 75 76 33</p>
-          </div>
-          <div class="info-block">
-            <h3>Dirección</h3>
-            <p>Calle Ejemplo, 123<br />28001 Madrid, España</p>
-          </div>
-          <div class="info-block">
-            <h3>Horario</h3>
-            <p>Lunes a viernes, 9:00 - 18:00</p>
-          </div>
+  <!-- ═══ CANALES ═══ -->
+  <section class="legal-body">
+    <div class="legal-inner">
+      <div class="contact-cards">
+        <a href="asesoria.html" class="contact-card contact-card-dark">
+          <span class="contact-card-label">Reserva directa</span>
+          <span class="contact-card-value">Asesoría gratis · 30 min</span>
+          <span class="contact-card-text">Elige día y hora en nuestro calendario.</span>
+        </a>
+        <a href="https://wa.me/34642757633" class="contact-card" target="_blank" rel="noopener noreferrer">
+          <span class="contact-card-label">WhatsApp</span>
+          <span class="contact-card-value">+34 642 75 76 33</span>
+          <span class="contact-card-text">Escríbenos o llámanos.</span>
+        </a>
+        <a href="mailto:info@nomotax.io" class="contact-card">
+          <span class="contact-card-label">Correo electrónico</span>
+          <span class="contact-card-value">info@nomotax.io</span>
+          <span class="contact-card-text">Ideal si quieres enviarnos documentación.</span>
+        </a>
+        <div class="contact-card">
+          <span class="contact-card-label">Domicilio social</span>
+          <span class="contact-card-value">Disconnected Group LLC</span>
+          <span class="contact-card-text">30 N Gould St, Ste R, Sheridan, WY 82801, Estados Unidos</span>
         </div>
+      </div>
 
-        <form class="contact-form">
-          <div class="form-group">
-            <label for="name">Nombre</label>
-            <input type="text" id="name" name="name" required />
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
-          </div>
-          <div class="form-group">
-            <label for="phone">Teléfono</label>
-            <input type="tel" id="phone" name="phone" />
-          </div>
-          <div class="form-group">
-            <label for="message">Mensaje</label>
-            <textarea id="message" name="message" rows="5" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary" style="color:#080808; background: var(--color-accent); border:none; cursor:pointer;">Enviar mensaje</button>
-          <p class="form-status" style="margin-top: 16px; color: var(--color-primary); font-weight: 600;"></p>
-        </form>
+      <div class="legal-content">
+        <p>¿Ya sabes qué necesitas? Consulta nuestros servicios de <a href="nacional.html">fiscalidad en España</a> y de <a href="internacional.html">fiscalidad internacional</a>.</p>
       </div>
     </div>
   </section>
@@ -126,6 +124,7 @@
           <li><a href="asesoria-fiscal-mercantil-laboral.html">Gestoría</a></li>
           <li><a href="consultoria.html">Consultoría</a></li>
           <li><a href="asesoria.html">Asesoría gratis</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
         </ul>
       </nav>
       <div class="footer-legal">
@@ -156,6 +155,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=20260925"></script>
+  <script src="js/main.js?v=20260926d"></script>
 </body>
 </html>
