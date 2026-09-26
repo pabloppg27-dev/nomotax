@@ -26,13 +26,9 @@ LETTER=re.compile(r'[A-Za-zÀ-ÿ]')
 def norm(t): return ' '.join(t.split())
 def has_letters(t): return bool(LETTER.search(html.unescape(t)))
 
+# Traducciones guardadas por texto en español (no dependen de la numeración)
+tr=json.load(open(HERE+'translations.json',encoding='utf-8'))
 keys=json.load(open(HERE+'keys.json',encoding='utf-8'))
-tr={}
-for f in sorted(glob.glob(HERE+'t0*.tsv')):
-    for ln in open(f,encoding='utf-8').read().split('\n'):
-        if not ln.strip(): continue
-        i,t=ln.split('\t',1)
-        tr[keys[int(i)]]=t
 missing=[k for k in keys if k not in tr]
 assert not missing, ('faltan', len(missing), missing[:5])
 
@@ -81,8 +77,10 @@ for p in PAGES:
     s=''.join(out)
     s=s.replace('<html lang="es">','<html lang="en">',1)
     f=p+'.html'
-    old_sw='<a href="%s" class="is-active" lang="es" aria-current="true">ES</a>\n        <a href="en/%s" lang="en" hreflang="en">EN</a>'%(f,f)
-    new_sw='<a href="../%s" lang="es" hreflang="es">ES</a>\n        <a href="%s" class="is-active" lang="en" aria-current="true">EN</a>'%(f,f)
+    # Enlaces sin .html: la portada es la carpeta ("./" en español, "../" desde /en/)
+    c='' if p=='index' else p
+    old_sw='<a href="%s" class="is-active" lang="es" aria-current="true">ES</a>\n        <a href="en/%s" lang="en" hreflang="en">EN</a>'%(c or './',c)
+    new_sw='<a href="../%s" lang="es" hreflang="es">ES</a>\n        <a href="%s" class="is-active" lang="en" aria-current="true">EN</a>'%(c,c or './')
     assert s.count(old_sw)==1,(p,'selector')
     s=s.replace(old_sw,new_sw)
     open(ROOT+'en/'+f,'w',encoding='utf-8').write(s)

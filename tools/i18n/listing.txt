@@ -248,11 +248,11 @@ txt	Entendido
 txt	Despacho especializado en fiscalidad internacional para empresarios y autónomos.
 @aria-label	Footer
 txt	Navegación
-txt	Contacto
 txt	Legal
 txt	Aviso legal
 txt	Privacidad
 txt	Cookies
+txt	Contacto
 txt	info@nomotax.io
 txt	&copy; 2026 NomoTax &mdash; Todos los derechos reservados
 txt	Fiscalidad sin fronteras.
