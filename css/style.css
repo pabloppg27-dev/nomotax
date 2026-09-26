@@ -1516,16 +1516,17 @@ a.service-chip:hover::after {
     display: flex;
   }
 
-  /* Menú desplegable de móvil en blanco */
+  /* Menú desplegable de móvil: negro con acentos lima para separarlo de la página */
   .nav {
-    background: #fff;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    background: #111110;
+    border-top: 2px solid var(--color-accent);
+    border-bottom: 1px solid rgba(205, 245, 100, 0.25);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
   }
 
   .nav > a,
   .nav > .nav-item > .mega-trigger {
-    color: #111110;
+    color: #f2f2f0;
     border-radius: 10px;
   }
 
@@ -1533,8 +1534,12 @@ a.service-chip:hover::after {
   .nav > a.active,
   .nav > .nav-item > .mega-trigger:hover,
   .nav > .nav-item > .mega-trigger.open {
-    color: #111110;
-    background: #f4f4f1;
+    color: var(--color-accent);
+    background: rgba(205, 245, 100, 0.08);
+  }
+
+  .nav .mega-trigger .chevron {
+    color: var(--color-accent);
   }
 
   /* En móvil el menú sale del flujo: el selector queda junto a la hamburguesa */
@@ -1700,22 +1705,35 @@ a.service-chip:hover::after {
     display: block;
   }
 
+  /* Submenús: línea lima a la izquierda para marcar el nivel */
+  .mega-menu.open {
+    margin: 4px 0 8px 14px;
+    border-left: 2px solid rgba(205, 245, 100, 0.4);
+  }
+
   .mega-eyebrow {
-    color: #8a8580;
+    color: var(--color-accent);
+    opacity: 0.75;
   }
 
   .mega-featured > a:first-child,
   .mega-list a {
-    color: #111110;
+    color: #e8e8e6;
   }
 
   .mega-list a:hover {
-    background: #f4f4f1;
+    background: rgba(205, 245, 100, 0.08);
+    color: var(--color-accent);
+  }
+
+  .mega-list .chevron-hover {
+    opacity: 0.7;
+    color: var(--color-accent);
   }
 
   .mega-all {
-    border-top-color: rgba(0, 0, 0, 0.08);
-    color: #111110;
+    border-top-color: rgba(205, 245, 100, 0.2);
+    color: var(--color-accent);
   }
 
   .mega-menu-wide .mega-grid {
@@ -1880,4 +1898,114 @@ a.service-chip:hover::after {
     text-align: center;
     padding: 18px 24px;
   }
+}
+
+/* ==========================================
+   ANIMACIONES SUTILES
+   Cortas y discretas. Con "reducir movimiento"
+   activado en el dispositivo no se aplican.
+   ========================================== */
+
+/* Hamburguesa → ✕ cuando el menú móvil está abierto */
+.nav-toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+  .nav-toggle span {
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+
+  /* Entrada de la cabecera de cada página al cargar */
+  .hero-fc-copy-zone,
+  .gst-hero-copy,
+  .legal-hero .legal-inner,
+  .asesoria-hero-inner,
+  .page-header .container {
+    animation: nt-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .hero-fc-logo-zone,
+  .gst-hero-panel-wrap {
+    animation: nt-fade 0.9s ease 0.15s both;
+  }
+
+  /* Aparición al hacer scroll (clases que pone main.js) */
+  .nt-reveal {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  .nt-reveal.nt-visible {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--nt-delay, 0ms);
+  }
+
+  /* Desplegables del menú: contenido en cascada */
+  .mega-menu.open .mega-eyebrow,
+  .mega-menu.open .mega-featured,
+  .mega-menu.open .mega-list li,
+  .mega-menu.open .mega-all {
+    animation: nt-rise-sm 0.28s ease both;
+  }
+
+  .mega-menu.open .mega-featured { animation-delay: 0.03s; }
+  .mega-menu.open .mega-list li:nth-child(1) { animation-delay: 0.05s; }
+  .mega-menu.open .mega-list li:nth-child(2) { animation-delay: 0.08s; }
+  .mega-menu.open .mega-list li:nth-child(3) { animation-delay: 0.11s; }
+  .mega-menu.open .mega-list li:nth-child(4) { animation-delay: 0.14s; }
+  .mega-menu.open .mega-all { animation-delay: 0.18s; }
+
+  /* Pop-ups: el panel se asienta con un leve desplazamiento */
+  .gst-modal-overlay .gst-modal {
+    transform: translateY(14px) scale(0.985);
+    transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .gst-modal-overlay.gst-modal-open .gst-modal {
+    transform: none;
+  }
+
+  /* Preguntas frecuentes: la respuesta aparece con un fundido */
+  .cns-faq-item[open] .cns-faq-answer {
+    animation: nt-rise-sm 0.3s ease both;
+  }
+}
+
+/* Menú móvil: el panel baja con un fundido corto */
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .nav.open {
+    animation: nt-drop 0.24s ease-out both;
+  }
+}
+
+@keyframes nt-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes nt-rise-sm {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes nt-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes nt-drop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
 }

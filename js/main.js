@@ -1481,3 +1481,90 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+/* ============================================================
+   APARICIÓN SUAVE AL HACER SCROLL
+   ------------------------------------------------------------
+   Los bloques de cada sección aparecen con un leve fundido al
+   entrar en pantalla; las tarjetas de una rejilla, en cascada
+   por columnas. Solo se aplica a lo que empieza fuera de la
+   vista (así nada parpadea al cargar) y respeta la preferencia
+   "reducir movimiento" del dispositivo.
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function () {
+  if (!("IntersectionObserver" in window)) return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  var pliegue = window.innerHeight;
+  var elementos = [];
+
+  function esContenedor(el) {
+    return typeof el.className === "string" &&
+      /(^|\s)[\w-]*(inner|container)(\s|$)/.test(el.className) && el.children.length > 0;
+  }
+
+  function decorativo(el) {
+    var cs = getComputedStyle(el);
+    return cs.position === "absolute" || cs.position === "fixed" ||
+      el.getAttribute("aria-hidden") === "true" || el.offsetHeight === 0;
+  }
+
+  function esRejilla(el) {
+    var cs = getComputedStyle(el);
+    return el.children.length >= 2 &&
+      (cs.display === "grid" || (cs.display === "flex" && cs.flexWrap === "wrap"));
+  }
+
+  function marcar(el, retraso) {
+    if (decorativo(el)) return;
+    if (el.getBoundingClientRect().top < pliegue) return;
+    el.classList.add("nt-reveal");
+    el._ntDelay = retraso || 0;
+    if (retraso) el.style.setProperty("--nt-delay", retraso + "ms");
+    elementos.push(el);
+  }
+
+  function repartir(bloque, orden) {
+    if (esRejilla(bloque)) {
+      // Cascada por columnas: la posición dentro de cada fila marca el retraso
+      var cols = getComputedStyle(bloque).gridTemplateColumns;
+      var n = cols && cols !== "none" ? cols.split(" ").length : 4;
+      Array.prototype.forEach.call(bloque.children, function (hijo, j) {
+        marcar(hijo, (j % Math.max(n, 1)) * 70);
+      });
+    } else if (bloque.offsetHeight > pliegue * 1.2 && bloque.children.length > 1) {
+      // Bloques muy altos (líneas de tiempo, listas largas): elemento a elemento
+      Array.prototype.forEach.call(bloque.children, function (hijo) { marcar(hijo, 0); });
+    } else {
+      marcar(bloque, Math.min(orden, 3) * 60);
+    }
+  }
+
+  document.querySelectorAll("body > section").forEach(function (seccion, i) {
+    if (i === 0) return; // la cabecera de la página tiene su propia entrada
+    var orden = 0;
+    Array.prototype.forEach.call(seccion.children, function (hijo) {
+      if (esContenedor(hijo)) {
+        Array.prototype.forEach.call(hijo.children, function (b) { repartir(b, orden++); });
+      } else {
+        repartir(hijo, orden++);
+      }
+    });
+  });
+
+  var observador = new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (entrada) {
+      if (!entrada.isIntersecting) return;
+      var el = entrada.target;
+      el.classList.add("nt-visible");
+      observador.unobserve(el);
+      // Al terminar se quitan las clases para no interferir con los efectos al pasar el cursor
+      setTimeout(function () {
+        el.classList.remove("nt-reveal", "nt-visible");
+        el.style.removeProperty("--nt-delay");
+      }, 700 + el._ntDelay);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+
+  elementos.forEach(function (el) { observador.observe(el); });
+});
