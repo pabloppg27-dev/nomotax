@@ -1,0 +1,2187 @@
+
+##### index
+txt	NomoTax | Fiscalidad Nacional e Internacional
+@aria-label	NomoTax — inicio
+@alt	NomoTax
+txt	Nomo
+txt	Tax
+txt	Nacional
+txt	Optimización fiscal España
+txt	Asesoría fiscal, mercantil y laboral
+txt	Contratar
+txt	Estructuras holding
+txt	Ley Beckham (impatriados)
+txt	Ganancias patrimoniales
+txt	Deducciones I+D y Cultura
+txt	Ver todos los servicios
+txt	Internacional
+txt	Fiscalidad internacional
+txt	LLC en EE.UU.
+txt	Cambio de residencia fiscal
+txt	Estructuras internacionales
+txt	Nómadas digitales
+txt	Gestoría
+txt	Consultoría
+txt	Asesoría gratis
+@aria-label	Idioma
+txt	ES
+txt	EN
+@aria-label	Abrir menú
+txt	Fiscalidad nacional e internacional
+txt	Maximizamos tu rentabilidad optimizando tu
+txt	fiscalidad.
+txt	Protegemos tu
+txt	patrimonio.
+txt	Combinamos estrategia fiscal, visión internacional y conocimiento del negocio para que tomes decisiones con impacto real.
+txt	Agendar asesoría
+txt	Ver servicios
+txt	&mdash; Estrategia
+txt	Estrategias fiscales
+txt	con resultados.
+txt	No buscamos fórmulas genéricas. Analizamos tu estructura, tus objetivos y dónde quieres estar para construir una estrategia fiscal eficiente, legal y preparada para crecer contigo.
+txt	en España.
+txt	Optimiza tu fiscalidad sin renunciar a operar desde España. Diseñamos estructuras adaptadas a tu actividad, tu patrimonio y tus objetivos para reducir costes fiscales dentro del marco legal.
+txt	Ley Beckham
+txt	Deducciones I+D y cultura
+txt	EXPLORAR
+@aria-label	Declaración optimizada y carga fiscal reducida en España
+txt	Holding
+txt	Beckham
+txt	Ganancias
+txt	Deducciones
+txt	Declaración
+txt	Ejercicio
+txt	Resultado
+txt	Optimizado
+txt	Carga fiscal
+txt	Antes
+txt	Después
+txt	Estructuras
+txt	internacionales.
+txt	Reestructuramos sociedades, operaciones y patrimonios con una visión internacional para mejorar la eficiencia fiscal de tu grupo sin perder control ni operativa.
+txt	Diseñamos holdings internacionales y planificamos la expansión de tu estructura empresarial con una visión fiscal a largo plazo.
+txt	Sociedad operativa
+txt	Holding internacional
+txt	Sociedad en la UE
+txt	Compliance anual
+@aria-label	Estructura internacional: una holding con sociedades en varias jurisdicciones
+txt	Sociedad matriz
+txt	LTD
+txt	Reino Unido
+txt	LLC
+txt	EE. UU.
+txt	OÜ
+txt	Estonia
+txt	13 jurisdicciones
+txt	Residencia fiscal
+txt	internacional.
+txt	Cuando trasladarte tiene sentido, diseñamos la estrategia completa: residencia fiscal, estructura empresarial, patrimonio y cumplimiento. Analizamos cada jurisdicción para encontrar una opción coherente con tu situación.
+txt	Planificación
+txt	Expatriación
+txt	Impatriación
+txt	Cuentas bancarias
+@aria-label	Cambio de residencia fiscal del país de origen al de destino
+txt	Origen
+txt	Tu país
+txt	Destino
+txt	Tu nuevo país
+txt	183 días
+txt	Días de estancia al año
+txt	LLC en
+txt	Estados Unidos.
+txt	Expertos en la constitución de estructuras LLC, analizamos su tributación en EE. UU. y el impacto de sus beneficios en los socios para crear estructuras eficientes, con cobertura internacional y compliance al día.
+txt	Nuevo México
+txt	Wyoming
+txt	Delaware
+txt	Montana
+txt	Florida
+@aria-label	Constitución de una LLC en Estados Unidos
+txt	Articles of Organization
+txt	EIN
+txt	NM
+txt	WY
+txt	DE
+txt	MT
+txt	FL
+txt	&mdash; Gestoría
+txt	Tu gestoría,
+txt	al día.
+txt	Fiscal, contable y laboral en un solo sitio, con un asesor detrás. Sin permanencia.
+txt	Ver planes
+txt	Autónomos
+txt	Desde
+txt	€/mes
+txt	Impuestos, contabilidad y asesoramiento para tu actividad.
+txt	Empresas
+txt	Contabilidad, Sociedades y cuentas anuales de tu SL.
+txt	Laboral
+txt	€/trabajador
+txt	Nóminas, contratos y Seguridad Social de tu equipo.
+txt	&mdash; Consultoría
+txt	¿Una duda concreta?
+txt	Resuélvela con un especialista, por escrito o en directo.
+txt	Ver consultoría
+txt	Dictamen fiscal exprés
+txt	Desde 49&nbsp;€
+txt	Sesión personalizada
+txt	79&nbsp;€/hora
+txt	Estudio fiscal completo
+txt	Desde 299&nbsp;€
+txt	&mdash; Jurisdicciones
+txt	Donde
+txt	operamos.
+txt	Operamos en 13 jurisdicciones estratégicas en base a su marco fiscal favorable en personas físicas y jurídicas.
+txt	España
+txt	Optimización fiscal para empresarios con actividad o residencia en España.
+txt	Emiratos Árabes Unidos
+txt	IRPF · 0% / IS · 0%
+txt	Fiscalidad 0% en persona física y jurídica, con infraestructura internacional y zonas francas para negocios globales.
+txt	Estados Unidos
+txt	IS · 0%
+txt	Mejor vehículo societario internacional con acceso al mayor mercado del mundo.
+txt	Georgia
+txt	Small Business · 1–3%
+txt	Mejor régimen de tributación para freelances y nómadas digitales.
+txt	Chipre
+txt	Non-dom · 0%
+txt	Tributación offshore más competitiva de Europa con residencia fiscal en 60 días.
+txt	Malta
+txt	Tasa Efectiva · 0-5%
+txt	Tributación de rentas pasivas al 0% e impuesto sobre sociedades efectivo del 5%.
+txt	Lituania
+txt	IS · 0-7%
+txt	El mayor hub tecnológico de Europa, con un Impuesto sobre Sociedades del 0% al 7% y dividendos al 15%.
+txt	Impuesto al distribuir
+txt	Sistema empresarial digital líder de Europa, con sociedades 100% online y tributación solo al distribuir beneficios.
+txt	Andorra
+txt	IS · 10%
+txt	Sin impuesto sobre el patrimonio, ubicación estratégica junto a España y Francia, y un entorno de alta seguridad y calidad de vida.
+txt	Paraguay
+txt	Fiscalidad territorial competitiva con costes operativos bajos, ideal para cambios de residencia fiscal.
+txt	Hong Kong
+txt	Sistema territorial
+txt	Impuesto de sociedades del 0% sobre rentas de fuente extranjera y distribución de beneficios sin impuestos ni retenciones.
+txt	Panamá
+txt	Fiscalidad basada en la fuente territorial de los ingresos y posición estratégica para negocios internacionales.
+txt	LTD · LLP
+txt	Sociedad lista en un día, con constitución, estatutos y cuenta bancaria. La vía más ágil para operar, con la LTD y la LLP como vehículos clave.
+txt	¿No sabes cuál encaja contigo?
+txt	Analizamos tu caso y te decimos qué jurisdicción y qué estructura tienen sentido.
+txt	Ver estructuras
+txt	&mdash; ¿Hablamos? &mdash;
+txt	No se trata de pagar menos.
+txt	Se trata de
+txt	hacerlo mejor.
+txt	¿Aún no lo tienes claro? Hablamos gratis. ¿Ya sabes lo que quieres? Empezamos con tu estudio fiscal.
+txt	RESERVAR ASESORÍA GRATIS
+txt	RESERVAR ESTUDIO FISCAL
+@aria-label	Cerrar
+txt	&times;
+@data-title	Reservar asesoría gratis
+@data-price	Sin coste
+@data-subtitle	Una primera llamada para ver tu caso y decirte por dónde empezar.
+@data-success	Te confirmaremos el día y la hora de tu asesoría por email y teléfono en las próximas 24 horas.
+txt	¿Sobre qué quieres hablar?
+@data-error	Indica sobre qué quieres hablar.
+@data-value	Fiscalidad en España
+@data-value	Estructura internacional
+@data-value	Cambio de residencia
+@data-value	LLC en EE. UU.
+@data-value	Aún no lo sé
+txt	País de residencia fiscal
+@data-error	Indica tu país de residencia fiscal.
+@placeholder	Ej.: España
+txt	Modalidad
+@data-error	Elige si prefieres videollamada o teléfono.
+@data-value	Videollamada
+@data-value	Llamada telefónica
+txt	Fecha preferida
+@data-error	Elige una fecha para la asesoría.
+txt	De lunes a viernes. Si ese día no hay hueco, te proponemos el más cercano.
+txt	Franja horaria
+@data-error	Elige una franja horaria.
+@data-value	Mañana (9–14 h)
+@data-value	Tarde (16–19 h)
+txt	Cuéntanos brevemente
+txt	(opcional)
+@placeholder	Qué tienes ahora y qué te gustaría conseguir.
+@data-title	Reservar estudio fiscal
+@data-price	Desde 299 €
+@data-subtitle	Analizamos tu situación a fondo y te damos una estrategia con números.
+@data-success	Un asesor revisará tu caso y te confirmará en las próximas 24 horas la fecha de la primera sesión, el precio cerrado y la documentación que necesitamos.
+txt	¿Qué quieres conseguir?
+@data-error	Indica qué quieres conseguir.
+@data-value	Optimizar mis impuestos
+@data-value	Estructurar mi empresa
+@data-value	Cambiar de residencia
+@data-value	Otro
+txt	Tu perfil
+@data-error	Indica tu perfil.
+@data-value	Particular
+@data-value	Autónomo
+@data-value	Empresa
+@data-value	No residente
+@placeholder	Ej.: México
+txt	Ingresos anuales
+@data-error	Indica tus ingresos anuales aproximados.
+txt	Selecciona
+txt	Menos de 30.000 €
+txt	De 30.000 a 60.000 €
+txt	De 60.000 a 150.000 €
+txt	De 150.000 a 300.000 €
+txt	Más de 300.000 €
+txt	Primera sesión
+@data-error	Elige una fecha para la primera sesión.
+txt	Comentarios
+@placeholder	Tu situación en pocas líneas.
+txt	Tus datos
+txt	Nombre y apellidos
+@placeholder	Tu nombre completo
+txt	Correo electrónico
+@placeholder	tu@email.com
+txt	Teléfono móvil
+txt	Enviar solicitud
+txt	Al enviar aceptas nuestra
+txt	política de privacidad
+txt	Solicitud enviada
+txt	Entendido
+txt	Despacho especializado en fiscalidad internacional para empresarios y autónomos.
+@aria-label	Footer
+txt	Navegación
+txt	Contacto
+txt	Legal
+txt	Aviso legal
+txt	Privacidad
+txt	Cookies
+txt	info@nomotax.io
+txt	&copy; 2026 NomoTax &mdash; Todos los derechos reservados
+txt	Fiscalidad sin fronteras.
+@aria-label	Contactar por WhatsApp
+txt	¿Tienes dudas? Escríbenos
+
+##### nacional
+txt	Fiscalidad en España | NomoTax
+@content	Fiscalidad en España con NomoTax: gestoría fiscal, mercantil y laboral, estructuras holding, Ley Beckham, ganancias patrimoniales, deducciones I+D y cultura y consultoría.
+txt	Fiscalidad
+txt	en España
+txt	Gestoría, estructuras y regímenes especiales para que pagues lo justo en España,
+txt	con un solo equipo.
+txt	Gestoría fiscal, mercantil y laboral
+txt	Estructuras y regímenes especiales
+txt	Asesoría gratis para empezar
+txt	Estudio fiscal
+txt	¿Aún no lo tienes claro? Empieza por la asesoría gratis. ¿Ya sabes lo que quieres? Reserva tu estudio fiscal.
+txt	NACIONAL · ESPAÑA
+txt	Servicios
+txt	Todo lo que necesitas en España
+txt	Elige el servicio que encaja contigo.
+txt	Cada uno tiene su página con el detalle.
+txt	Impuestos, contabilidad y nóminas de autónomos y empresas.
+txt	Desde 39 €/mes
+txt	Ver servicio
+txt	Organiza tus sociedades y reinvierte los beneficios desde una matriz.
+txt	Dividendos exentos al 95 %
+txt	Régimen especial para quien se traslada a trabajar o emprender en España.
+txt	24 % durante 6 años
+txt	Vende pisos, acciones o cripto pagando lo justo.
+txt	Pisos, acciones y cripto
+txt	Convierte parte de tus impuestos en inversión en proyectos.
+txt	Deduce hasta el 120 %
+txt	Consultoría fiscal
+txt	Dictamen, sesión o estudio para una duda concreta.
+txt	Desde 49 €
+txt	¿No sabes cuál necesitas?
+txt	Reserva una asesoría gratis
+txt	y te orientamos.
+txt	Cómo trabajamos
+txt	De la primera llamada a tu día a día
+txt	Un solo equipo en todo el proceso,
+txt	y después seguimos contigo.
+txt	Vemos tu caso sin coste y te decimos por dónde empezar.
+txt	Analizamos tu situación y te damos una estrategia con números.
+txt	Ejecución
+txt	Lo ponemos en marcha: trámites, sociedades y declaraciones.
+txt	Seguimiento
+txt	Seguimos a tu lado cada año, como tu gestoría.
+txt	Por dónde empezar
+txt	Dos formas de empezar
+txt	Reserva el día y la hora que te vengan bien.
+txt	Te confirmamos la cita en 24&nbsp;horas.
+txt	¿Aún no lo tienes claro?
+txt	¿Ya sabes lo que quieres?
+txt	Analizamos tu situación en España y te damos una estrategia con números.
+txt	Paga lo justo.
+txt	Ni un euro
+txt	más.
+@data-value	Vender un bien
+@data-value	Mudarme a España
+
+##### internacional
+txt	Fiscalidad internacional | NomoTax
+@content	Fiscalidad internacional con NomoTax: cambio de residencia fiscal, estructuras internacionales en 13 jurisdicciones, nómadas digitales y LLC en EE. UU.
+txt	internacional
+txt	Residencia, estructuras y sociedades en el extranjero, vengas de donde vengas.
+txt	Un solo equipo, en todos los países.
+txt	Residencia y estructura coordinadas
+txt	Tu gestoría estés donde estés
+txt	INTERNACIONAL · 13 JURISDICCIONES
+txt	Todo lo que necesitas fuera de tu país
+txt	De la salida de tu país a la llegada al nuevo, con bancos y sociedades.
+txt	Estudio desde 299 €
+txt	Sociedad, holding o sociedad en la UE, en 13 jurisdicciones.
+txt	Residencia fiscal clara y estructura para facturar, estés donde estés.
+txt	Residencia + estructura
+txt	Constitución y compliance anual de tu LLC, con visión fiscal internacional.
+txt	Desde 590 €
+txt	Analizamos tu residencia, tu estructura y tus impuestos en cada país, con números.
+txt	Vengas de donde vengas.
+txt	Tributa donde
+txt	toca.
+@data-value	Nómada digital
+@data-value	Facturar como nómada
+
+##### asesoria-fiscal-mercantil-laboral
+txt	Asesoría fiscal, mercantil y laboral | NomoTax
+txt	Gestoría online para
+txt	autónomos y empresas
+txt	Todo en uno: Fiscal, Mercantil, Contable y Laboral
+txt	Cobertura frente a errores
+txt	Sin permanencia ni letra pequeña
+txt	Planes
+txt	Asesoramiento a medida
+@alt	Verifactu
+txt	Software compatible
+txt	Programa de facturación
+txt	Gestionamos
+txt	SL
+txt	SA
+txt	SCP
+txt	CB
+txt	S. Coop.
+txt	Holdings
+@alt	Pablo, tu asesor
+txt	Tan cerca como quieras,
+txt	tan lejos como necesites
+txt	Un asesor con nombre y apellidos al otro lado del teléfono y una firma que sabe mover tu fiscalidad por medio mundo.
+txt	Hablas siempre con la misma persona. Sin tickets, sin centralitas, sin explicar tu caso dos veces.
+txt	Autónomos, SL, SA, SCP, comunidades de bienes, cooperativas y holdings. La misma casa en cada etapa del negocio.
+txt	No presentamos modelos: planificamos. El cierre se revisa antes de presentarlo, no se explica después.
+txt	Lo que incluye tu gestoría
+txt	Todo lo que necesitas, seas autónomo o sociedad, con un despacho detrás.
+txt	Contabilidad e impuestos al día
+txt	Llevamos tu contabilidad, libros y obligaciones fiscales al día, con una visión clara de cómo va realmente tu actividad o empresa.
+txt	Con
+txt	Te avisamos de cada plazo y presentamos tus impuestos por ti. Tú sabes qué toca y cuándo, sin tener que perseguir fechas.
+txt	Nos encargamos de la parte administrativa y fiscal para que puedas centrarte en tu negocio.
+txt	Altas y gestión fiscal
+txt	Altas, bajas, cambios de actividad y gestión censal para que todo esté correctamente encuadrado desde el principio.
+txt	Libros, cuentas y obligaciones
+txt	Libros registro, cuentas anuales y obligaciones mercantiles, según el tipo de actividad o sociedad. Todo ordenado y al día.
+txt	Tu documentación siempre preparada y presentada en plazo, sin dejar obligaciones pendientes.
+txt	Fiscal y laboral coordinados desde un mismo despacho, sin tener que explicar tu situación dos veces.
+txt	Gestión laboral
+txt	Nóminas, seguros sociales, altas y bajas de trabajadores y gestión laboral, cuando tu actividad lo necesita.
+txt	Planificación para pagar lo justo
+txt	Revisamos tus gastos, deducciones, forma de tributar y estructura para que pagues lo justo y legalmente necesario.
+txt	No solo presentamos impuestos: analizamos cómo organizar tu actividad para mejorar tu fiscalidad.
+txt	Fiscalidad nacional e internacional en un mismo sitio, con una visión global de tu estructura.
+txt	Asesoramiento nacional e internacional
+txt	Si trabajas con clientes extranjeros, facturas fuera o tienes estructuras internacionales, coordinamos todo con tu situación en España.
+@aria-label	Selector de planes
+txt	Selecciona tu área
+txt	La gestión que necesita tu sociedad, desde una SL sencilla hasta una estructura empresarial más compleja.
+txt	¿Necesitas constituir una sociedad?
+txt	Hazlo totalmente gratis con nosotros.
+txt	Solicitar
+txt	Mensual
+@aria-label	Cambiar a plan anual
+txt	Anual
+txt	Ahorra 2 meses
+txt	Empresa Base
+txt	Para sociedades nuevas o con una operativa sencilla.
+txt	Más elegido
+txt	Empresa Smart
+txt	Para sociedades en crecimiento y con una operativa más activa.
+txt	Empresa Max
+txt	Para sociedades con mayor volumen, estructuras complejas y necesidades avanzadas.
+txt	Compara los planes
+txt	Facturas mensuales
+txt	Hasta 50
+txt	Hasta 150
+txt	Contabilidad e impuestos periódicos
+txt	Impuesto sobre Sociedades + cuentas anuales
+txt	Asesoramiento fiscal
+txt	Básico
+txt	Atención
+txt	Chat y email
+txt	Prioritaria
+txt	Directa
+txt	Estudios fiscales
+txt	1/año
+txt	3/año
+txt	Estructuras complejas / holdings
+txt	¿No sabes qué plan elegir?
+txt	Te lo resolvemos, reserva ahora
+txt	Constituir sociedad gratis
+txt	Rellena los datos y nos pondremos en contacto contigo.
+txt	Tipo de sociedad
+txt	Sociedad Limitada (SL)
+txt	Sociedad Anónima (SA)
+txt	Sociedad Holding
+@data-value	Cooperativa
+txt	Sociedad Cooperativa
+txt	Sociedad Civil Privada
+txt	¿Cuándo la necesitas?
+@data-value	inmediato
+txt	De inmediato
+@data-value	este-mes
+txt	Este mes
+@data-value	3-meses
+txt	En los próximos 3 meses
+txt	Teléfono
+txt	Solicitar constitución
+txt	Solicitar alta
+txt	Plan seleccionado:
+txt	Denominación social
+@placeholder	Nombre de tu sociedad
+txt	CIF
+@placeholder	B12345678
+txt	Todo lo que necesitas para gestionar tu actividad como autónomo, sin complicaciones.
+txt	Autónomo Core
+txt	Para autónomos con poca facturación y necesidades básicas.
+txt	Autónomo Plus
+txt	Para autónomos con actividad regular y que necesitan más cobertura.
+txt	Autónomo Pro
+txt	Para autónomos con mayor volumen, operaciones especiales o situaciones complejas.
+txt	Hasta 25
+txt	Contabilidad e impuestos
+txt	Impuestos periódicos y anuales
+txt	Email
+txt	Chat + email
+txt	Alta de autónomo
+txt	Declaración de la Renta
+txt	Operaciones / situaciones especiales
+txt	Área
+txt	Nóminas, contratos y Seguridad Social gestionados por especialistas, para que tu equipo esté siempre en regla.
+txt	1 trabajador
+txt	Para tu primera contratación, sin complicarte con trámites.
+@data-plan	1 trabajador — 25 €/trabajador/mes
+txt	De 2 a 9 trabajadores
+txt	Para equipos en crecimiento que ya necesitan una gestión laboral sólida.
+@data-plan	De 2 a 9 trabajadores — 18 €/trabajador/mes
+txt	10 o más trabajadores
+txt	Para plantillas consolidadas con mayor volumen de gestión laboral.
+@data-plan	10 o más trabajadores — 12 €/trabajador/mes
+txt	Incluye nóminas, contratos, altas y bajas en Seguridad Social, y asesoramiento laboral continuo — como tener tu propio departamento de recursos humanos, sin el coste de tenerlo en plantilla.
+txt	AGENDAR ASESORÍA GRATIS
+txt	¿Requieres alta de autónomo?
+@data-value	si
+txt	Sí
+@data-value	no
+txt	No
+txt	¿En qué fecha?
+txt	NIF
+@placeholder	12345678A
+txt	Solicitar gestión laboral
+@placeholder	Nombre de tu empresa
+@placeholder	Persona de contacto
+txt	Solicitar información
+
+##### consultoria
+txt	Consultoría fiscal | NomoTax
+@content	Consultoría fiscal a medida: dictamen fiscal exprés, sesiones de asesoramiento personalizado desde 79 €/hora y estudios fiscales completos desde 299 €.
+txt	a tu medida
+txt	Resolvemos una duda puntual, te acompañamos en una sesión uno a uno o analizamos tu situación completa. Tú eliges el formato y
+txt	conoces el precio antes de empezar
+txt	Especialistas en fiscalidad nacional e internacional
+txt	Precio cerrado antes de empezar
+txt	Conclusiones siempre por escrito
+txt	Ver formatos
+txt	Tu caso concreto
+txt	CONSULTORÍA · 1:1
+txt	Dictamen exprés en 48–72&nbsp;h
+txt	Sesión 1:1 · 79&nbsp;€/hora
+txt	Estudio completo · desde 299&nbsp;€
+txt	Formatos
+txt	Elige cómo quieres que te ayudemos
+txt	De una pregunta concreta a un análisis completo de tu situación. En los tres casos hablas con un
+txt	asesor especialista
+txt	y te llevas las conclusiones por escrito.
+txt	Una cuestión concreta, respondida por escrito y con fundamento.
+txt	Respuesta por escrito en 48–72&nbsp;h
+txt	Normativa y criterio de Hacienda aplicables
+txt	Conclusión clara y qué hacer a continuación
+txt	Una aclaración posterior incluida
+txt	Asesoramiento fiscal uno a uno para resolver tus dudas en directo.
+txt	€ / hora
+txt	Por videollamada o por teléfono
+txt	Revisamos tu documentación antes de la sesión
+txt	Resumen escrito con los próximos pasos
+txt	Eliges día y franja horaria
+txt	Más completo
+txt	Tu situación analizada a fondo, con números y una estrategia.
+txt	Análisis de tu situación personal o empresarial
+txt	Comparativa de escenarios con el cálculo de impuestos
+txt	Informe escrito con la estrategia recomendada
+txt	Sesión de presentación del informe incluida
+txt	¿No sabes cuál elegir?
+txt	Pide una asesoría gratuita
+txt	Consultoría por situación
+txt	Tu caso concreto, resuelto por especialistas
+txt	Las situaciones que más nos consultan, con un servicio pensado para cada una.
+txt	Precio cerrado
+txt	antes de empezar.
+txt	¿Autónomo o sociedad?
+txt	Comparamos lo que pagarías como autónomo y como SL con tus números reales, y te decimos a partir de qué punto compensa dar el salto.
+txt	Venta de inmueble, herencia o donación
+txt	Calculamos el impuesto antes de firmar y buscamos las reducciones y exenciones que te corresponden según tu comunidad autónoma.
+txt	Criptomonedas
+txt	Calculamos tus ganancias y pérdidas por exchange y ejercicio, y te dejamos preparado lo que declarar en la Renta y en el modelo 721 si te afecta.
+txt	Plazos cortos
+txt	Requerimientos y defensa ante Hacienda
+txt	Contestamos requerimientos, presentamos alegaciones a propuestas de liquidación o sanción y recurrimos cuando procede.
+txt	Consulta vinculante a la DGT
+txt	Redactamos y presentamos tu consulta a la Dirección General de Tributos, para que Hacienda fije por escrito cómo tributa tu operación.
+txt	Revisión y segunda opinión
+txt	Revisamos una declaración ya presentada o una decisión que estás a punto de tomar. Si hay un error, te decimos cómo corregirlo.
+txt	Te mudas a otro país: dónde tributas, qué pasa con tus rentas y cómo planificar la fecha del cambio en origen y en destino.
+txt	Due diligence y reestructuraciones
+txt	Revisión fiscal en compraventas de empresas, entrada de inversores, fusiones y reorganizaciones societarias.
+txt	A presupuesto
+txt	Cómo funciona
+txt	De tu pregunta a un plan de acción
+txt	Sin idas y venidas: sabes qué vas a recibir, cuándo y cuánto cuesta antes de que empecemos.
+txt	Eliges el servicio
+txt	Pulsa en contratar y cuéntanos tu caso en el formulario. Te lleva dos minutos.
+txt	Te confirmamos precio y fecha
+txt	Un asesor revisa tu solicitud y te confirma el precio cerrado y, si es una sesión, el día y la hora.
+txt	Nos envías la documentación
+txt	Solo la que hace falta para tu caso. Te decimos exactamente qué necesitamos.
+txt	Recibes tu respuesta
+txt	Dictamen, sesión o informe, siempre con conclusiones claras y los siguientes pasos por escrito.
+txt	Preguntas frecuentes
+txt	¿Qué diferencia hay entre el dictamen exprés y la sesión?
+txt	El dictamen es para una pregunta concreta que se puede responder por escrito. La sesión es mejor cuando tienes varias dudas relacionadas o quieres ir contrastando opciones en directo con el asesor.
+txt	¿Cómo es la sesión de asesoramiento?
+txt	Por videollamada o por teléfono, como prefieras. Antes de la sesión revisamos la documentación que nos envíes para aprovechar la hora al máximo, y después te mandamos un resumen por escrito con lo que hemos visto y los próximos pasos.
+txt	¿El precio puede cambiar?
+txt	Los precios que ves son el punto de partida. Antes de empezar revisamos tu caso y te confirmamos el precio final por escrito. Si vemos que necesita más trabajo del previsto, te lo decimos antes y tú decides.
+txt	Me ha llegado una notificación de Hacienda, ¿es urgente?
+txt	Normalmente sí. Para contestar un requerimiento o alegar a una propuesta de liquidación suele haber 10 días hábiles, y para recurrir una liquidación, un mes. Los plazos cuentan desde el día siguiente a la notificación, así que escríbenos cuanto antes.
+txt	¿Qué documentación tengo que preparar?
+txt	Depende del caso: tu última declaración de la Renta, escrituras, extractos del exchange, la notificación de Hacienda… Cuando recibamos tu solicitud te diremos exactamente qué necesitamos, sin pedirte nada de más.
+txt	¿Y si no sé qué servicio necesito?
+txt	Pide una
+txt	asesoría gratuita
+txt	. Vemos tu caso en una primera llamada y te recomendamos el formato que encaja, o te decimos si no necesitas ninguno.
+txt	Las decisiones fiscales
+txt	se toman
+txt	antes
+txt	, no después
+txt	Una hora con un asesor puede ahorrarte un error que cuesta mucho más. Reserva tu sesión y sal con un plan claro.
+txt	RESERVAR SESIÓN
+txt	¿Prefieres una primera toma de contacto?
+@data-subtitle	Plantea tu cuestión y te la respondemos por escrito en 48–72 h.
+@data-submit	Solicitar dictamen
+@data-success	Un asesor revisará tu consulta y te confirmará el precio cerrado en las próximas 24 horas. Recibirás el dictamen por escrito en 48–72 h desde la confirmación.
+txt	¿Sobre qué es tu consulta?
+@data-error	Indica sobre qué es tu consulta.
+@data-value	IRPF
+@data-value	Sociedades
+@data-value	IVA
+@data-value	Herencias y donaciones
+@data-value	No residentes
+txt	Tu pregunta
+@data-error	Escribe la pregunta que quieres resolver.
+@placeholder	Explica brevemente tu situación y la pregunta concreta que quieres resolver.
+txt	¿Tienes algún plazo?
+@data-error	Indica si tienes algún plazo.
+@data-value	Sin plazo
+@data-value	Esta semana
+@data-value	Urgente
+@data-title	Reservar sesión personalizada
+@data-price	79 € / hora
+@data-subtitle	Elige cuándo te viene bien y te confirmamos la cita por email y teléfono.
+@data-submit	Reservar sesión
+@data-success	Te confirmaremos el día y la hora de tu sesión por email y teléfono en las próximas 24 horas. Si quieres, ve preparando la documentación sobre la que quieras hablar.
+txt	Duración
+@data-error	Elige la duración de la sesión.
+@data-value	1 hora · 79 €
+@data-value	2 horas · 158 €
+@data-error	Elige una fecha para la sesión.
+txt	¿De qué quieres hablar?
+@data-error	Cuéntanos brevemente de qué quieres hablar.
+@placeholder	Cuéntanos el tema para que el asesor llegue preparado.
+@data-subtitle	Cuéntanos tu situación y te confirmamos el alcance del estudio y su precio cerrado.
+@data-submit	Solicitar estudio
+@data-success	Un asesor te contactará en las próximas 24 horas para confirmar el alcance del estudio, el precio cerrado y la documentación que necesitamos.
+@data-error	Indica qué quieres conseguir con el estudio.
+@data-value	Planificar una operación
+@data-value	Ordenar mi patrimonio
+txt	Ingresos anuales aproximados
+txt	Selecciona un tramo
+txt	Describe tu situación
+@data-error	Describe brevemente tu situación.
+@placeholder	Fuentes de ingresos, sociedades, inmuebles, inversiones, lo que te preocupa…
+@data-price	Desde 99 €
+@data-subtitle	Con estos datos preparamos la comparativa con tus números reales.
+@data-submit	Solicitar comparativa
+txt	¿Cuál es tu situación ahora?
+@data-error	Indica tu situación actual.
+@data-value	Aún no he empezado
+@data-value	Ya soy autónomo
+@data-value	Ya tengo sociedad
+txt	Actividad
+@data-error	Indica a qué te dedicas.
+@placeholder	Ej.: consultoría, e-commerce, diseño…
+txt	Facturación anual prevista
+@data-error	Indica tu facturación anual prevista.
+txt	Menos de 40.000 €
+txt	De 40.000 a 70.000 €
+txt	De 70.000 a 120.000 €
+txt	De 120.000 a 250.000 €
+txt	Más de 250.000 €
+txt	Gastos anuales aprox.
+@data-error	Indica tus gastos anuales aproximados.
+txt	Menos de 10.000 €
+txt	De 10.000 a 30.000 €
+txt	Más de 60.000 €
+txt	Comunidad autónoma de residencia
+@data-error	Indica tu comunidad autónoma.
+@data-price	Desde 149 €
+@data-subtitle	Calculamos el impuesto y las reducciones que te corresponden antes de firmar.
+@data-submit	Solicitar planificación
+txt	Tipo de operación
+@data-error	Indica el tipo de operación.
+@data-value	Venta de inmueble
+@data-value	Herencia
+@data-value	Donación
+txt	El Impuesto sobre Sucesiones se presenta en
+txt	6 meses desde el fallecimiento
+txt	. Si ya ha pasado parte de ese plazo, indícalo en los comentarios.
+txt	Parentesco
+@data-error	Indica el parentesco.
+txt	Hijo/a o descendiente
+txt	Cónyuge
+txt	Padre/madre o ascendiente
+txt	Hermano/a, sobrino/a o tío/a
+txt	Otro o sin parentesco
+txt	¿Cuándo está prevista?
+@data-error	Indica cuándo está prevista la operación.
+@data-value	Ya ha ocurrido
+@data-value	En menos de 3 meses
+@data-value	Más adelante
+txt	Valor aproximado
+@data-error	Indica el valor aproximado.
+txt	Menos de 150.000 €
+txt	De 150.000 a 400.000 €
+txt	De 400.000 a 1.000.000 €
+txt	Más de 1.000.000 €
+txt	Comunidad autónoma
+@data-error	Indica la comunidad autónoma.
+@placeholder	Cualquier detalle que debamos saber.
+@data-title	Fiscalidad de criptomonedas
+@data-subtitle	Con estos datos estimamos el volumen de trabajo y te damos un precio cerrado.
+@data-submit	Solicitar informe cripto
+txt	Ejercicios a revisar
+txt	(puedes marcar varios)
+@data-error	Marca al menos un ejercicio.
+txt	Qué operaciones haces
+txt	(puedes marcar varias)
+@data-error	Marca qué tipo de operaciones haces.
+@data-value	Compraventa
+@data-value	Permutas entre cripto
+@data-value	Staking
+@data-value	DeFi
+@data-value	NFT
+@data-value	Minería
+txt	Exchanges y wallets
+@data-error	Indica los exchanges o wallets que usas.
+@placeholder	Binance, Coinbase, Ledger…
+txt	Nº de operaciones al año
+@data-error	Indica cuántas operaciones haces al año.
+txt	Menos de 100
+txt	De 100 a 1.000
+txt	Más de 1.000
+txt	¿Más de 50.000 € en exchanges extranjeros a 31 de diciembre?
+@data-error	Indica si superas los 50.000 € en exchanges extranjeros.
+@data-value	No lo sé
+txt	Es el umbral a partir del cual hay que presentar el modelo 721.
+@data-subtitle	Revisamos tu notificación con prioridad: en estos casos los plazos cuentan.
+@data-submit	Solicitar defensa
+@data-success	Revisamos tu caso con prioridad. Un asesor te contactará en las próximas 24 horas para ver los plazos y pedirte una copia de la notificación.
+txt	¿Qué has recibido?
+@data-error	Indica qué tipo de notificación has recibido.
+@data-value	Requerimiento de información
+txt	Requerimiento
+@data-value	Propuesta de liquidación
+@data-value	Liquidación
+@data-value	Sanción
+@data-value	Inicio de inspección
+txt	Inspección
+txt	Fecha de notificación
+@data-error	Indica la fecha en que recibiste la notificación.
+txt	Impuesto
+@data-error	Indica el impuesto afectado.
+txt	Impuesto sobre Sociedades
+txt	Sucesiones y Donaciones
+txt	El plazo para responder cuenta desde el día siguiente a la notificación.
+@data-error	Cuéntanos brevemente qué te piden.
+@placeholder	Qué te piden o qué te reclaman, y el importe si aparece.
+@data-price	Desde 129 €
+@data-subtitle	Estudiamos tu operación y te decimos si tiene sentido plantearla a la DGT antes de redactarla.
+@data-submit	Solicitar consulta vinculante
+txt	¿En qué punto está la operación?
+@data-error	Indica en qué punto está la operación.
+@data-value	Planificada
+@data-value	Realizada, aún sin declarar
+txt	La consulta tiene que presentarse antes de que acabe el plazo para declarar la operación.
+txt	Describe la operación
+@data-error	Describe brevemente la operación.
+@placeholder	Qué quieres hacer, quién interviene y qué duda tienes sobre cómo tributa.
+@data-price	Desde 79 €
+@data-subtitle	Dinos qué quieres que revisemos y te confirmamos el precio cerrado.
+@data-submit	Solicitar revisión
+txt	¿Qué quieres que revisemos?
+@data-error	Indica qué quieres que revisemos.
+@data-value	Declaraciones de IVA
+@data-value	Una decisión u operación
+@data-error	Indica el ejercicio.
+txt	¿Ya está presentada?
+@data-error	Indica si ya está presentada.
+txt	Sí, ya presentada
+txt	No, aún sin presentar
+txt	¿Qué te preocupa?
+@data-error	Cuéntanos qué te preocupa.
+@placeholder	Lo que no te cuadra o la decisión que quieres contrastar.
+@data-subtitle	Te ayudamos a planificar el cambio antes de que se produzca.
+@data-submit	Solicitar estudio de residencia
+txt	País de origen
+@data-error	Indica tu país de origen.
+txt	País de destino
+@data-error	Indica el país de destino (o si aún lo estás decidiendo).
+@placeholder	Ej.: Portugal, o aún no lo sé
+txt	¿Cuándo?
+@data-error	Indica cuándo está previsto el cambio.
+txt	Ya me he mudado
+txt	En 3 a 12 meses
+txt	Aún sin fecha
+txt	Tu situación profesional
+@data-error	Indica tu situación profesional.
+@data-value	Empleado
+@data-value	Autónomo o freelance
+@data-value	Empresario
+@data-value	Inversor o rentista
+@data-value	Jubilado
+txt	¿Tienes sociedades o participaciones en empresas?
+@data-error	Indica si tienes sociedades o participaciones en empresas.
+txt	Algunos países aplican un impuesto de salida sobre acciones y participaciones. ¿Necesitas también bancos o reestructurar tus sociedades? Mira el
+txt	acompañamiento integral
+@data-subtitle	Cuéntanos la operación y te enviamos un presupuesto cerrado.
+@data-submit	Solicitar presupuesto
+@data-success	Un asesor te contactará en las próximas 24 horas para concretar el alcance de la operación y enviarte el presupuesto.
+@data-value	Compra de empresa
+@data-value	Venta de empresa
+@data-value	Entrada de inversores
+@data-value	Fusión o escisión
+@data-value	Reorganización del grupo
+txt	Facturación de la empresa
+@data-error	Indica la facturación de la empresa.
+txt	Menos de 1 M€
+txt	De 1 a 10 M€
+txt	Más de 10 M€
+txt	Cierre previsto
+@data-error	Indica cuándo está previsto el cierre.
+txt	En menos de 1 mes
+txt	En 1 a 3 meses
+txt	En más de 3 meses
+txt	Empresa o sociedad
+@placeholder	Partes, calendario y qué necesitas que revisemos.
+
+##### holding
+txt	Estructuras holding y optimización fiscal | NomoTax
+@content	Analizamos tus sociedades, beneficios e inversiones para determinar si una estructura holding te conviene. Dividendos exentos al 95% (art. 21 LIS), reinversión y planificación patrimonial. NomoTax estudia tu estructura.
+txt	holding
+txt	Analizamos tus sociedades, beneficios e inversiones para determinar si una estructura holding puede ayudarte a
+txt	organizar y optimizar tu patrimonio empresarial
+txt	Dividendos entre sociedades exentos al 95%
+txt	Reinviertes sin pasar por tu IRPF
+txt	Si no te compensa, también te lo decimos
+txt	Sin compromiso &middot; Revisamos tu estructura actual
+txt	HOLDING · GRUPO
+txt	Art. 21 LIS
+txt	Dividendos exentos al 95%
+txt	Participación mínima del 5%
+txt	Tu estructura
+txt	Matriz
+txt	Operativas
+txt	Inmuebles
+txt	Cartera
+txt	Relevo
+txt	El concepto
+txt	Qué es una holding y para qué puede servirte
+txt	Una holding es una sociedad que
+txt	no opera: posee
+txt	. No factura a clientes ni tiene actividad propia; su función es ser titular de las participaciones de tus empresas y de tus inversiones, y centralizar ahí los beneficios que generan.
+txt	Tu holding
+txt	Sociedad matriz. Titular de todo.
+txt	Sociedades operativas
+txt	Las que facturan y generan el beneficio. Una por negocio, con sus riesgos separados.
+txt	SL comercial
+txt	Inversiones
+txt	Lo que compras con el beneficio ya acumulado arriba: inmuebles, cartera o nuevos proyectos.
+txt	Organización empresarial
+txt	Cada negocio en su sociedad y todas colgando de la misma matriz. Si un proyecto va mal, no se lleva por delante a los demás ni a tu patrimonio personal.
+txt	Reinversión de beneficios
+txt	El dividendo sube de la operativa a la holding casi sin peaje, y lo reinviertes entero en el siguiente proyecto sin haber pasado antes por tu IRPF.
+txt	Planificación patrimonial
+txt	Preparar la venta futura de una de tus empresas, dar entrada a un socio o dejar ordenado el relevo generacional es mucho más limpio desde una matriz.
+txt	Qué cambia con un dividendo de 100.000 €
+txt	Tu sociedad operativa reparte 100.000 € de beneficio. A la izquierda, lo cobras tú directamente como socio persona física. A la derecha, lo cobra tu holding.
+txt	Sin holding &middot; lo cobras tú
+txt	Dividendo recibido
+txt	Tributa en la escala del ahorro
+txt	Impuesto a pagar
+txt	Te queda para reinvertir
+txt	Con holding &middot; lo cobra la matriz
+txt	Exento al 95% (art. 21 LIS)
+txt	tributan 5.000 €
+txt	Impuesto a pagar (25%)
+txt	Queda para reinvertir
+txt	Eso
+txt	no es un ahorro de 20.630 €, es un diferimiento
+txt	: el día que te repartas el dinero pagarás la escala del ahorro igual. La ventaja real es mover 98.750 € en lugar de 78.120 €. Y si te preguntas
+txt	«¿y si ese dinero lo quiero usar yo?»
+txt	, se puede, sin repartírselo. Justo aquí debajo.
+txt	Cálculo orientativo con la escala del ahorro del IRPF de 2025 (19% hasta 6.000 €, 21% hasta 50.000 € y 23% hasta 200.000 €) y el tipo general del Impuesto sobre Sociedades del 25%. La exención del art. 21 LIS exige una participación de al menos el 5% mantenida un año, y se reduce en un 5% en concepto de gastos de gestión (art. 21.10 LIS), de ahí el 95%. No contempla tu situación concreta ni otras rentas. No sustituye a un estudio personalizado.
+txt	La parte que casi nadie explica
+txt	Y si el dinero lo quieres usar tú, ¿qué?
+txt	Sacarlo como dividendo te cuesta entre un 19% y un 23% antes de tocarlo. No es la única vía:
+txt	hay tres formas de que ese dinero trabaje para ti sin pasar por tu declaración
+txt	La holding avala, el banco te presta
+txt	Una matriz con beneficios e inmuebles avala mucho mejor que tú solo: hipoteca, préstamo o póliza en condiciones a las que no llegarías.
+txt	Y la clave:
+txt	un préstamo no es renta
+txt	. Ese dinero no tributa en tu IRPF. Lo devuelves con tu nómina o con el alquiler que cobres, a un interés muy por debajo del 19-23% del dividendo.
+txt	La holding debe cobrarte una
+txt	comisión de aval de mercado
+txt	La holding te presta a ti
+txt	La matriz puede prestarte dinero directamente. Llega a tu bolsillo
+txt	sin pasar por la escala del ahorro
+txt	: no es un dividendo, es un préstamo que devuelves.
+txt	Solo pide lo de siempre:
+txt	contrato, interés de mercado y devoluciones que ocurren de verdad
+txt	Sin eso, Hacienda lo recalifica como
+txt	dividendo encubierto
+txt	(art. 25.1.d LIRPF).
+txt	Activos en la holding y alquileres
+txt	El local, el vehículo o los equipos se compran con dinero que
+txt	aún no ha tributado en tu IRPF
+txt	, y la sociedad deduce gastos y amortizaciones.
+txt	Y va en los dos sentidos: si el local es tuyo,
+txt	se lo alquilas a tu holding
+txt	y cobras una renta con la que devolver el préstamo del punto 01.
+txt	A
+txt	valor de mercado
+txt	(art. 18 LIS), con contrato y factura.
+txt	Dónde está la línea
+txt	Las tres son
+txt	operaciones vinculadas
+txt	. La ley no las prohíbe: exige precio de mercado (art. 18 LIS) y papeles. El problema nunca es hacerlas, es hacerlas
+txt	sin contrato y sin devolver nada
+txt	: eso es un dividendo sin declarar, con sanción del 50% al 150%.
+txt	Nosotros las montamos
+txt	por escrito desde el primer día
+txt	. Es lo que separa una estructura que aguanta una inspección de una que te cuesta el doble de lo que te ahorró.
+txt	Quiero analizar mi estructura
+txt	Autodiagnóstico
+txt	¿Tiene sentido una holding para ti?
+txt	No es una estructura para todo el mundo. Si te reconoces en varios de estos puntos, merece la pena sentarse a mirarlo.
+txt	Tienes una empresa rentable
+txt	Tu sociedad gana dinero y
+txt	acumula caja
+txt	que no necesitas sacar para vivir. Hoy esa caja está parada en la operativa, expuesta al riesgo del negocio.
+txt	Tienes varias empresas o inversiones
+txt	Dos o más sociedades, o sociedades más inmuebles y cartera, cada una por su lado.
+txt	Nadie tiene la foto completa
+txt	y mover dinero entre ellas te cuesta impuestos.
+txt	Quieres reinvertir los beneficios
+txt	Lo que gana un negocio lo quieres meter en el siguiente, en un local o en cartera. Si pasa antes por tu IRPF,
+txt	reinviertes con bastante menos dinero
+txt	Te planteas vender o dar entrada a un socio
+txt	Una venta futura, un inversor o el relevo generacional.
+txt	Esto se prepara antes
+txt	, no el mes de la operación: la estructura tiene que llevar tiempo montada.
+txt	Cuándo no compensa
+txt	Y ahora la parte que casi nadie te cuenta
+txt	Si tienes
+txt	una sola sociedad pequeña
+txt	y te repartes el beneficio íntegro cada año para vivir, la holding
+txt	te va a costar más de lo que te ahorra
+txt	: una sociedad más que constituir, contabilizar y declarar.
+txt	Eso sí,
+txt	no reinvertir no es lo mismo que no tener uso para el dinero
+txt	: si lo aprovechas como respaldo para financiarte, sigue compensando. Lo que no compensa es montarla para dejarla parada, o solo por la ventaja fiscal —sin motivo económico real, Hacienda puede tumbar el diferimiento (art. 89.2 LIS).
+txt	Quiero saber si es mi caso
+txt	El Estudio de Estructura
+txt	Diseñamos contigo la estructura antes de tomar decisiones
+txt	No constituimos una holding y ya está. Primero miramos qué tienes, cómo tributa hoy y qué vas a hacer con ello.
+txt	Seis puntos
+txt	, y al final una recomendación con números, incluida la de no hacer nada.
+txt	Estructura actual
+txt	Qué sociedades tienes, quién participa en cada una y en qué porcentaje. El punto de partida real, no el que crees que tienes.
+txt	Tributación
+txt	Cuánto paga hoy cada sociedad y cuánto pagas tú. Sin esta foto no se puede decir si una holding mejora algo o solo lo complica.
+txt	Participaciones
+txt	Si se llega al 5% que exige el art. 21 LIS, cuánto tiempo llevas con ellas y cómo aportarlas a la matriz sin un coste fiscal inmediato.
+txt	Dividendos y operaciones vinculadas
+txt	Qué reparten tus sociedades y qué pasaría si ese flujo subiera a la holding. Y cómo llega el dinero hasta ti: préstamo, alquiler o nómina, documentado a valor de mercado.
+txt	Reinversión y financiación
+txt	Dónde va a ir ese dinero: otro negocio, inmuebles, cartera. Y qué capacidad de aval te da el balance de la matriz para financiarte en mejores condiciones.
+txt	Operaciones futuras
+txt	Una venta, la entrada de un socio o el relevo generacional. Cada una pide una estructura distinta, y hay que montarla con tiempo.
+txt	Qué recibes y cuándo
+txt	Una
+txt	primera llamada sin coste
+txt	para ver si tu caso encaja. Si tiene recorrido, el estudio completo con el esquema propuesto, los números comparados y el calendario de pasos. Y si no lo tiene, te lo decimos ahí mismo y te ahorras el estudio.
+txt	Reservar asesoría
+txt	Sin compromiso &middot; Respuesta en 24&nbsp;h
+txt	La estructura se diseña
+txt	de necesitarla
+txt	Miramos tus sociedades, tus beneficios y lo que quieres hacer con ellos, y te decimos con números si una holding te conviene. Si no te conviene, también.
+
+##### ley-beckham
+txt	Ley Beckham: régimen de impatriados | NomoTax
+@content	Ley Beckham (art. 93 LIRPF): tributa al 24% fijo durante seis años al mudarte a España. Requisitos, qué rentas tributan, plazo de seis meses para el modelo 149 y calculadora comparativa. NomoTax estudia tu caso.
+txt	Art. 93 LIRPF · Régimen de impatriados
+txt	Ley
+txt	Si te mudas a España, puedes tributar a un
+txt	24% fijo durante seis años
+txt	en lugar de entrar en una escala progresiva que llega al 47%.
+txt	Tus rentas de fuera de España, casi siempre exentas
+txt	Sin modelo 720 mientras dure el régimen
+txt	Seis meses de plazo &mdash; y no hay prórroga
+txt	Comprobar si puedo acogerme
+txt	IRPF · IMPATRIADOS
+txt	Art. 93 LIRPF
+txt	RD 1008/2023 · Ley de Startups
+txt	Modelos 149 y 151
+txt	Perfiles que encajan
+txt	Contrato laboral
+txt	Teletrabajo
+txt	Administrador
+txt	Emprendedor
+txt	I+D+i
+txt	Qué ganas exactamente
+txt	Un tipo fijo en lugar de
+txt	una escala progresiva
+txt	Como residente normal, tu nómina entra en una escala que sube tramo a tramo hasta rozar el 47%. Con el régimen de impatriados tributas a un
+txt	tipo plano del 24%
+txt	y solo por lo que ganas en España, salvo el trabajo, que tributa en todo el mundo.
+txt	Sobre tu salario
+txt	Tipo fijo sobre los primeros 600.000 € de rendimientos del trabajo.
+txt	Solo sobre el exceso
+txt	Lo que supere 600.000 € tributa al 47%. Por debajo, nunca.
+txt	Años de aplicación
+txt	El año del desplazamiento y los cinco siguientes.
+txt	Modelos 720
+txt	Mientras dure el régimen no declaras bienes en el extranjero ni tributas patrimonio mundial.
+txt	Si te vienes a España, ¿cuánto pagarías?
+txt	Pon tus ingresos y verás cómo se clasifica cada uno: lo que tributa al 24%, lo que va a la escala del ahorro y lo que directamente no tributa en España.
+txt	Salario bruto anual
+txt	De tu empleador, esté donde esté. El trabajo tributa en todo el mundo.
+txt	Tributa al 24%
+txt	Dividendos e intereses españoles
+txt	De empresas o bancos en España.
+txt	Escala del ahorro
+txt	Dividendos e intereses extranjeros
+txt	De fuera de España.
+txt	No tributa en España
+txt	Ganancias patrimoniales españolas
+txt	Venta de inmuebles, acciones o fondos situados en España.
+txt	Ganancias patrimoniales extranjeras
+txt	Venta de activos fuera de España.
+txt	Con Ley Beckham
+txt	Salario
+txt	Rentas españolas del ahorro
+txt	Rentas extranjeras
+txt	A pagar
+txt	Régimen general
+txt	Base general
+txt	Base del ahorro
+txt	Te ahorras cada año
+txt	Quiero el cálculo exacto de mi caso
+txt	Estimación orientativa con las escalas del IRPF de 2025. El 24% de impatriados es estatal y no varía entre comunidades. Para el régimen general usamos la escala autonómica supletoria del art. 65 LIRPF, que sirve de referencia intermedia: tu comunidad puede subir o bajar la factura algunos puntos. Se descuentan las cotizaciones a la Seguridad Social hasta la base máxima (58.914 €) y 2.000 € de otros gastos deducibles, y se aplica el mínimo personal; en impatriados se tributa sobre el bruto sin reducciones ni mínimo personal, según el art. 93 LIRPF. No contempla deducciones autonómicas, situación familiar, convenios de doble imposición ni retenciones ya practicadas. No sustituye a un estudio personalizado.
+txt	Quién puede acogerse
+txt	Cuatro perfiles encajan
+txt	en el régimen
+txt	No basta con mudarse: la ley exige que el traslado tenga una causa concreta. Estas son las cuatro puertas de entrada.
+txt	Contrato de trabajo
+txt	Te contrata una empresa española, o te trasladan dentro del grupo. También entra el
+txt	teletrabajo internacional
+txt	: trabajas en remoto para una empresa de fuera con el visado de nómada digital. Quedan fuera los deportistas profesionales.
+txt	Administrador de una sociedad
+txt	Vienes a España a administrar una empresa. Si es una
+txt	entidad patrimonial
+txt	, tu participación debe ser
+txt	inferior al 25%
+txt	; si no lo es, no hay límite de porcentaje.
+txt	Montas en España una actividad calificada como emprendedora. Requiere
+txt	informe favorable de ENISA
+txt	sobre el carácter innovador del proyecto.
+txt	Profesional altamente cualificado
+txt	Prestas servicios a
+txt	empresas emergentes
+txt	o realizas formación, investigación o desarrollo e innovación. Esos ingresos deben suponer
+txt	más del 40%
+txt	del total de tus rendimientos.
+txt	Y además, en todos los casos
+txt	No haber sido residente fiscal en España
+txt	durante los cinco períodos impositivos anteriores al traslado.
+txt	Que el desplazamiento tenga causa
+txt	: uno de los cuatro motivos de arriba, documentado.
+txt	No obtener rentas por establecimiento permanente
+txt	en España, salvo los supuestos de emprendedor y profesional cualificado.
+txt	El régimen
+txt	se extiende a tu cónyuge y a tus hijos menores de 25 años
+txt	(o con discapacidad, de cualquier edad) si se desplazan el mismo año o el siguiente y la suma de sus bases liquidables es menor que la tuya. En la práctica, la familia entera puede acogerse.
+txt	Quiero que estudien mi caso
+txt	Qué tributa y qué no
+txt	Tributas como un no residente,
+txt	con una excepción
+txt	Vives en España pero tributas casi como si no lo hicieras:
+txt	solo por tus rentas españolas
+txt	. La excepción es el trabajo, que tributa venga de donde venga.
+txt	Renta
+txt	¿Tributa en España?
+txt	Detalle
+txt	Salario, venga de donde venga
+txt	24% hasta 600.000 € y 47% sobre el exceso. Es la única renta que tributa en todo el mundo.
+txt	Escala del ahorro: del 19% al 30%.
+txt	Fuera de la base imponible española.
+txt	Ganancias por vender activos españoles
+txt	Escala del ahorro, igual que cualquier no residente.
+txt	Ganancias por vender activos extranjeros
+txt	Aquí está la gran ventaja para quien vende participaciones o cartera fuera.
+txt	Impuesto sobre el Patrimonio
+txt	Solo por obligación real: bienes y derechos situados en España. No tu patrimonio mundial.
+txt	Modelo 720 (bienes en el extranjero)
+txt	No lo presentas
+txt	mientras dure el régimen
+txt	, porque el 720 solo obliga a quien tributa por la totalidad de su renta. Ojo: el primer año en que vuelves al régimen general sí toca presentarlo, con todo lo que tengas fuera a 31 de diciembre.
+txt	No siempre compensa
+txt	En el régimen de impatriados no hay mínimo personal, ni reducciones, ni prácticamente deducciones: tributas sobre el bruto desde el primer euro. Por eso,
+txt	con salarios por debajo de unos 55.000&nbsp;–&nbsp;60.000 €
+txt	el régimen general suele salir más barato. Y si tienes mucha renta de fuente extranjera, la balanza se inclina justo al revés.
+txt	Es una decisión de números, no de titulares
+txt	, y se toma una sola vez.
+txt	Plazos y tramitación
+txt	Cuándo hay que pedirlo
+txt	y qué pone el reloj en marcha
+txt	Es la parte donde más gente se equivoca. No se pide cuando llegas, ni cuando te empadronas: se pide desde que empieza tu actividad.
+txt	Tienes seis meses
+txt	desde el inicio de actividad
+txt	El plazo para presentar el
+txt	modelo 149
+txt	es de
+txt	seis meses desde la fecha de inicio de actividad
+txt	. Y conviene traducir qué significa eso, porque es donde se confunde casi todo el mundo.
+txt	Inicio de actividad no es el día que empezaste a trabajar
+txt	, ni el día que llegaste. Es la fecha en que quedas formalmente dado de alta en España para ejercer la actividad que justifica tu traslado: la que figura en tu
+txt	alta en la Seguridad Social española
+txt	. Si mantienes la Seguridad Social de tu país de origen, es la fecha que conste en esa documentación (el formulario A1 o equivalente). Y si no estás obligado a darte de alta en ningún sitio, es la fecha de inicio de actividad que acredite tu documentación de soporte.
+txt	Dicho de otro modo: el reloj lo arranca
+txt	un papel con una fecha
+txt	, no tu vida cotidiana en España.
+txt	Empadronarte en el ayuntamiento
+txt	El día que aterrizas en España
+txt	La concesión del visado o el NIE
+txt	La firma del contrato de trabajo
+txt	La fecha de inicio de actividad del alta en la Seguridad Social
+txt	(o la del documento que la sustituya)
+txt	Las dudas que nos llegan cada semana
+txt	Ya estoy viviendo en España. ¿Llego tarde?
+txt	Depende de cuándo te diste de alta, no de cuándo llegaste. Si
+txt	no han pasado seis meses
+txt	desde la fecha de inicio de actividad, estás a tiempo. Lo primero que hacemos es mirar esa fecha.
+txt	¿Tenía que haberlo pedido antes de venir?
+txt	No. El modelo 149
+txt	se presenta después
+txt	del desplazamiento, no antes. Lo que sí conviene es planificarlo antes, porque la fecha del alta y la forma de cobrar condicionan el resultado.
+txt	Me empadroné hace meses. ¿Me cuenta?
+txt	El empadronamiento
+txt	no tiene efecto fiscal
+txt	por sí solo. Es un registro municipal: ni abre el plazo, ni te convierte en residente fiscal, ni lo cierra.
+txt	Estoy aquí solo temporalmente
+txt	Si pasas
+txt	más de 183 días
+txt	en España en el año natural, eres residente fiscal aunque tu estancia sea temporal. Y entonces la comparación entre los dos regímenes te afecta de lleno.
+txt	Llevo tiempo en España cobrando de mi empresa de fuera
+txt	El caso más habitual: vives aquí, facturas o te pagas desde tu sociedad en otro país y lo has venido declarando allí. Si pasas más de 183 días en España,
+txt	ya eres residente fiscal español
+txt	, lo declares donde lo declares. Tu inicio de actividad será la fecha del alta con la que regularices tu situación aquí &mdash; pero antes hay que resolver los años que ya llevas.
+txt	¿Y esos años anteriores me quitan el régimen?
+txt	Pueden hacerlo, y es lo primero que miramos. El régimen exige
+txt	no haber sido residente fiscal en España los cinco años anteriores
+txt	. Si ya lo eras aunque tributaras fuera, cada uno de esos años cuenta en tu contra. Por eso esta situación corre prisa: cuanto antes se mire, más opciones hay.
+txt	Ya se me pasó el plazo. ¿Hay algo que hacer?
+txt	Los seis meses son
+txt	un plazo de caducidad
+txt	: no hay prórroga ni forma de recuperarlo. Tributarás en régimen general. Merece la pena revisar entonces qué otras vías de optimización te quedan.
+txt	¿Y si me acojo y luego no me interesa?
+txt	Puedes
+txt	renunciar durante noviembre y diciembre
+txt	, con efectos para el año siguiente. Pero una vez renuncias, no puedes volver: por eso el cálculo se hace antes, no después.
+txt	Cómo lo hacemos nosotros
+txt	Días 1 &ndash; 2
+txt	Viabilidad y números
+txt	Comprobamos los cinco años de no residencia, la causa del desplazamiento y la fecha que abre el plazo. Y calculamos si te compensa: con tus cifras reales, no con un ejemplo.
+txt	Días 3 &ndash; 7
+txt	Documentación
+txt	Contrato o carta de desplazamiento, alta en la Seguridad Social o A1, certificados de no residencia, informe de ENISA si eres emprendedor. Te decimos exactamente qué pedir y a quién.
+txt	Semana 2
+txt	Modelo 149
+txt	Presentamos la comunicación de opción ante la AEAT. Recibes el certificado que acredita tu régimen y que tu empresa necesita para aplicarte la retención del 24%.
+txt	Cada año
+txt	Modelo 151
+txt	Durante los seis años presentas el 151 en lugar del modelo 100. Lo llevamos nosotros y revisamos cada ejercicio que sigues cumpliendo los requisitos.
+txt	Seis meses desde el alta.
+txt	Es un plazo de caducidad: no hay prórroga ni forma de recuperarlo.
+txt	El plazo corre desde
+txt	tu
+txt	primer día de alta
+txt	Miramos tu fecha, comprobamos si encajas y te decimos con números si te compensa. Si no te compensa, también te lo decimos.
+
+##### ganancias-patrimoniales
+txt	Ganancias patrimoniales en el IRPF | NomoTax
+@content	Cómo tributan las ganancias patrimoniales en el IRPF: inmuebles, acciones, fondos, criptomonedas, arte y vehículos. Base del ahorro, compensación de pérdidas y exenciones. NomoTax analiza tu operación.
+txt	IRPF · Art. 33 LIRPF
+txt	patrimoniales
+txt	Vendes un piso, unas acciones o unas criptomonedas y Hacienda quiere su parte. Cuánta depende de
+txt	dónde encaje la operación
+txt	, no solo de cuánto has ganado.
+txt	Base del ahorro: del 19% al 30%
+txt	Las pérdidas compensan &mdash; si sabes cómo
+txt	Hay exenciones que dejan la factura a cero
+txt	Analizar mi operación
+txt	Sin compromiso &middot; Antes de firmar, no después
+txt	IRPF · TRANSMISIONES
+txt	Arts. 33 a 39 LIRPF
+txt	Base del ahorro o base general
+txt	Particular o actividad económica
+txt	Qué analizamos
+txt	Acciones
+txt	Fondos
+txt	Cripto
+txt	Arte
+txt	Vehículos
+txt	El punto de partida
+txt	Qué es una ganancia o pérdida patrimonial
+txt	El artículo 33.1 de la Ley del IRPF lo define como cualquier variación en el valor de tu patrimonio que se pone de manifiesto cuando ese patrimonio cambia de composición. Traducido:
+txt	tenías algo, lo has transmitido y ahora vale otra cosa
+txt	. Esa diferencia es lo que tributa.
+txt	La fórmula
+txt	Valor de transmisión
+txt	Precio de venta
+txt	menos
+txt	los gastos y tributos que asume quien vende
+txt	Valor de adquisición
+txt	Precio de compra
+txt	más
+txt	inversiones, mejoras, gastos y tributos,
+txt	amortizaciones si estuvo alquilado
+txt	Ganancia o pérdida
+txt	Lo que realmente entra en tu declaración
+txt	El error más caro es calcular la ganancia a ojo, restando precio de venta menos precio de compra. Las notarías, los registros, el ITP o el IVA de la compra, la comisión de la inmobiliaria y las mejoras reales suman al valor de adquisición y
+txt	reducen la ganancia
+txt	. Las amortizaciones que te dedujiste mientras el inmueble estuvo alquilado, en cambio, la aumentan.
+txt	Dónde suele aparecer
+txt	Vivienda, local, garaje o terreno. Se puede sumar al valor de adquisición todo lo que costó comprarlo y mejorarlo, pero hay que restar las amortizaciones deducidas si estuvo alquilado.
+txt	Clave: la plusvalía municipal es un impuesto aparte
+txt	Acciones y fondos
+txt	En valores homogéneos se aplica el criterio FIFO: se entiende que vendes primero las que compraste primero. Los traspasos entre fondos de inversión permiten diferir la tributación.
+txt	Clave: traspasar un fondo no tributa, reembolsarlo sí
+txt	También FIFO. Y ojo: cambiar una cripto por otra es una permuta, genera ganancia aunque no hayas visto un euro. Si las tienes en exchanges fuera de España, puede haber obligación de informar.
+txt	Clave: cripto por cripto ya tributa
+txt	Colecciones y arte
+txt	Obra, joyas, relojes, vino, coches clásicos. Tributan como cualquier otra transmisión, pero la dificultad está en acreditar el valor de adquisición cuando la compra fue hace veinte años.
+txt	Clave: sin factura, no hay coste que restar
+txt	Vehículos y bienes personales
+txt	Normalmente se venden por debajo de lo que costaron. Esa pérdida
+txt	no se puede computar
+txt	: la ley la considera consumo, no pérdida patrimonial. Si excepcionalmente hay ganancia, sí tributa.
+txt	Clave: art. 33.5.b &mdash; pérdida debida al consumo
+txt	Otros bienes y derechos
+txt	Licencias, participaciones no cotizadas, derechos de traspaso, indemnizaciones, expropiaciones. Cada uno tiene su regla de valoración específica y conviene revisarla antes de firmar.
+txt	Clave: reglas de valoración propias
+txt	La pregunta que lo cambia todo
+txt	Base general o base del ahorro: ¿dónde va?
+txt	La misma cantidad de dinero puede tributar al 19% o al 47%. La diferencia no está en el importe, está en
+txt	si la ganancia viene o no de transmitir algo
+txt	Cuando hay transmisión
+txt	Vendes, permutas, donas o transmites un elemento patrimonial. Es el caso habitual: inmuebles, acciones, fondos, criptomonedas, arte.
+txt	Tipos del
+txt	19% al 30%
+txt	, iguales en toda España
+txt	No se suma a tu nómina ni a tus rendimientos de actividad
+txt	Tu comunidad autónoma no altera el tipo
+txt	Cuando no hay transmisión
+txt	Tu patrimonio aumenta sin que hayas transmitido nada: premios, subvenciones, ayudas públicas, indemnizaciones no exentas.
+txt	Se suma al resto de tus rentas y tributa a tu
+txt	tipo marginal
+txt	Entre el
+txt	45% y el 54%
+txt	en el tramo alto según comunidad
+txt	Aquí sí importa mucho dónde resides
+txt	Escala de la base liquidable del ahorro
+txt	Vigente desde el 01/01/2025 &middot; Ley 7/2024
+txt	Base liquidable del ahorro
+txt	Tipo aplicable
+txt	Hasta 6.000 €
+txt	De 6.000 € a 50.000 €
+txt	De 50.000 € a 200.000 €
+txt	De 200.000 € a 300.000 €
+txt	La escala es progresiva por tramos: una ganancia de 60.000 € no tributa toda al 23%, sino 6.000 € al 19%, 44.000 € al 21% y los 10.000 € restantes al 23%. El tramo superior subió del 28% al 30% con la Ley 7/2024.
+txt	Segunda pregunta
+txt	¿Vendes como particular o dentro de una actividad económica?
+txt	Si compras y vendes de forma habitual y organizada &mdash;promoción inmobiliaria, compraventa recurrente de pisos, trading profesional&mdash;, Hacienda puede considerar que no estás obteniendo una ganancia patrimonial, sino el
+txt	rendimiento de una actividad económica
+txt	. Y eso lo cambia todo.
+txt	Como particular
+txt	Ganancia patrimonial
+txt	Base del ahorro, 19% &ndash; 30%
+txt	Sin IVA ni alta en IAE
+txt	Sin obligaciones contables
+txt	Dentro de actividad
+txt	Rendimiento de actividad económica
+txt	Base general, tipo marginal
+txt	Posible IVA y alta en IAE
+txt	Obligaciones formales y de facturación
+txt	Lo que casi nadie aprovecha
+txt	Las pérdidas también cuentan
+txt	Si este año has ganado con unas acciones y perdido con otras, no tributas por la ganancia bruta. Existe un orden legal de compensación que conviene planificar
+txt	antes del 31 de diciembre
+txt	Ganancias contra pérdidas del mismo ejercicio
+txt	Primero se compensan entre sí todas las ganancias y pérdidas patrimoniales del año dentro de la base del ahorro.
+txt	El saldo negativo, contra rendimientos del capital mobiliario
+txt	Si aún queda pérdida, puede compensarse con dividendos e intereses del mismo año, pero solo hasta el
+txt	de su saldo positivo.
+txt	Lo que sobre, durante los 4 años siguientes
+txt	El resto no se pierde: se arrastra a los
+txt	cuatro ejercicios siguientes
+txt	y se aplica en ese mismo orden.
+txt	Cuidado con la recompra.
+txt	Si vendes con pérdida y vuelves a comprar el mismo valor dentro de los
+txt	dos meses
+txt	anteriores o posteriores (valores cotizados),
+txt	un año
+txt	(valores no cotizados) o
+txt	un año posterior
+txt	(resto de elementos), la pérdida no se computa en ese ejercicio. No se pierde, queda diferida hasta que transmitas definitivamente.
+txt	Cómo afecta al IRPF
+txt	Casos habituales, uno a uno
+txt	Las operaciones que más vemos en el despacho y lo que hay que mirar en cada una antes de dar por hecho cómo tributan.
+txt	Operación
+txt	Tributa
+txt	Base
+txt	La clave
+txt	Ahorro
+txt	Suma al coste gastos, tributos y mejoras; resta amortizaciones si estuvo alquilado. La plusvalía municipal va aparte.
+txt	Criterio FIFO en valores homogéneos. El traspaso entre fondos difiere la tributación; el reembolso, no.
+txt	FIFO y permutas cripto&ndash;cripto ya generan ganancia. Si están en el extranjero puede haber obligación de informar.
+txt	Todo depende de poder acreditar el valor de adquisición. Sin documentación, el coste que Hacienda admite es cero.
+txt	Vehículo particular
+txt	Solo si hay ganancia
+txt	La pérdida habitual
+txt	no es computable
+txt	: el art. 33.5.b la considera consumo. La ganancia, si la hay, sí tributa.
+txt	Subvenciones y ayudas
+txt	General
+txt	No hay transmisión, así que van a la base general y tributan a tu tipo marginal. Algunas tienen exención específica.
+txt	Premios
+txt	Loterías y apuestas del Estado, ONCE y Cruz Roja tienen gravamen especial del 20% sobre lo que excede de 40.000 €. El resto, base general.
+txt	Tabla orientativa. Cada operación tiene matices &mdash;fechas, titularidad, régimen económico matrimonial, residencia fiscal&mdash; que pueden cambiar el resultado por completo.
+txt	Antes de resignarte a pagar
+txt	Lo que puede dejar la factura a cero
+txt	La ley prevé supuestos en los que la ganancia existe pero no se tributa. Casi todos exigen cumplir requisitos
+txt	en el momento de la operación
+txt	, no después.
+txt	Reinversión en vivienda habitual
+txt	Si vendes tu vivienda habitual y reinviertes el importe obtenido en comprar otra, la ganancia queda exenta en la parte reinvertida. Hay plazo, y hay que acreditar que ambas son realmente vivienda habitual.
+txt	Art. 38.1 LIRPF
+txt	Mayores de 65 años
+txt	La transmisión de la vivienda habitual por mayores de 65 años está exenta, sin necesidad de reinvertir. Y para el resto de elementos patrimoniales, la exención alcanza lo que se reinvierta en una renta vitalicia asegurada, con un máximo de 240.000 €.
+txt	Art. 33.4.b y 38.3 LIRPF
+txt	Coeficientes de abatimiento
+txt	Para bienes adquiridos antes del 31/12/1994 y no afectos a actividad, parte de la ganancia puede reducirse &mdash;solo la generada hasta el 20/01/2006&mdash; con un tope acumulado de 400.000 € de valor de transmisión por contribuyente desde 2015.
+txt	DT 9ª LIRPF
+txt	Ver si mi caso encaja
+txt	¿No sabes cómo tributa
+txt	operación?
+txt	Revisamos los números, la base que te corresponde y las exenciones aplicables antes de que firmes. Después de firmar, el margen para optimizar ya es mucho menor.
+txt	ANALIZAR MI OPERACIÓN
+
+##### deducciones-id-cultura
+txt	Deducciones en Cultura e I+D | NomoTax
+@content	Invierte en proyectos culturales o de I+D y deduce hasta el 120% de lo aportado en tu IRPF o en el Impuesto sobre Sociedades. Calcula tu deducción con NomoTax.
+txt	Incentivos fiscales España
+txt	Deducciones en
+txt	Cultura e I+D
+txt	Convierte parte de lo que ya pagas en impuestos en inversión en proyectos culturales o de I+D, y deduce hasta el
+txt	de lo aportado.
+txt	Recuperas el 120% de lo aportado
+txt	Válido en IRPF y en Impuesto sobre Sociedades
+txt	Proyectos certificados, sin riesgo de producción
+txt	Reserva tu consulta
+txt	Sin compromiso &middot; Te decimos cuánto puedes deducir
+txt	I+D · CULTURA
+txt	Arts. 35 y 36 LIS
+txt	Entras como financiador
+txt	Deducción directa en cuota
+txt	Sectores
+txt	Cine
+txt	Series
+txt	Teatro
+txt	Música
+txt	I+D
+txt	Innovación
+txt	Elige tu perfil
+txt	Deducción IRPF
+txt	Deducción IS
+txt	Los dos incentivos
+txt	Qué puedes deducirte
+txt	La ley premia dos cosas: que en España se produzca cultura y que se investigue. Estos son los porcentajes que genera cada proyecto.
+txt	Cultura
+txt	Art. 36 LIS
+txt	Cine y series audiovisuales españolas
+txt	Largometrajes, cortos y series de producción española. Art. 36.1
+txt	primer millón · 25% el exceso
+txt	Producciones extranjeras rodadas en España
+txt	Servicios de producción a rodajes internacionales. Art. 36.2
+txt	Espectáculos en vivo
+txt	Artes escénicas y musicales: teatro, danza, ópera, conciertos. Art. 36.3
+txt	de costes directos · máx. 500.000 €/año
+txt	I+D e Innovación
+txt	Art. 35 LIS
+txt	Gastos de I+D del ejercicio
+txt	Base general de la deducción por investigación y desarrollo
+txt	Exceso sobre la media de los 2 años anteriores
+txt	Premia a quien aumenta su esfuerzo inversor
+txt	Personal investigador cualificado
+txt	Adscrito en exclusiva a actividades de I+D
+txt	adicional
+txt	Inmovilizado afecto a I+D
+txt	Material e intangible, excluidos inmuebles y terrenos
+txt	Innovación tecnológica
+txt	Mejora sustancial de productos o procesos ya existentes
+txt	Y aquí está la clave
+txt	No tienes que rodar una película
+txt	ni montar un laboratorio.
+txt	Entras como
+txt	financiador
+txt	: aportas dinero al proyecto y la deducción que genera ese proyecto se aplica en
+txt	declaración. Ni produces, ni gestionas, ni asumes el riesgo de la producción.
+txt	Art. 39.7 LIS
+txt	Cultura — cine, series y espectáculos en vivo
+txt	Art. 39.3 LIS
+txt	I+D+i — proyectos de investigación e innovación
+txt	Tope de deducción
+txt	La deducción que aplicas no puede superar
+txt	1,20 veces
+txt	lo que aportas. De ahí el 120%: recuperas tu dinero y un 20% más.
+txt	Tope sobre tu cuota
+txt	El límite conjunto del art. 39.1 LIS es el 25% de la cuota íntegra minorada, y
+txt	sube al 50%
+txt	cuando la deducción supera el 10% de esa cuota.
+txt	Nuestro catálogo
+txt	Proyectos en los que puedes entrar
+txt	Trabajamos con productoras y centros de investigación que ya tienen el proyecto certificado. Tú eliges dónde va tu dinero.
+txt	Largometrajes y ficción
+txt	Cine español de productoras consolidadas, con financiación cerrada y calendario de rodaje en firme.
+txt	Series y plataformas
+txt	Series de producción española destinadas a televisión y plataformas de streaming.
+txt	Documentales
+txt	Documental de autor y divulgativo, con recorrido en festivales y ventas internacionales.
+txt	Teatro y artes escénicas
+txt	Producciones teatrales, danza y ópera con temporada y gira ya programadas.
+txt	Música en vivo y giras
+txt	Conciertos, giras y musicales que generan deducción por espectáculos en vivo.
+txt	Animación y VFX
+txt	Animación y efectos visuales, con umbrales de gasto propios y equipos técnicos en España.
+txt	Software, IA y datos
+txt	Desarrollo de algoritmos, modelos de inteligencia artificial y plataformas de datos.
+txt	Biotecnología y salud
+txt	Investigación biomédica, diagnóstico y desarrollo de dispositivos sanitarios.
+txt	Agrotech y alimentación
+txt	Nuevos cultivos, eficiencia hídrica y procesos de transformación alimentaria.
+txt	Industria y automatización
+txt	Robótica, nuevos procesos productivos y mejora sustancial de líneas de fabricación.
+txt	Energía y sostenibilidad
+txt	Almacenamiento, eficiencia energética, hidrógeno y descarbonización industrial.
+txt	Materiales avanzados
+txt	Nuevos materiales, recubrimientos y aplicaciones de nanotecnología.
+txt	El catálogo cambia cada ejercicio según los proyectos que entran en producción. En la consulta inicial te enseñamos los que están abiertos en ese momento y cuánto ticket queda libre en cada uno.
+txt	Paso a paso
+txt	Cómo se formaliza la inversión
+txt	Mismo mecanismo en los dos casos, pero con calendario distinto. Elige el tuyo.
+txt	Autónomos · IRPF
+txt	Aportas en 2026 y lo aplicas en la Renta que presentas en 2027.
+txt	Antes de invertir
+txt	Reserva y consulta
+txt	Revisamos tu caso, calculamos cuánto puedes deducirte y elegimos juntos el proyecto que mejor te encaja. Te reservamos el ticket de inversión.
+txt	Durante 2026
+txt	Firma y aportación
+txt	Firmas el contrato de financiación y desembolsas el importe antes del 31 de diciembre de 2026.
+txt	Tras la aportación
+txt	Certificación
+txt	El proyecto obtiene su certificado del ICAA o del INAEM, o el informe motivado si es I+D, y el contrato se comunica a la AEAT.
+txt	Abril – junio 2027
+txt	Renta 2026
+txt	Presentamos tu declaración y aplicamos la deducción directamente sobre la cuota.
+txt	Recuperas desde el 120%
+txt	Tu aportación vuelve íntegra en forma de menor cuota, más un 20% adicional de ahorro como mínimo.
+txt	Reserva tu consulta IRPF
+txt	Empresas · Impuesto sobre Sociedades
+txt	Aportas dentro del ejercicio 2026 y lo aplicas en el modelo 200 de julio de 2027.
+txt	Analizamos la cuota prevista de tu sociedad, definimos el importe óptimo y te reservamos el ticket en el proyecto elegido.
+txt	Durante el ejercicio 2026
+txt	Contrato de financiación y desembolso dentro del propio ejercicio, antes del cierre contable.
+txt	Certificados del ICAA o INAEM, o informe motivado del proyecto de I+D, y comunicación del contrato a la AEAT.
+txt	1 – 25 de julio 2027
+txt	Modelo 200
+txt	Presentamos el Impuesto sobre Sociedades del ejercicio 2026 con la deducción aplicada en cuota.
+txt	La sociedad recupera la aportación vía menor cuota, con un 20% extra como mínimo respecto a lo invertido.
+txt	Reserva tu consulta IS
+txt	Calculadora
+txt	Cuánto puedes deducirte
+txt	Indica tu beneficio bruto anual esperado y te decimos cuánto pagarías, cuánto deberías aportar y cuánto te ahorras.
+txt	¿Cómo tributas?
+@data-value	irpf
+@data-value	is
+txt	Tipo de proyecto
+@data-value	cultura
+@data-value	idi
+txt	Andalucía
+txt	Aragón
+txt	Asturias
+txt	Illes Balears
+txt	Canarias
+txt	Cantabria
+txt	Castilla-La Mancha
+txt	Castilla y León
+txt	Cataluña
+txt	Extremadura
+txt	Galicia
+txt	Comunidad de Madrid
+txt	Región de Murcia
+txt	La Rioja
+txt	Comunitat Valenciana
+txt	País Vasco y Navarra tienen régimen foral propio y no se incluyen en este cálculo.
+txt	Tipo de entidad
+txt	Micropyme — facturación &lt; 1 M€
+txt	Reducida dimensión — 1 a 10 M€
+txt	Tipo general — más de 10 M€
+txt	Tipos de 2026 según la Ley 7/2024: 19% / 21% para micropymes, 23% para reducida dimensión y 25% general.
+txt	Beneficio bruto anual esperado
+txt	Lo que pagarías de IRPF
+txt	Aportación recomendada al proyecto
+txt	Deducción que aplicas
+txt	(120% de lo aportado)
+txt	Tu ahorro neto
+txt	Cuota final a pagar
+txt	Consulta ahora tu deducción
+txt	Cálculo orientativo. Aplica la escala general estatal y la autonómica vigentes, con el mínimo personal general de 5.550 €; no contempla mínimos por descendientes o ascendientes, reducciones, rendimientos del ahorro ni otras deducciones. El importe y el límite definitivos dependen de tu situación concreta y del proyecto elegido.
+txt	La mejor deducción es
+txt	la que se planifica
+txt	a tiempo.
+txt	Consulta tu deducción
+txt	Revisamos tu caso y te proponemos el proyecto que mejor encaja. Sin compromiso.
+txt	Perfil
+txt	Beneficio estimado
+txt	Aportación estimada
+txt	Ahorro estimado
+txt	¿Qué tipo de proyecto te interesa?
+@data-value	Todavía no lo sé
+txt	No lo sé todavía
+txt	Solicitar mi estudio
+txt	Un asesor de NomoTax se pondrá en contacto contigo en las próximas
+txt	24&nbsp;horas
+txt	con el estudio de tu deducción y los proyectos disponibles.
+
+##### cambio-residencia-fiscal
+txt	Cambio de residencia fiscal | NomoTax
+@content	Cambio de residencia fiscal internacional de principio a fin: planificación, salida del país de origen, llegada al de destino, cuentas bancarias y reestructuración societaria.
+txt	Cambio de residencia fiscal,
+txt	de principio a fin
+txt	Vengas de donde vengas y vayas a donde vayas, nos encargamos de todo: la salida de tu país, la llegada al nuevo, tus cuentas bancarias y la reorganización de tus sociedades. Y después,
+txt	seguimos siendo tu gestoría en tu nuevo país.
+txt	Salida y llegada coordinadas
+txt	Convenios de doble imposición
+txt	Te abrimos las cuentas bancarias
+txt	Tu gestoría en el nuevo país
+@data-cns-preset	Estudio de residencia
+txt	Ver el proceso
+txt	RESIDENCIA · INTERNACIONAL
+@aria-label	Del país de origen al país de destino
+txt	El proceso
+txt	Un solo plan, de un país a otro
+txt	Coordinamos la salida y la llegada para que ningún país te reclame lo que no le corresponde. Y no acabamos ahí:
+txt	después del cambio seguimos siendo tu gestoría
+txt	en tu nuevo país.
+txt	FASE 01 · ANTES DE MUDARTE
+txt	Estudiamos tu caso en los dos países y decidimos cuándo y cómo mudarte.
+txt	Estudio de residencia en origen y destino
+txt	Fecha óptima del cambio
+txt	Convenio de doble imposición aplicable
+txt	Régimen para nuevos residentes en el destino
+txt	Qué vender o reorganizar antes y qué después
+txt	Baja fiscal como residente
+txt	Última declaración como residente
+txt	Impuesto de salida, si tu país lo aplica
+txt	Desvinculación: vivienda, actividad, bancos y seguros
+txt	FASE 02 · EXPATRIACIÓN
+txt	Salida del país de origen
+txt	Cerramos tu residencia en origen para que no te sigan reclamando impuestos.
+txt	FASE 03 · IMPATRIACIÓN
+txt	Llegada al país de destino
+txt	Te damos de alta en tu nuevo país, te abrimos las cuentas y activamos tus ventajas fiscales.
+txt	Alta como residente fiscal
+txt	Número de identificación fiscal
+txt	Apertura de tus cuentas bancarias
+txt	Solicitud del régimen especial, si aplica
+txt	Certificado de residencia fiscal
+txt	Declaraciones en los dos países el año del cambio
+txt	Rentas que sigues generando en origen
+txt	Control de días y vínculos
+txt	Defensa si alguna administración revisa tu salida
+txt	FASE 04 · EL PRIMER AÑO
+txt	El año que más se revisa: seguimos a tu lado hasta consolidar el cambio.
+txt	FASE 05 · DE AQUÍ EN ADELANTE
+txt	No solo te hacemos el cambio: seguimos siendo tus gestores en tu nuevo país.
+txt	Impuestos y declaraciones de cada año
+txt	Contabilidad de tu actividad o de tu sociedad
+txt	Lo que siga declarándose en tu país de origen
+txt	Asesoramiento cuando cambie tu situación
+txt	Más allá de los impuestos
+txt	Todo lo que se mueve contigo
+txt	Cambiar de país no es solo cambiar de Hacienda. También se mueven tus cuentas, tus empresas y tu patrimonio.
+txt	Nos ocupamos de todo.
+txt	Te abrimos las cuentas en destino y
+txt	actualizamos tu residencia
+txt	en los bancos de origen.
+txt	Reestructuración societaria
+txt	Si diriges tu empresa desde otro país,
+txt	puede pasar a tributar allí
+txt	. Adaptamos la estructura.
+txt	Patrimonio en origen
+txt	Inmuebles e inversiones que dejas atrás,
+txt	sin pagar dos veces
+txt	por ellos.
+txt	Documentación y pruebas
+txt	Certificados y pruebas para
+txt	acreditar el cambio
+txt	si te lo piden.
+txt	Herederos en países distintos,
+txt	sin pagar el impuesto dos veces
+txt	Lo que tienes que saber
+txt	Las reglas que deciden dónde tributas
+txt	Cada país tiene sus propias normas, pero casi todos miran lo mismo. Estas son las claves que revisamos en tu caso.
+txt	Qué te hace residente fiscal
+txt	Días de estancia
+txt	En muchos países, pasar más de 183 días al año te hace residente.
+txt	Vivienda permanente
+txt	Tener casa disponible pesa, aunque apenas la uses.
+txt	Centro de intereses económicos
+txt	Dónde están tu negocio, tus ingresos y tu patrimonio.
+txt	Familia
+txt	Si tu pareja o tus hijos se quedan, se presume que tú también.
+txt	Si dos países te consideran residente a la vez
+txt	Pasa sobre todo el año del cambio. Si hay convenio, se decide por este orden:
+txt	¿Dónde tienes casa disponible?
+txt	Centro de intereses vitales
+txt	¿Dónde están tu familia y tu actividad?
+txt	Residencia habitual
+txt	¿Dónde pasas más tiempo?
+txt	Nacionalidad
+txt	¿De qué país eres nacional?
+txt	Sin convenio,
+txt	puedes acabar pagando dos veces
+txt	Cuatro riesgos al cambiar de país
+txt	Doble residencia el año del cambio
+txt	Dos países pueden reclamar los mismos ingresos ese año.
+txt	Impuesto de salida
+txt	Algunos países gravan tus plusvalías al irte, como si vendieras.
+txt	Tributación por nacionalidad
+txt	Ciudadanos y titulares de green card declaran en EE. UU. vivan donde vivan.
+txt	Residencia prolongada
+txt	Irte a un paraíso fiscal puede mantenerte como residente varios años.
+txt	Errores que vemos a menudo
+txt	Creer que basta con pasar 183 días fuera
+txt	No darte de baja fiscal en tu país de origen
+txt	No pedir el certificado de residencia en el destino
+txt	Dirigir tu sociedad desde el nuevo país sin revisarlo
+txt	No actualizar tu residencia en los bancos
+txt	Mudarte mientras tu familia se queda en origen
+txt	Para quién
+txt	Acompañamos a quien se muda, venga de donde venga
+txt	Cada perfil tiene sus riesgos y sus oportunidades.
+txt	Empezamos por entender el tuyo.
+txt	Nómadas digitales y profesionales remotos
+txt	Una residencia fiscal clara, trabajes desde donde trabajes.
+txt	Empresarios con sociedades
+txt	Tu empresa, reorganizada para que el cambio no te cueste de más.
+txt	Trabajadores desplazados
+txt	Contrato, nómina y regímenes especiales para quien llega.
+txt	Inversores y rentistas
+txt	Dónde tributa cada renta, sin doble imposición.
+txt	Jubilados
+txt	Pensión, ahorros y vivienda: dónde tributa cada cosa.
+txt	Familias
+txt	Juntos o por etapas, planificamos la residencia de cada uno.
+txt	Servicio
+txt	Empieza por el estudio. Si quieres, lo hacemos todo contigo
+txt	Con el estudio sabes qué te conviene antes de mover nada. Con el acompañamiento integral,
+txt	nos ocupamos de todo el cambio
+txt	Sabes qué te conviene antes de mover nada.
+txt	Análisis de tu residencia en origen y destino
+txt	Convenio aplicable y riesgos de doble imposición
+txt	Fecha óptima y plan paso a paso
+txt	Números comparados en los dos países
+txt	Sesión de presentación incluida
+txt	Todo incluido
+txt	Acompañamiento integral
+txt	Nos ocupamos de todo el cambio, de un país a otro.
+txt	Todo lo del estudio de residencia
+txt	Salida del país de origen y llegada al de destino
+txt	Apertura de cuentas bancarias
+txt	Reestructuración de tus sociedades
+txt	Seguimiento del primer año en los dos países
+txt	Pedir presupuesto
+txt	Y después del cambio,
+txt	seguimos como tu gestoría en tu nuevo país
+txt	. ¿Prefieres hablarlo antes?
+txt	¿Cuándo dejo de ser residente fiscal en mi país?
+txt	Depende de cada país: unos cuentan días y otros miran tu vivienda, tu familia o de dónde vienen tus ingresos. No basta con irte: tienes que dejar de cumplir sus criterios y, en muchos casos, comunicarlo. Es lo primero que analizamos en el estudio.
+txt	¿Puedo ser residente en dos países a la vez?
+txt	Sí, y es habitual el año del cambio. Si hay convenio de doble imposición entre los dos países, el convenio decide cuál prevalece. Si no lo hay, el riesgo de pagar dos veces es real. Por eso se planifica antes de mudarse.
+txt	¿Tengo que cerrar mis cuentas en mi país de origen?
+txt	No necesariamente. Muchas veces basta con pasarlas a cuenta de no residente y actualizar tu residencia en el banco. Te decimos cuáles conviene mantener y cuáles no.
+txt	¿Qué pasa con mi empresa si me mudo?
+txt	Si la diriges desde el nuevo país, puede pasar a considerarse residente allí o acabar tributando en los dos. Revisamos la estructura y te proponemos la mejor opción: mantenerla, trasladarla o reorganizarla.
+txt	¿Y con mis inmuebles en origen?
+txt	Puedes conservarlos. Normalmente seguirán tributando en el país donde están, como no residente, y el convenio evita que pagues dos veces por las mismas rentas. Lo dejamos todo previsto antes del cambio.
+txt	¿Con cuánto tiempo debo empezar?
+txt	Lo ideal es entre 6 y 12 meses antes de la mudanza: da margen para elegir la fecha, reorganizar sociedades y abrir cuentas sin prisas. Si ya te has mudado, también te ayudamos a ordenar la situación.
+txt	El cambio de residencia se planifica
+txt	de hacer las maletas
+txt	Cuéntanos de dónde sales y a dónde vas. Te decimos qué necesitas, en qué orden y cuánto cuesta.
+txt	SOLICITAR ESTUDIO
+@data-subtitle	Cuéntanos tu ruta y te decimos qué necesitas y cuánto cuesta.
+@data-success	Un asesor especialista en fiscalidad internacional revisará tu caso y te contactará en las próximas 24 horas con los siguientes pasos y el precio cerrado.
+txt	¿Qué te interesa?
+@data-error	Elige el servicio que te interesa.
+txt	Estudio de residencia · desde 299 €
+txt	Nacionalidad(es)
+@data-error	Indica tu nacionalidad o nacionalidades.
+@placeholder	Ej.: mexicana y española
+txt	¿Qué necesitas?
+@data-error	Marca al menos una cosa que necesites.
+@data-value	Gestoría en el nuevo país
+txt	¿Te mudas con tu familia?
+@data-error	Indica si te mudas con tu familia.
+@data-value	Me mudo solo/a
+@data-value	Con mi familia
+@data-value	Mi familia se queda en origen
+txt	En muchos países, que la familia se quede hace presumir que
+txt	sigues siendo residente
+txt	. Lo tendremos en cuenta en el estudio.
+txt	¿En qué países?
+@data-error	Indica en qué países tienes sociedades.
+@placeholder	Ej.: México y EE. UU. (LLC)
+@placeholder	Cualquier detalle que debamos saber: inmuebles, inversiones, fechas…
+
+##### estructuras-internacionales
+txt	Estructuras internacionales | NomoTax
+@content	Estructuras internacionales en 13 jurisdicciones: sociedad operativa, holding, sociedad en la UE desde casa y compliance anual, con constitución 100 % en remoto.
+txt	internacionales
+txt	Diseñamos y constituimos la estructura que encaja con tu negocio y tu residencia.
+txt	Constitución y cumplimiento, de principio a fin.
+txt	Constitución 100&nbsp;% en remoto
+txt	Compliance anual y gestoría
+txt	ESTRUCTURAS · 13 JURISDICCIONES
+txt	Sociedad en la UE desde casa
+txt	Qué montamos
+txt	La estructura que encaja con tu negocio
+txt	Desde una sociedad para facturar hasta un grupo con holding.
+txt	Te decimos cuál tiene sentido y la dejamos funcionando.
+txt	Factura a clientes de todo el mundo desde la jurisdicción adecuada.
+txt	Sociedad transparente
+txt	LLC o LLP: tributa en los socios, no en la sociedad.
+txt	Ver LLC en EE.&nbsp;UU.
+txt	Agrupa tus sociedades y reinvierte los beneficios desde un solo punto.
+txt	Sociedad patrimonial
+txt	Tus inversiones, ordenadas dentro de una estructura.
+txt	Revisión de tu estructura
+txt	Si ya la tienes, comprobamos que sigue teniendo sentido.
+txt	Residentes en la Unión Europea
+txt	Tu sociedad en otro país de la UE, sin moverte de casa
+txt	Constituimos tu sociedad en países como Lituania, Letonia o Irlanda en pocos días, 100&nbsp;% en remoto y con costes bajos.
+txt	En la mayoría de casos, sin notario ni desplazamientos.
+txt	Elegimos contigo el país y el tipo de sociedad.
+txt	Firmas online con tu certificado o identidad electrónica, válidos en toda la UE (eIDAS).
+txt	Gestionamos todo el trámite y tu sociedad queda constituida en días.
+txt	Constitución en días
+txt	Todo en remoto, gestionado por nosotros
+txt	Firma con tu identidad electrónica
+txt	Lituania, Letonia, Irlanda y más
+txt	Constituir mi sociedad en la UE
+txt	Del diagnóstico a tu sociedad funcionando
+txt	Diagnóstico
+txt	Tu residencia, tu actividad y dónde están tus clientes.
+txt	Diseño
+txt	Jurisdicción y tipo de sociedad, con los números comparados.
+txt	Constitución
+txt	Montamos la sociedad en remoto y la dejamos operativa.
+txt	Compliance y gestoría
+txt	Contabilidad, impuestos y obligaciones, cada año.
+txt	Tu residencia manda.
+txt	Si tu país grava las sociedades extranjeras de sus residentes, los beneficios pueden tributar allí igualmente. Por eso empezamos por ti.
+txt	Ver cambio de residencia fiscal
+txt	Analizamos tu caso a fondo y te entregamos la estructura recomendada, con números.
+txt	También puedes contratar
+txt	Tu sociedad en cualquiera de nuestras 13 jurisdicciones.
+@data-cns-preset	Sociedad nueva
+txt	Para residentes en la UE, en remoto y en días.
+txt	Contabilidad, impuestos y obligaciones de tu sociedad.
+@data-cns-preset	Compliance de mi sociedad
+txt	¿Qué jurisdicción me conviene?
+txt	Depende de dónde vives, de tu actividad y de dónde están tus clientes. Si no lo tienes claro, empieza por la asesoría gratis; si quieres los números, por el estudio fiscal.
+txt	¿Tengo que viajar para constituir la sociedad?
+txt	En la mayoría de casos, no: lo gestionamos todo en remoto. Si algún país exige presencia, te lo decimos antes de empezar.
+txt	¿Qué es eIDAS?
+txt	Es el sistema europeo que te permite usar tu identidad electrónica nacional, como tu documento de identidad o tu certificado electrónico, en trámites de otros países de la UE. Con él firmas la constitución sin desplazarte.
+txt	¿Cuánto tarda?
+txt	Depende del país: en Reino Unido, un día; en la UE desde casa, pocos días. Antes de empezar te damos el plazo exacto de tu jurisdicción.
+txt	¿Puedo tener una sociedad fuera si vivo en otro país?
+txt	Sí, pero tu residencia fiscal manda. Muchos países gravan las sociedades extranjeras de sus residentes o consideran que la sociedad reside donde se dirige. Por eso empezamos por tu caso.
+txt	¿Quién lleva la contabilidad y los impuestos?
+txt	Nosotros. Con el compliance anual nos encargamos de la contabilidad, las declaraciones y las obligaciones de tu sociedad cada año.
+txt	de facturar
+@placeholder	Ej.: Colombia
+@data-value	Revisar mi estructura
+txt	Jurisdicción
+@data-error	Indica la jurisdicción que te interesa (o si aún no lo sabes).
+@data-error	Indica tu actividad.
+@placeholder	Ej.: software, e-commerce…
+txt	Facturación anual
+@data-error	Indica la facturación anual prevista.
+txt	Aún no facturo
+txt	Menos de 50.000 €
+txt	De 50.000 a 250.000 €
+txt	De 250.000 a 1 M€
+txt	Más de 1 M€
+@placeholder	Sociedades que ya tienes, socios, plazos…
+@data-title	Contratar servicio
+@data-subtitle	Cuéntanos tu caso y te enviamos el precio cerrado.
+@data-success	Un asesor especialista en fiscalidad internacional revisará tu caso y te contactará en las próximas 24 horas con una propuesta y el precio cerrado.
+@data-error	Indica qué necesitas.
+txt	Sociedad en la UE desde casa · desde 490 €
+txt	País de residencia en la UE
+@data-error	Indica tu país de residencia en la UE.
+@placeholder	Ej.: Italia
+txt	¿Dónde quieres la sociedad?
+@data-error	Indica dónde quieres la sociedad.
+@data-value	Letonia
+@data-value	Irlanda
+txt	¿Tienes certificado o identidad electrónica?
+@data-error	Indica si tienes certificado o identidad electrónica.
+txt	Si no la tienes, te explicamos cómo conseguirla en tu país.
+txt	¿Dónde están tus clientes?
+@data-error	Indica dónde están tus clientes.
+@data-value	En mi país
+@data-value	En la UE
+@data-value	En EE. UU.
+@data-value	En todo el mundo
+@data-error	Indica a qué se dedica o se dedicará la sociedad.
+
+##### nomadas-digitales
+txt	Nómadas digitales | NomoTax
+@content	Fiscalidad para nómadas digitales: residencia fiscal clara, visado, estructura para facturar, cuentas bancarias y gestoría continua estés donde estés.
+txt	Nómadas
+txt	digitales
+txt	Trabajas desde cualquier lugar. Nosotros nos aseguramos de que tributes donde toca,
+txt	y solo en un sitio.
+txt	Residencia fiscal clara
+txt	Estructura para facturar
+txt	NÓMADAS · REMOTO
+txt	Visado de nómada digital
+txt	Sociedad para facturar
+txt	Gestoría continua
+txt	Lo que casi nadie te cuenta
+txt	El mito del «residente en ninguna parte»
+txt	Viajar no te libra de tributar.
+txt	Si no lo planificas, pueden reclamarte en más de un país.
+txt	Siempre eres residente en algún sitio
+txt	Si no cierras bien tu residencia, tu país de origen puede seguir reclamándote.
+txt	Tu sociedad viaja contigo
+txt	Si la diriges desde donde estás, ese país puede gravarla.
+txt	Los bancos informan
+txt	Tus cuentas se comunican al país donde declaras residir.
+txt	Qué hacemos por ti
+txt	Todo lo que necesitas para trabajar desde cualquier lugar
+txt	Un solo equipo para tu residencia, tu estructura y tus impuestos,
+txt	estés donde estés.
+txt	Elegimos contigo dónde residir y lo dejamos acreditado.
+txt	Te decimos qué visado encaja contigo y cómo tributa en cada país.
+txt	Autónomo, LLC, LTD u otra sociedad, según dónde estén tus clientes.
+txt	LLC en EE.&nbsp;UU.
+txt	Te abrimos las cuentas y dejamos tu residencia actualizada en cada banco.
+txt	Impuestos y contabilidad cada año, estés donde estés.
+txt	¿Cómo trabajas?
+txt	Cada forma de trabajar se planifica distinto.
+txt	Empleado en remoto
+txt	Trabajas para una empresa de otro país: revisamos dónde tributa tu nómina.
+txt	Freelance
+txt	Facturas a clientes de varios países: elegimos cómo y desde dónde facturar.
+txt	Emprendedor digital
+txt	SaaS, e-commerce o creación de contenido: una estructura que crece contigo.
+txt	¿No sabes por dónde empezar?
+txt	Jurisdicciones
+txt	Donde operamos
+txt	13 jurisdicciones para tu residencia y tu estructura.
+txt	Ver jurisdicciones
+txt	Analizamos tu residencia, tus ingresos y tu estructura, y te damos un plan con números.
+txt	Gestoría para nómadas
+txt	Impuestos, contabilidad y obligaciones cada año, estés donde estés.
+txt	¿Puedo no ser residente fiscal en ningún país?
+txt	Es arriesgado: tu país de origen puede seguir considerándote residente y los bancos te pedirán una residencia fiscal. Lo seguro es tener una, bien elegida y acreditada.
+txt	¿Qué pasa si paso menos de 183 días en cada país?
+txt	Los días no lo son todo: también cuentan tu vivienda, tu familia y dónde están tus intereses económicos. Puedes seguir siendo residente en tu país de origen aunque pases poco tiempo allí.
+txt	¿Necesito una sociedad?
+txt	Depende de cuánto factures y de dónde estén tus clientes. A veces basta con ser autónomo en tu país de residencia; otras compensa una sociedad. Lo vemos con números.
+txt	¿Puedo seguir facturando con mi sociedad de origen?
+txt	Sí, pero si la diriges desde otro país, ese país puede considerar que la sociedad reside allí. Revisamos si te conviene mantenerla, trasladarla o crear otra.
+txt	¿Qué visado me conviene?
+txt	El que encaje con tu nacionalidad, tu forma de trabajar y dónde quieres tributar. Un visado de nómada no siempre te hace residente fiscal, y al revés: te lo explicamos en tu caso.
+txt	¿Qué pasa con mis cuentas?
+txt	Los bancos comunican tus cuentas al país donde declaras residir. Te abrimos las que necesites y dejamos tu residencia actualizada en cada banco.
+txt	Trabaja desde donde quieras.
+txt	toca
+@data-value	Visado
+@data-error	Indica tu nacionalidad.
+@placeholder	Ej.: argentina
+txt	¿Dónde estás ahora?
+@data-error	Indica en qué país estás ahora.
+@placeholder	Ej.: Portugal
+@placeholder	Cómo trabajas y qué te gustaría conseguir.
+@data-error	Indica cómo trabajas.
+@data-value	Empresa propia
+@placeholder	Ej.: mexicana
+txt	Residencia fiscal actual
+@data-error	Indica tu residencia fiscal actual (o si no la tienes clara).
+@placeholder	Ej.: México, o no lo sé
+txt	Países donde pasas más tiempo
+@data-error	Indica los países donde pasas más tiempo.
+@placeholder	Ej.: España, Portugal y Tailandia
+txt	Más de 150.000 €
+txt	¿Tienes sociedad?
+@data-error	Indica si tienes sociedad.
+txt	¿En qué país?
+@data-error	Indica en qué país tienes la sociedad.
+@placeholder	Ej.: EE. UU. (LLC)
+@data-subtitle	Cuéntanos tu situación y te enviamos el precio cerrado.
+@data-success	Un asesor revisará tu caso y te enviará el presupuesto de tu gestoría en las próximas 24 horas.
+@placeholder	Ej.: Georgia
+@placeholder	Ej.: Reino Unido (LTD)
+@placeholder	Obligaciones que tienes ahora, países donde declaras…
+
+##### llc-usa
+txt	LLC en Estados Unidos | NomoTax
+txt	Monta tu LLC en Estados Unidos con visión fiscal internacional
+txt	Nos encargamos de la constitución, el compliance y la gestión fiscal de tu LLC, coordinando la estructura de Estados Unidos con tu situación fiscal.
+txt	Constitución en estados estratégicos
+txt	Gestión 100% online
+txt	Sin intermediarios, todo gestionado por NomoTax
+txt	Constituir LLC
+txt	LLC · USA
+txt	Compliance al día
+txt	Estados
+txt	Constituimos
+txt	Partnership
+txt	C-Corp
+txt	S-Corp
+txt	Estructura creada en EE. UU.
+txt	¿Por qué constituir una LLC en EE. UU.?
+txt	Responsabilidad limitada
+txt	Protección del patrimonio personal de los socios.
+txt	Acceso al mercado estadounidense
+txt	Opera en EE. UU. y amplía tus oportunidades de negocio.
+txt	Lista en 48 horas
+txt	Constitución rápida para empezar a operar.
+txt	Bajos costes de constitución
+txt	Una estructura empresarial accesible para comenzar.
+txt	Simple y flexible
+txt	Menos burocracia y distintas opciones fiscales según tu estructura.
+txt	Tu LLC Lista en 5 Simples Pasos
+txt	Un proceso simple y 100% en línea. Del paso 1 al paso 5, en cuatro días laborables. No necesitas viajar a Estados Unidos.
+txt	Consulta Inicial
+txt	Analizamos tu caso y te asesoramos sobre el mejor estado para tu negocio.
+txt	Solo necesitas pasaporte. Preparamos todos los documentos legales.
+txt	Registro Estatal
+txt	Presentamos tu LLC ante el estado seleccionado.
+txt	Obtención del EIN
+txt	Gestionamos tu número de identificación fiscal con el IRS.
+txt	Cuenta Bancaria
+txt	Te abrimos tu cuenta empresarial en EEUU.
+@aria-label	Selector de servicio LLC
+txt	Selecciona tu servicio
+txt	Constitución LLC
+txt	Gestión y cumplimiento
+txt	Constitución y gestión fiscal de tu LLC en EE.&nbsp;UU.
+txt	LLC Essential
+txt	Pago único
+txt	+ tasas estatales correspondientes
+txt	Sin permanencia. Sin sorpresas.
+txt	Asesoramiento inicial
+txt	Constitución de la LLC
+txt	Registered Agent en EE.&nbsp;UU.
+txt	Operating Agreement
+txt	Solicitud y obtención del EIN
+txt	Documentación corporativa
+txt	Apertura de cuenta bancaria
+txt	Atención por chat y email
+txt	LLC completamente lista para operar
+txt	Plazo aproximado: 6–8 días laborables
+txt	Dirección empresarial VIP
+txt	Gestión bancaria premium
+txt	Atención prioritaria directa
+txt	1 asesoría incluida
+txt	Constitución prioritaria
+txt	Solicita Constitución
+txt	LLC Advanced
+txt	Plazo aproximado: 4 días laborables
+txt	Tasa Estatal
+txt	New Mexico
+txt	Pago único · Sin permanencia · Sin sorpresas
+txt	Los precios no incluyen las tasas estatales correspondientes, que dependen del estado seleccionado.
+txt	Compliance
+txt	anual
+txt	Gestión y cumplimiento de tu estructura en EE.&nbsp;UU. durante todo el año.
+txt	Servicio anual · Renovación cada 365 días
+txt	Compliance Essential
+txt	/ año
+txt	Pago anual
+txt	Renovación cada 365 días
+txt	Seguimiento de obligaciones de la LLC
+txt	Declaraciones fiscales según estructura
+txt	Form 1120, cuando corresponda
+txt	Form 5472, cuando corresponda
+txt	Schedule K-1, cuando corresponda
+txt	Contabilidad
+txt	Asesoramiento por chat y email
+txt	2 asesorías al año · semestrales
+txt	Estudio fiscal anual
+txt	Conciliación bancaria
+txt	FBAR / FinCEN Form 114, cuando corresponda
+txt	W-8BEN / W-8BEN-E, cuando corresponda
+txt	Contratar pack
+txt	Recomendado
+txt	Compliance Advanced
+txt	4 asesorías al año · trimestrales
+txt	Pago anual · Renovación cada 365 días · Sin permanencia · Sin sorpresas
+txt	Los precios no incluyen tasas estatales u otros costes de terceros que puedan corresponder.
+txt	¿Solo necesitas un modelo?
+txt	También puedes contratar determinadas obligaciones de forma individual.
+txt	Form 1120 + 5472
+txt	Declaración informativa anual para LLCs con socio extranjero, cuando corresponda.
+txt	FBAR · FinCEN Form 114
+txt	Declaración de cuentas en el extranjero, cuando proceda por saldo o titularidad.
+txt	BOI / BOIR
+txt	Revisión o presentación del informe de beneficiario final, solo cuando exista obligación aplicable.
+txt	W-8BEN
+txt	Certificado de titular real extranjero (persona física) ante entidades de EE.&nbsp;UU.
+txt	W-8BEN-E
+txt	Certificado de titular real extranjero (entidad) ante entidades de EE.&nbsp;UU.
+txt	Las entidades constituidas en EE.&nbsp;UU. están actualmente exentas del BOI reporting federal; este servicio se presta únicamente cuando exista una obligación aplicable o como revisión puntual.
+txt	Una LLC bien montada empieza
+txt	con la
+txt	estrategia correcta.
+txt	Solicita la constitución de tu LLC
+txt	¿Cómo quieres que se llame tu LLC?
+@placeholder	Ej. Northbridge Ventures LLC
+txt	Comprobaremos su disponibilidad en el estado que elijas y te propondremos alternativas si estuviera registrado.
+txt	¿Cuándo quieres tenerla constituida?
+@data-value	En las próximas 2 semanas
+@data-value	El próximo mes
+txt	Estado donde quieres constituirla
+txt	Anonimato total
+txt	La tasa estatal se abona una sola vez y es adicional al precio del plan.
+txt	para confirmar el nombre de tu LLC y arrancar la constitución.
+txt	Contrata tu servicio de gestión y cumplimiento
+txt	Servicio seleccionado:
+txt	Nombre de tu LLC
+txt	EIN de tu LLC
+@placeholder	XX-XXXXXXX
+txt	El EIN (Employer Identification Number) es el número de identificación fiscal asignado por el IRS a tu LLC.
+txt	para gestionar tu solicitud.
+
+##### asesoria
+txt	Asesoría gratis | NomoTax
+txt	Asesoría fiscal · Nacional e internacional
+txt	Ponemos tu situación fiscal en orden.
+txt	Reserva una primera sesión con nuestro equipo y analiza tu situación fiscal, tus opciones y el camino más adecuado para ti.
+txt	Reserva tu sesión ↓
+txt	30 minutos · Sesión personalizada
+txt	Tiempo concreto, sin rodeos
+txt	Sin compromiso · Sin humo
+txt	Honestidad ante todo
+txt	Presencia propia, sin intermediarios
+txt	¿Prefieres escribir? WhatsApp
+
+##### contacto
+txt	Contacto | NomoTax
+txt	Hablemos
+txt	Escríbenos por el canal que prefieras o reserva directamente tu asesoría gratuita de 30 minutos.
+txt	Reserva directa
+txt	Asesoría gratis · 30 min
+txt	Elige día y hora en nuestro calendario.
+txt	WhatsApp
+txt	Solo atendemos por WhatsApp: escríbenos.
+txt	Ideal si quieres enviarnos documentación.
+txt	Domicilio social
+txt	Disconnected Group LLC
+txt	30 N Gould St, Ste R, Sheridan, WY 82801, Estados Unidos
+txt	¿Ya sabes qué necesitas? Consulta nuestros servicios de
+txt	fiscalidad en España
+txt	y de
+txt	fiscalidad internacional
+
+##### aviso-legal
+txt	Aviso legal | NomoTax
+@content	Aviso legal de NomoTax, nombre comercial de Disconnected Group LLC: datos del titular y condiciones de uso del sitio web.
+txt	Última actualización: 26 de septiembre de 2026
+@aria-label	Documentos legales
+txt	Política de privacidad
+txt	Política de cookies
+txt	En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se facilitan los datos identificativos del titular de este sitio web.
+txt	Titular
+txt	Nombre comercial
+txt	Identificación fiscal (EIN)
+txt	Domicilio
+txt	Teléfono / WhatsApp
+txt	1. Objeto
+txt	Este aviso legal regula el acceso y el uso de este sitio web, a través del cual NomoTax informa sobre sus servicios de asesoría fiscal, contable y laboral, consultoría y estructuras nacionales e internacionales. Acceder al sitio web te atribuye la condición de usuario e implica la aceptación de este aviso legal. Si no estás de acuerdo con él, te pedimos que no utilices el sitio.
+txt	2. Condiciones de uso
+txt	Te comprometes a utilizar el sitio web de forma diligente, lícita y conforme a este aviso legal. En particular, no debes:
+txt	Utilizar los contenidos con fines ilícitos o contrarios a la buena fe.
+txt	Introducir virus o cualquier sistema que pueda dañar el sitio web o los equipos de terceros.
+txt	Intentar acceder a áreas restringidas o a datos de otros usuarios.
+txt	Facilitar datos falsos o de terceros en los formularios sin su autorización.
+txt	3. Carácter informativo de los contenidos
+txt	Los contenidos del sitio web, incluidos los ejemplos, cálculos y simuladores, tienen
+txt	carácter general e informativo
+txt	. No constituyen asesoramiento fiscal, legal ni financiero personalizado y no sustituyen el análisis de cada caso por un profesional.
+txt	La normativa tributaria cambia con frecuencia y es distinta en cada país. NomoTax procura mantener la información actualizada, pero no garantiza su exactitud o vigencia en todo momento. Las decisiones que tomes basándote únicamente en esta información son de tu responsabilidad.
+txt	4. Precios y contratación
+txt	Los precios que aparecen en el sitio web son orientativos. El precio definitivo de cada servicio se confirma por escrito antes de empezar, en función del alcance de tu caso. Enviar un formulario de solicitud o reserva no supone contratar ningún servicio: la contratación se formaliza cuando ambas partes aceptan la propuesta.
+txt	5. Propiedad intelectual e industrial
+txt	Todos los contenidos del sitio web (textos, diseños, gráficos, logotipos, código y marcas, incluida la marca NomoTax) son titularidad de Disconnected Group LLC o de terceros que han autorizado su uso. Queda prohibida su reproducción, distribución, comunicación pública o transformación sin autorización expresa por escrito, salvo para uso personal y privado.
+txt	6. Enlaces a terceros
+txt	El sitio web puede incluir enlaces a sitios o servicios de terceros, como WhatsApp. NomoTax no controla esos sitios ni se responsabiliza de sus contenidos, de su disponibilidad ni de sus políticas de privacidad.
+txt	7. Responsabilidad
+txt	NomoTax no se hace responsable de los daños derivados de interrupciones o fallos técnicos del sitio web, de la presencia de virus ajenos a su control ni del uso indebido que los usuarios hagan de los contenidos. Nos reservamos el derecho a modificar, suspender o retirar contenidos en cualquier momento y sin previo aviso.
+txt	8. Protección de datos y cookies
+txt	El tratamiento de los datos personales que nos facilitas se rige por nuestra
+txt	, y el uso de cookies, por nuestra
+txt	política de cookies
+txt	9. Legislación aplicable y jurisdicción
+txt	Este aviso legal se rige por la legislación española. Para cualquier controversia, las partes se someten a los juzgados y tribunales que resulten competentes conforme a la normativa aplicable. Si tienes la condición de consumidor, serán competentes los juzgados de tu domicilio.
+
+##### privacidad
+txt	Política de privacidad | NomoTax
+@content	Política de privacidad de NomoTax: qué datos personales tratamos, con qué finalidad, durante cuánto tiempo y cómo ejercer tus derechos.
+txt	En NomoTax nos tomamos en serio la protección de tus datos. Esta política explica qué datos personales tratamos, con qué finalidad y qué derechos tienes, conforme al Reglamento (UE) 2016/679 General de Protección de Datos (RGPD) y, en lo que resulte aplicable, a la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD).
+txt	1. Responsable del tratamiento
+txt	2. Qué datos tratamos
+txt	Datos identificativos y de contacto:
+txt	nombre y apellidos, correo electrónico y teléfono.
+txt	Datos sobre tu situación:
+txt	país de residencia, nacionalidad, actividad, ingresos aproximados, sociedades y cualquier otra información que incluyas en los formularios o en la documentación que nos envíes.
+txt	Datos de las citas que reservas:
+txt	fecha, franja horaria y modalidad.
+txt	Datos técnicos:
+txt	los mínimos necesarios para el funcionamiento y la seguridad del sitio web, como la dirección IP en los registros del servidor.
+txt	Te pedimos que no incluyas en los formularios datos que no sean necesarios para tu consulta, en especial datos de categorías especiales (salud, ideología, etc.).
+txt	3. Para qué los usamos
+txt	Atender tus consultas y solicitudes de información, presupuesto o reserva (asesoría gratuita, estudio fiscal, sesiones y demás servicios).
+txt	Prestar los servicios que contrates y gestionar la relación contractual, la facturación y el cobro.
+txt	Cumplir las obligaciones legales que nos resulten aplicables, como las fiscales, contables o de prevención del blanqueo de capitales.
+txt	Enviarte información sobre nuestros servicios, solo si nos das tu consentimiento o, si ya eres cliente, sobre servicios similares a los contratados, pudiendo oponerte en cualquier momento.
+txt	No tomamos decisiones automatizadas ni elaboramos perfiles que produzcan efectos jurídicos sobre ti.
+txt	4. Base jurídica
+txt	Tu consentimiento
+txt	, al enviarnos un formulario o una consulta.
+txt	La ejecución de un contrato
+txt	o la aplicación de medidas precontractuales a petición tuya.
+txt	El cumplimiento de obligaciones legales.
+txt	Nuestro interés legítimo
+txt	en informar a nuestros clientes sobre servicios similares.
+txt	5. Durante cuánto tiempo
+txt	Si nos envías una solicitud y no llegas a contratar, conservaremos tus datos el tiempo necesario para atenderla y, después, durante un máximo de un año, salvo que nos pidas antes su supresión. Si eres cliente, durante la relación contractual y, después, durante los plazos que exija la normativa aplicable (por ejemplo, la fiscal o la de prevención del blanqueo de capitales). Los datos para comunicaciones comerciales se conservan hasta que retires tu consentimiento.
+txt	6. A quién los comunicamos
+txt	No vendemos ni cedemos tus datos a terceros. Solo los comunicamos:
+txt	A las administraciones públicas, juzgados y tribunales cuando exista una obligación legal.
+txt	A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y el calendario de reservas Calendly, que recibe los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.
+txt	Cuando el servicio que contratas lo requiere, y siempre con tu conocimiento, a entidades de otros países necesarias para prestarlo, como registros mercantiles, agentes registrados, notarías o entidades bancarias.
+txt	7. Transferencias internacionales
+txt	Disconnected Group LLC está establecida en Estados Unidos, por lo que tus datos se tratan fuera del Espacio Económico Europeo. Además, algunos de nuestros servicios, como la constitución de sociedades o la apertura de cuentas en otros países, requieren comunicar datos a entidades de esos países. En estos casos aplicamos las garantías previstas en el capítulo V del RGPD o, cuando procede, las excepciones de su artículo 49, por ejemplo cuando la transferencia es necesaria para ejecutar el contrato que has solicitado.
+txt	8. Tus derechos
+txt	Puedes ejercer en cualquier momento tus derechos de
+txt	acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad
+txt	, así como retirar tu consentimiento, escribiendo a
+txt	e indicando el derecho que quieres ejercer.
+txt	Si consideras que no hemos atendido correctamente tu solicitud, puedes presentar una reclamación ante la Agencia Española de Protección de Datos (
+txt	www.aepd.es
+txt	) o ante la autoridad de control de tu país de residencia.
+txt	9. Seguridad
+txt	Aplicamos medidas técnicas y organizativas adecuadas para proteger tus datos frente a su pérdida, alteración o acceso no autorizado, teniendo en cuenta el estado de la técnica y la naturaleza de los datos.
+txt	10. Menores de edad
+txt	Nuestros servicios están dirigidos a personas mayores de 18 años. No recogemos conscientemente datos de menores.
+txt	11. Cambios en esta política
+txt	Podemos actualizar esta política para adaptarla a cambios normativos o de nuestros servicios. Publicaremos siempre la versión vigente en esta página, con su fecha de actualización.
+
+##### cookies
+txt	Política de cookies | NomoTax
+@content	Política de cookies de NomoTax: qué cookies utiliza este sitio web y cómo puedes gestionarlas.
+txt	Esta política explica qué son las cookies y cómo se utilizan en este sitio web, conforme al artículo 22.2 de la Ley 34/2002 (LSSI-CE) y a la normativa de protección de datos.
+txt	1. Qué son las cookies
+txt	Las cookies son pequeños archivos que un sitio web guarda en tu navegador cuando lo visitas. Sirven, por ejemplo, para que el sitio funcione correctamente, para recordar tus preferencias o para medir cómo se usa.
+txt	2. Cookies que utiliza este sitio
+txt	Este sitio web no utiliza cookies analíticas ni publicitarias propias.
+txt	Solo podrían instalarse cookies técnicas estrictamente necesarias para el funcionamiento del sitio o por motivos de seguridad del servidor de alojamiento, que están exentas de consentimiento.
+txt	La única herramienta de terceros integrada es el calendario de
+txt	Calendly
+txt	, en la página de
+txt	asesoría gratis
+txt	, que permite reservar tu cita. Al cargar esa página, Calendly puede instalar sus propias cookies, necesarias para el funcionamiento del calendario y otras según su política de cookies.
+txt	Tipo
+txt	Para qué sirve
+txt	¿Necesita consentimiento?
+txt	¿Se usa en este sitio?
+txt	Técnicas
+txt	Permitir la navegación y garantizar la seguridad del sitio.
+txt	Solo las imprescindibles
+txt	Analíticas
+txt	Medir el número de visitas y cómo se usa el sitio.
+txt	Publicitarias
+txt	Mostrar anuncios según tus intereses.
+txt	De terceros
+txt	Funciones de servicios externos integrados en el sitio.
+txt	Según su finalidad
+txt	Solo Calendly, en la página de asesoría gratis
+txt	3. Enlaces a servicios de terceros
+txt	Algunos botones, como el de WhatsApp, te llevan a servicios de terceros. Al pulsarlos, esos servicios pueden instalar sus propias cookies según sus políticas, sobre las que NomoTax no tiene control.
+txt	4. Cómo gestionar las cookies
+txt	Puedes permitir, bloquear o eliminar las cookies desde la configuración de tu navegador, normalmente en el apartado de privacidad o seguridad (Chrome, Safari, Firefox, Edge y el resto de navegadores habituales lo permiten). Si bloqueas las cookies técnicas, es posible que algunas partes del sitio no funcionen correctamente.
+txt	5. Cambios en esta política
+txt	Si en el futuro incorporamos cookies que requieran tu consentimiento, te lo pediremos mediante un aviso antes de instalarlas y actualizaremos esta política.

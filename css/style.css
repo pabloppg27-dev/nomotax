@@ -1498,7 +1498,7 @@ a.service-chip:hover::after {
   /* Nav collapse to hamburger */
   .nav {
     position: absolute;
-    top: 72px;
+    top: 100%; /* justo debajo de la cabecera, mida lo que mida */
     left: 0;
     right: 0;
     background: var(--color-black);
@@ -1508,7 +1508,7 @@ a.service-chip:hover::after {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: none;
     gap: 4px;
-    max-height: calc(100vh - 72px);
+    max-height: calc(100vh - 64px);
     overflow-y: auto;
   }
 
