@@ -1776,6 +1776,11 @@ a.service-chip:hover::after {
     padding: 56px 0 40px;
   }
 
+  /* Mismo margen lateral que el resto de secciones de la home */
+  .home-strategy .container {
+    padding: 0 24px;
+  }
+
   .home-big-title {
     font-size: 2.2rem;
   }
