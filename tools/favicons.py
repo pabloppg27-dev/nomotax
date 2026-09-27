@@ -30,8 +30,8 @@ def icono(tam, proporcion):
 
 
 icono(32, 0.66).save(ROOT + 'img/favicon-32.png', optimize=True)
-icono(48, 0.62).save(ROOT + 'img/favicon-48.png', optimize=True)
-icono(192, 0.58).save(ROOT + 'img/favicon-192.png', optimize=True)
-icono(180, 0.56).save(ROOT + 'img/apple-touch-icon.png', optimize=True)
-icono(256, 0.62).save(ROOT + 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+icono(48, 0.66).save(ROOT + 'img/favicon-48.png', optimize=True)
+icono(192, 0.66).save(ROOT + 'img/favicon-192.png', optimize=True)
+icono(180, 0.6).save(ROOT + 'img/apple-touch-icon.png', optimize=True)
+icono(256, 0.66).save(ROOT + 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 print('favicons ok')
