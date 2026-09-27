@@ -2135,7 +2135,7 @@ txt	Si nos envías una solicitud y no llegas a contratar, conservaremos tus dato
 txt	6. A quién los comunicamos
 txt	No vendemos ni cedemos tus datos a terceros. Solo los comunicamos:
 txt	A las administraciones públicas, juzgados y tribunales cuando exista una obligación legal.
-txt	A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y el calendario de reservas Calendly, que recibe los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.
+txt	A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y Google, cuyo calendario y Google Meet reciben los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.
 txt	Cuando el servicio que contratas lo requiere, y siempre con tu conocimiento, a entidades de otros países necesarias para prestarlo, como registros mercantiles, agentes registrados, notarías o entidades bancarias.
 txt	7. Transferencias internacionales
 txt	Disconnected Group LLC está establecida en Estados Unidos, por lo que tus datos se tratan fuera del Espacio Económico Europeo. Además, algunos de nuestros servicios, como la constitución de sociedades o la apertura de cuentas en otros países, requieren comunicar datos a entidades de esos países. En estos casos aplicamos las garantías previstas en el capítulo V del RGPD o, cuando procede, las excepciones de su artículo 49, por ejemplo cuando la transferencia es necesaria para ejecutar el contrato que has solicitado.
@@ -2164,13 +2164,9 @@ txt	Las cookies son pequeños archivos que un sitio web guarda en tu navegador c
 txt	2. Cookies que utiliza este sitio
 txt	Este sitio web no utiliza cookies analíticas ni publicitarias propias.
 txt	Solo podrían instalarse cookies técnicas estrictamente necesarias para el funcionamiento del sitio o por motivos de seguridad del servidor de alojamiento, que están exentas de consentimiento.
-txt	La única herramienta de terceros integrada es el calendario de
-txt	Calendly
-txt	, en la página de
+txt	La web no integra servicios de terceros que instalen cookies. Cuando reservas una
 txt	asesoría gratis
-txt	, que permite reservar tu cita. Calendly instala sus propias cookies, por eso el calendario
-txt	solo se carga si las aceptas
-txt	en el aviso que aparece al entrar en la web. Si las rechazas, puedes reservar igualmente abriendo el calendario en la web de Calendly.
+txt	, los datos de la cita se envían directamente a nuestro calendario de Google, sin usar cookies en tu navegador.
 txt	Tipo
 txt	Para qué sirve
 txt	¿Necesita consentimiento?
@@ -2185,12 +2181,9 @@ txt	Mostrar anuncios según tus intereses.
 txt	De terceros
 txt	Funciones de servicios externos integrados en el sitio.
 txt	Según su finalidad
-txt	Solo Calendly y solo si lo aceptas
 txt	3. Enlaces a servicios de terceros
 txt	Algunos botones, como el de WhatsApp, te llevan a servicios de terceros. Al pulsarlos, esos servicios pueden instalar sus propias cookies según sus políticas, sobre las que NomoTax no tiene control.
 txt	4. Cómo gestionar las cookies
 txt	Puedes permitir, bloquear o eliminar las cookies desde la configuración de tu navegador, normalmente en el apartado de privacidad o seguridad (Chrome, Safari, Firefox, Edge y el resto de navegadores habituales lo permiten). Si bloqueas las cookies técnicas, es posible que algunas partes del sitio no funcionen correctamente.
-txt	Puedes cambiar tu elección sobre las cookies de terceros en cualquier momento:
-txt	Cambiar mis preferencias de cookies
 txt	5. Cambios en esta política
 txt	Si incorporamos nuevas cookies que requieran tu consentimiento, actualizaremos esta política y te volveremos a pedir permiso mediante el aviso de cookies.

@@ -54,14 +54,42 @@ var NT_EN = {
   "Elige una fecha a partir de mañana.": "Choose a date from tomorrow onwards.",
   "La fecha de notificación no puede ser posterior a hoy.": "The notification date cannot be later than today.",
   "Elige un día de lunes a viernes.": "Choose a weekday (Monday to Friday).",
-  "El calendario de reservas funciona con Calendly, que usa sus propias cookies. Acéptalas para verlo aquí o ábrelo directamente en su web.": "The booking calendar runs on Calendly, which uses its own cookies. Accept them to see it here, or open it directly on their website.",
-  "Aceptar y ver el calendario": "Accept and show the calendar",
-  "Abrir en Calendly": "Open in Calendly",
   "Aviso de cookies": "Cookie notice",
-  "Usamos cookies técnicas para que la web funcione y, si lo aceptas, las de Calendly para que puedas reservar tu cita desde aquí. ": "We use technical cookies to make the site work and, if you accept, Calendly's cookies so you can book your appointment right here. ",
+  "Solo usamos cookies técnicas, necesarias para que la web funcione. No usamos cookies de análisis ni de publicidad. ": "We only use technical cookies, needed for the site to work. We don't use analytics or advertising cookies. ",
   "Política de cookies": "Cookie policy",
-  "Rechazar": "Reject",
-  "Aceptar": "Accept"
+  "Aceptar": "Accept",
+  "Asesoría gratuita · 30 min": "Free consultation · 30 min",
+  "Reserva tu asesoría": "Book your consultation",
+  "No hemos podido cargar la agenda en este momento. Escríbenos por WhatsApp y te damos cita al momento.": "We couldn't load the calendar right now. Message us on WhatsApp and we'll book you in straight away.",
+  "Escribir por WhatsApp": "Message us on WhatsApp",
+  "Sin compromiso. Elige el día y la hora que mejor te vengan.": "No commitment. Pick the day and time that suit you best.",
+  "Cargando disponibilidad…": "Loading availability…",
+  "Ahora mismo no quedan huecos libres. Escríbenos por WhatsApp y buscamos un momento.": "There are no free slots right now. Message us on WhatsApp and we'll find a time.",
+  "Horas en tu zona horaria": "Times shown in your time zone",
+  "Cambiar": "Change",
+  "¿Cómo prefieres hablar?": "How would you like to talk?",
+  "Videollamada (Google Meet)": "Video call (Google Meet)",
+  "Llamada por WhatsApp": "WhatsApp call",
+  "Nombre y apellidos": "Full name",
+  "Email": "Email",
+  "Teléfono (WhatsApp)": "Phone (WhatsApp)",
+  "¿Sobre qué quieres hablar?": "What would you like to discuss?",
+  "Cuéntanos brevemente tu situación (opcional)": "Tell us briefly about your situation (optional)",
+  "He leído y acepto la ": "I have read and accept the ",
+  "política de privacidad": "privacy policy",
+  "Confirmar reserva": "Confirm booking",
+  "Indica un teléfono válido.": "Enter a valid phone number.",
+  "Debes aceptar la política de privacidad.": "Please accept the privacy policy.",
+  "Reservando…": "Booking…",
+  "Ya tienes una reserva reciente con este email. Si necesitas cambiarla, escríbenos por WhatsApp.": "You already have a recent booking with this email. If you need to change it, message us on WhatsApp.",
+  "No hemos podido completar la reserva. Inténtalo de nuevo o escríbenos por WhatsApp.": "We couldn't complete the booking. Please try again or message us on WhatsApp.",
+  "¡Reserva confirmada!": "Booking confirmed!",
+  "Te hemos enviado la invitación a tu email con el enlace de Google Meet.": "We've sent the invitation to your email with the Google Meet link.",
+  "Te hemos enviado la invitación a tu email. Te llamaremos por WhatsApp a esa hora.": "We've sent the invitation to your email. We'll call you on WhatsApp at that time.",
+  "Si necesitas cambiarla, escríbenos por WhatsApp.": "If you need to change it, message us on WhatsApp.",
+  "Cerrar": "Close",
+  "Sobre": "About",
+  "¿Sobre qué servicio?": "Which service is it about?"
 };
 function T(texto) {
   return NT_LANG === "en" && NT_EN.hasOwnProperty(texto) ? NT_EN[texto] : texto;
@@ -1580,14 +1608,14 @@ document.addEventListener("DOMContentLoaded", function () {
 /* ============================================================
    AVISO DE COOKIES
    ------------------------------------------------------------
-   La web solo usa cookies técnicas; la única de terceros es el
-   calendario de Calendly (página de asesoría gratis), que no se
-   carga hasta que el usuario acepta. La elección se guarda en el
-   navegador y se puede cambiar desde la política de cookies
-   (cualquier elemento con data-cookies-config abre el aviso).
+   La web solo usa cookies técnicas (sin analítica, publicidad
+   ni servicios de terceros), así que el aviso es informativo:
+   se muestra hasta que se acepta y la elección se guarda en el
+   navegador. Cualquier elemento con data-cookies-config lo abre.
    ============================================================ */
 (function () {
   var CLAVE = "nt-cookies";
+  var banner = null;
 
   function leer() {
     try { return localStorage.getItem(CLAVE); } catch (e) { return null; }
@@ -1597,60 +1625,12 @@ document.addEventListener("DOMContentLoaded", function () {
     try { localStorage.setItem(CLAVE, valor); } catch (e) {}
   }
 
-  function cargarCalendly() {
-    var widget = document.querySelector(".calendly-inline-widget");
-    if (!widget || widget.getAttribute("data-cargado")) return;
-    widget.setAttribute("data-cargado", "1");
-    var aviso = document.querySelector(".calendly-consent");
-    if (aviso) aviso.parentNode.removeChild(aviso);
-    widget.hidden = false;
-    var s = document.createElement("script");
-    s.src = "https://assets.calendly.com/assets/external/widget.js";
-    s.async = true;
-    document.body.appendChild(s);
-  }
-
-  function avisoCalendly() {
-    var widget = document.querySelector(".calendly-inline-widget");
-    if (!widget || document.querySelector(".calendly-consent")) return;
-    widget.hidden = true;
-    var aviso = document.createElement("div");
-    aviso.className = "calendly-consent";
-    aviso.innerHTML =
-      "<p></p><div class=\"calendly-consent-actions\">" +
-      "<button type=\"button\"></button><a target=\"_blank\" rel=\"noopener noreferrer\"></a></div>";
-    aviso.querySelector("p").textContent = T("El calendario de reservas funciona con Calendly, que usa sus propias cookies. Acéptalas para verlo aquí o ábrelo directamente en su web.");
-    var boton = aviso.querySelector("button");
-    boton.textContent = T("Aceptar y ver el calendario");
-    boton.addEventListener("click", function () { elegir("aceptadas"); });
-    var enlace = aviso.querySelector("a");
-    enlace.textContent = T("Abrir en Calendly");
-    enlace.href = widget.getAttribute("data-url");
-    widget.parentNode.insertBefore(aviso, widget);
-  }
-
-  var banner = null;
-
-  function cerrarBanner() {
+  function cerrar() {
     if (banner) banner.hidden = true;
     document.body.classList.remove("nt-cookies-open");
   }
 
-  function elegir(valor) {
-    var antes = leer();
-    guardar(valor);
-    cerrarBanner();
-    if (valor === "aceptadas") {
-      cargarCalendly();
-    } else if (antes === "aceptadas" && document.querySelector(".calendly-inline-widget[data-cargado]")) {
-      // Calendly ya estaba cargado: se recarga la página para quitarlo
-      window.location.reload();
-    } else {
-      avisoCalendly();
-    }
-  }
-
-  function mostrarBanner() {
+  function mostrar() {
     if (!banner) {
       banner = document.createElement("div");
       banner.className = "nt-cookies";
@@ -1658,22 +1638,20 @@ document.addEventListener("DOMContentLoaded", function () {
       banner.setAttribute("aria-live", "polite");
       banner.setAttribute("aria-label", T("Aviso de cookies"));
       banner.innerHTML =
-        "<span class=\"nt-cookies-title\"></span><p></p>" +
-        "<div class=\"nt-cookies-actions\"><button type=\"button\" class=\"nt-cookies-reject\"></button>" +
-        "<button type=\"button\" class=\"nt-cookies-accept\"></button></div>";
-      banner.querySelector(".nt-cookies-title").textContent = "Cookies";
+        "<span class=\"nt-cookies-title\">Cookies</span><p></p>" +
+        "<div class=\"nt-cookies-actions\"><button type=\"button\" class=\"nt-cookies-accept\"></button></div>";
       var p = banner.querySelector("p");
-      p.appendChild(document.createTextNode(T("Usamos cookies técnicas para que la web funcione y, si lo aceptas, las de Calendly para que puedas reservar tu cita desde aquí. ")));
+      p.appendChild(document.createTextNode(T("Solo usamos cookies técnicas, necesarias para que la web funcione. No usamos cookies de análisis ni de publicidad. ")));
       var mas = document.createElement("a");
       mas.href = "cookies";
       mas.textContent = T("Política de cookies");
       p.appendChild(mas);
-      var rechazar = banner.querySelector(".nt-cookies-reject");
-      rechazar.textContent = T("Rechazar");
-      rechazar.addEventListener("click", function () { elegir("rechazadas"); });
       var aceptar = banner.querySelector(".nt-cookies-accept");
       aceptar.textContent = T("Aceptar");
-      aceptar.addEventListener("click", function () { elegir("aceptadas"); });
+      aceptar.addEventListener("click", function () {
+        guardar("aceptadas");
+        cerrar();
+      });
       document.body.appendChild(banner);
     }
     banner.hidden = false;
@@ -1682,16 +1660,567 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var eleccion = leer();
-    if (eleccion === "aceptadas") cargarCalendly();
-    else avisoCalendly();
-    if (!eleccion) mostrarBanner();
-
+    if (!leer()) mostrar();
     document.addEventListener("click", function (e) {
       var el = e.target.closest && e.target.closest("[data-cookies-config]");
       if (!el) return;
       e.preventDefault();
-      mostrarBanner();
+      mostrar();
+    });
+  });
+})();
+
+/* ============================================================
+   RESERVAS — asesoría gratuita
+   ------------------------------------------------------------
+   Los botones y enlaces de "Asesoría gratis" abren un pop-up con
+   los huecos libres del Google Calendar de NomoTax; en /asesoria
+   el mismo reservador aparece dentro de la página
+   ([data-reserva-inline]). El motor es un Google Apps Script
+   (tools/booking/Code.gs): da los huecos, crea la cita con enlace
+   de Google Meet o llamada por WhatsApp y Google envía la
+   invitación. Las horas se muestran en la zona horaria del
+   visitante. Sin URL del motor, en local se usan huecos de prueba.
+   ============================================================ */
+var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l8Xh8duZxgbzydO1ZdTsa6qtKR_sRxtNiZjF07rqmnIUyzjSmzAKQ/exec";
+
+(function () {
+  var API = NT_RESERVAS_API;
+  var PRUEBA = !API && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  var WHATSAPP = "https://wa.me/34642757633";
+  var ZONA = (Intl.DateTimeFormat().resolvedOptions().timeZone) || "Europe/Madrid";
+  var peticion = null;
+
+  /* ---------- Servicio desde el que se reserva ----------
+     Se deduce de la página (o de la sección con data-reserva-servicio, p. ej.
+     planes de autónomo o de empresa en Gestoría) y del plan de la tarjeta en
+     la que se ha pulsado. El visitante puede cambiarlo en el formulario. */
+  var SERVICIOS = [
+    ["general", "Consulta general", "General enquiry"],
+    ["gestoria", "Gestoría", "Accounting"],
+    ["gestoria-autonomo", "Gestoría · Autónomo", "Accounting · Self-employed"],
+    ["gestoria-sl", "Gestoría · Empresa / SL", "Accounting · Company / SL"],
+    ["consultoria", "Consultoría fiscal", "Tax consulting"],
+    ["espana", "Fiscalidad en España", "Tax in Spain"],
+    ["holding", "Estructuras holding", "Holding structures"],
+    ["beckham", "Ley Beckham", "Beckham Law"],
+    ["ganancias", "Ganancias patrimoniales", "Capital gains"],
+    ["deducciones", "Deducciones I+D y Cultura", "R&D and Culture deductions"],
+    ["internacional", "Fiscalidad internacional", "International tax"],
+    ["llc", "LLC en EE. UU.", "US LLC"],
+    ["estructuras", "Estructuras internacionales", "International structures"],
+    ["residencia", "Cambio de residencia fiscal", "Tax residency change"],
+    ["nomadas", "Nómadas digitales", "Digital nomads"]
+  ];
+  var POR_PAGINA = {
+    "nacional": "espana",
+    "internacional": "internacional",
+    "asesoria-fiscal-mercantil-laboral": "gestoria",
+    "consultoria": "consultoria",
+    "holding": "holding",
+    "ley-beckham": "beckham",
+    "ganancias-patrimoniales": "ganancias",
+    "deducciones-id-cultura": "deducciones",
+    "llc-usa": "llc",
+    "estructuras-internacionales": "estructuras",
+    "cambio-residencia-fiscal": "residencia",
+    "nomadas-digitales": "nomadas"
+  };
+
+  function servicio(clave) {
+    for (var i = 0; i < SERVICIOS.length; i++) if (SERVICIOS[i][0] === clave) return SERVICIOS[i];
+    return SERVICIOS[0];
+  }
+
+  function nombreServicio(clave, idioma) {
+    var s = servicio(clave);
+    return (idioma || NT_LANG) === "en" ? s[2] : s[1];
+  }
+
+  function contexto(n) {
+    var pagina = location.pathname.replace(/^\/(en\/)?/, "").replace(/\.html$/, "").replace(/\/$/, "");
+    var clave = POR_PAGINA[pagina] || "general";
+    var seccion = n && n.closest && n.closest("[data-reserva-servicio]");
+    if (seccion) clave = seccion.getAttribute("data-reserva-servicio");
+    // Plan de la tarjeta pulsada (LLC Essential, Compliance Advanced…)
+    var detalle = "";
+    for (var a = n; a && a !== document.body; a = a.parentElement) {
+      var planes = a.querySelectorAll("[data-llc-plan], [data-llc-pack], [data-plan]");
+      if (planes.length > 1) break;
+      if (planes.length === 1) {
+        detalle = planes[0].getAttribute("data-llc-plan") || planes[0].getAttribute("data-llc-pack") || planes[0].getAttribute("data-plan") || "";
+        break;
+      }
+    }
+    return { clave: clave, detalle: detalle, pagina: location.pathname };
+  }
+
+  /* ---------- Datos ---------- */
+
+  function huecosDePrueba() {
+    var huecos = [];
+    var ahora = Date.now();
+    for (var d = 1; d <= 28; d++) {
+      var dia = new Date(ahora + d * 86400000);
+      if (dia.getDay() === 0 || dia.getDay() === 6) continue;
+      [[9, 14], [16, 19]].forEach(function (t) {
+        for (var h = t[0] * 2; h < t[1] * 2; h++) {
+          if ((d * 7 + h) % 5 === 0) continue;
+          var x = new Date(dia);
+          x.setHours(Math.floor(h / 2), (h % 2) * 30, 0, 0);
+          huecos.push(x.toISOString());
+        }
+      });
+    }
+    return { ok: true, huecos: huecos, duracion: 30 };
+  }
+
+  // Copia de la agenda en el navegador (3 min) para no esperar al pasar de una página a otra
+  var CLAVE_AGENDA = "nt-agenda";
+
+  function agendaGuardada() {
+    try {
+      var g = JSON.parse(sessionStorage.getItem(CLAVE_AGENDA) || "null");
+      if (g && Date.now() - g.t < 180000 && g.api === API) return g.datos;
+    } catch (e) {}
+    return null;
+  }
+
+  function guardarAgenda(datos) {
+    try { sessionStorage.setItem(CLAVE_AGENDA, JSON.stringify({ t: Date.now(), api: API, datos: datos })); } catch (e) {}
+  }
+
+  function olvidarAgenda() {
+    try { sessionStorage.removeItem(CLAVE_AGENDA); } catch (e) {}
+  }
+
+  function cargarHuecos(forzar) {
+    if (peticion && !forzar) return peticion;
+    var copia = !forzar && !PRUEBA && agendaGuardada();
+    if (copia) {
+      peticion = Promise.resolve(copia);
+      return peticion;
+    }
+    if (PRUEBA) {
+      peticion = new Promise(function (ok) { setTimeout(function () { ok(huecosDePrueba()); }, 500); });
+    } else if (!API) {
+      peticion = Promise.reject(new Error("sin motor"));
+    } else {
+      peticion = fetch(API + "?accion=huecos", { credentials: "omit" })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { if (!j.ok) throw new Error(j.error || "error"); guardarAgenda(j); return j; });
+    }
+    peticion.catch(function () { peticion = null; });
+    return peticion;
+  }
+
+  function enviarReserva(datos) {
+    if (PRUEBA) {
+      return new Promise(function (ok) { setTimeout(function () { ok({ ok: true, inicio: datos.inicio }); }, 800); });
+    }
+    return fetch(API, {
+      method: "POST",
+      credentials: "omit",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(datos)
+    }).then(function (r) { return r.json(); });
+  }
+
+  /* ---------- Formatos (idioma de la página, zona del visitante) ---------- */
+
+  function fmt(opciones) {
+    opciones.timeZone = ZONA;
+    return new Intl.DateTimeFormat(NT_LOCALE, opciones);
+  }
+  var fDia = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit", day: "2-digit" });
+  var fHora = fmt({ hour: "2-digit", minute: "2-digit", hour12: false });
+  var fLargo = fmt({ weekday: "long", day: "numeric", month: "long" });
+  var fMes = fmt({ month: "long" });
+  var fMesCorto = fmt({ month: "short" });
+  var fSemana = fmt({ weekday: "short" });
+
+  function claveDia(fecha) { return fDia.format(fecha); }
+
+  function largo(fecha) {
+    var t = fLargo.format(fecha);
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  // Fecha de calendario (sin hora) a partir de "AAAA-MM-DD"
+  function fechaDeClave(clave) {
+    var p = clave.split("-");
+    return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2], 12));
+  }
+
+  function el(etiqueta, clase, texto) {
+    var n = document.createElement(etiqueta);
+    if (clase) n.className = clase;
+    if (texto != null) n.textContent = texto;
+    return n;
+  }
+
+  /* ---------- Reservador ---------- */
+
+  function Reservador(contenedor, alCerrar) {
+    var estado = { huecos: [], porDia: {}, dia: null, hora: null, tipo: "meet", ctx: contexto(null) };
+    var raiz = el("div", "ntb-body");
+    contenedor.appendChild(raiz);
+
+    function cabecera() {
+      raiz.appendChild(el("span", "ntb-eyebrow", T("Asesoría gratuita · 30 min")));
+      var h = el("h2", "ntb-title", T("Reserva tu asesoría"));
+      h.id = "ntb-titulo-" + Math.random().toString(36).slice(2, 7);
+      contenedor.setAttribute("aria-labelledby", h.id);
+      raiz.appendChild(h);
+    }
+
+    function limpiar() { raiz.innerHTML = ""; cabecera(); }
+
+    function tema() {
+      if (estado.ctx.clave === "general") return;
+      var chip = el("p", "ntb-topic");
+      chip.appendChild(el("span", null, T("Sobre") + ": "));
+      chip.appendChild(el("strong", null, nombreServicio(estado.ctx.clave) + (estado.ctx.detalle ? " · " + estado.ctx.detalle : "")));
+      raiz.appendChild(chip);
+    }
+
+    function errorAgenda() {
+      limpiar();
+      var p = el("p", "ntb-sub", T("No hemos podido cargar la agenda en este momento. Escríbenos por WhatsApp y te damos cita al momento."));
+      raiz.appendChild(p);
+      var a = el("a", "ntb-submit", T("Escribir por WhatsApp"));
+      a.href = WHATSAPP; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.style.display = "block"; a.style.textAlign = "center"; a.style.textDecoration = "none";
+      raiz.appendChild(a);
+    }
+
+    function paso1(forzar) {
+      limpiar();
+      raiz.appendChild(el("p", "ntb-sub", T("Sin compromiso. Elige el día y la hora que mejor te vengan.")));
+      tema();
+      var cargando = el("div", "ntb-loading", T("Cargando disponibilidad…"));
+      raiz.appendChild(cargando);
+      cargarHuecos(forzar).then(function (r) {
+        estado.huecos = r.huecos || [];
+        estado.porDia = {};
+        estado.huecos.forEach(function (iso) {
+          var k = claveDia(new Date(iso));
+          (estado.porDia[k] = estado.porDia[k] || []).push(iso);
+        });
+        if (estado.dia && !estado.porDia[estado.dia]) estado.dia = null;
+        if (!estado.dia) estado.dia = Object.keys(estado.porDia).sort()[0] || null;
+        pintarCalendario();
+      }, errorAgenda);
+    }
+
+    function pintarCalendario() {
+      limpiar();
+      raiz.appendChild(el("p", "ntb-sub", T("Sin compromiso. Elige el día y la hora que mejor te vengan.")));
+      tema();
+      var dias = Object.keys(estado.porDia).sort();
+      if (!dias.length) {
+        raiz.appendChild(el("p", "ntb-empty", T("Ahora mismo no quedan huecos libres. Escríbenos por WhatsApp y buscamos un momento.")));
+        return;
+      }
+      var grid = el("div", "ntb-grid");
+      var izq = el("div"); var der = el("div");
+      grid.appendChild(izq); grid.appendChild(der);
+      raiz.appendChild(grid);
+
+      // Calendario: semanas de lunes a domingo desde hoy hasta el último día con huecos
+      var hoy = fechaDeClave(claveDia(new Date()));
+      var inicio = new Date(hoy.getTime() - ((hoy.getUTCDay() + 6) % 7) * 86400000);
+      var ultimo = fechaDeClave(dias[dias.length - 1]);
+      var mesIni = fMes.format(hoy);
+      var mesFin = fMes.format(ultimo);
+      var titulo = (mesIni === mesFin ? mesIni : mesIni + " – " + mesFin) + " " + ultimo.getUTCFullYear();
+      izq.appendChild(el("div", "ntb-month", titulo.charAt(0).toUpperCase() + titulo.slice(1)));
+      var cal = el("div", "ntb-cal");
+      for (var i = 0; i < 7; i++) {
+        var nombreDia = fSemana.format(new Date(inicio.getTime() + i * 86400000)).replace(".", "");
+        cal.appendChild(el("span", "ntb-dow", nombreDia.slice(0, NT_LANG === "en" ? 3 : 2)));
+      }
+      for (var t = inicio.getTime(); t <= ultimo.getTime() || (t - inicio.getTime()) / 86400000 % 7 !== 0; t += 86400000) {
+        var f = new Date(t);
+        var k = f.toISOString().slice(0, 10);
+        var b = el("button", "ntb-day");
+        b.type = "button";
+        b.appendChild(document.createTextNode(String(f.getUTCDate())));
+        if (f.getUTCDate() === 1) b.appendChild(el("small", null, fMesCorto.format(f).replace(".", "")));
+        if (!estado.porDia[k]) {
+          b.disabled = true;
+        } else {
+          b.setAttribute("aria-label", fLargo.format(new Date(estado.porDia[k][0])));
+          if (k === estado.dia) b.classList.add("is-selected");
+          b.addEventListener("click", (function (clave) {
+            return function () { estado.dia = clave; estado.hora = null; pintarCalendario(); };
+          })(k));
+        }
+        cal.appendChild(b);
+      }
+      izq.appendChild(cal);
+
+      var etiqueta = el("span", "ntb-label", largo(new Date(estado.porDia[estado.dia][0])));
+      etiqueta.style.textTransform = "none";
+      der.appendChild(etiqueta);
+      var horas = el("div", "ntb-times");
+      estado.porDia[estado.dia].forEach(function (iso) {
+        var h = el("button", "ntb-time", fHora.format(new Date(iso)));
+        h.type = "button";
+        h.addEventListener("click", function () { estado.hora = iso; paso2(); });
+        horas.appendChild(h);
+      });
+      der.appendChild(horas);
+      raiz.appendChild(el("p", "ntb-hint", T("Horas en tu zona horaria") + " (" + ZONA.replace(/_/g, " ") + ")."));
+    }
+
+    function campo(tipo, nombre, texto, obligatorio, completo) {
+      var envoltorio = el("label", completo ? "ntb-field-full" : null);
+      envoltorio.appendChild(el("span", "ntb-label", texto + (obligatorio ? " *" : "")));
+      var input = el(tipo === "textarea" ? "textarea" : "input", "ntb-input");
+      if (tipo !== "textarea") input.type = tipo;
+      input.name = nombre;
+      if (obligatorio) input.required = true;
+      envoltorio.appendChild(input);
+      return envoltorio;
+    }
+
+    function paso2(mensaje) {
+      limpiar();
+      var inicio = new Date(estado.hora);
+      var resumen = el("div", "ntb-summary");
+      resumen.appendChild(el("span", null, largo(inicio) + " · " + fHora.format(inicio) + " (30 min)"));
+      var cambiar = el("button", "ntb-link", T("Cambiar"));
+      cambiar.type = "button";
+      cambiar.addEventListener("click", function () { pintarCalendario(); });
+      resumen.appendChild(cambiar);
+      raiz.appendChild(resumen);
+
+      var form = el("form");
+      form.noValidate = true;
+      form.appendChild(el("span", "ntb-label", T("¿Cómo prefieres hablar?")));
+      var tipos = el("div", "ntb-types");
+      [["meet", T("Videollamada (Google Meet)")], ["whatsapp", T("Llamada por WhatsApp")]].forEach(function (o) {
+        var b = el("button", "ntb-type" + (estado.tipo === o[0] ? " is-selected" : ""), o[1]);
+        b.type = "button";
+        b.addEventListener("click", function () {
+          estado.tipo = o[0];
+          tipos.querySelectorAll(".ntb-type").forEach(function (x) { x.classList.toggle("is-selected", x === b); });
+        });
+        tipos.appendChild(b);
+      });
+      form.appendChild(tipos);
+
+      var campos = el("div", "ntb-fields");
+      var envTema = el("label", "ntb-field-full");
+      envTema.appendChild(el("span", "ntb-label", T("¿Sobre qué servicio?")));
+      var selTema = el("select", "ntb-input ntb-select");
+      selTema.name = "servicio";
+      SERVICIOS.forEach(function (s) {
+        var o = el("option", null, NT_LANG === "en" ? s[2] : s[1]);
+        o.value = s[0];
+        if (s[0] === estado.ctx.clave) o.selected = true;
+        selTema.appendChild(o);
+      });
+      envTema.appendChild(selTema);
+      campos.appendChild(envTema);
+      campos.appendChild(campo("text", "nombre", T("Nombre y apellidos"), true));
+      campos.appendChild(campo("email", "email", T("Email"), true));
+      campos.appendChild(campo("tel", "telefono", T("Teléfono (WhatsApp)"), true, true));
+      var motivo = campo("textarea", "motivo", T("¿Sobre qué quieres hablar?"), false, true);
+      motivo.querySelector("textarea").placeholder = T("Cuéntanos brevemente tu situación (opcional)");
+      campos.appendChild(motivo);
+      form.appendChild(campos);
+      form.nombre.autocomplete = "name";
+      form.email.autocomplete = "email";
+      form.telefono.autocomplete = "tel";
+
+      var trampa = el("div", "ntb-trap");
+      trampa.setAttribute("aria-hidden", "true");
+      var web = el("input"); web.name = "web"; web.tabIndex = -1; web.autocomplete = "off";
+      trampa.appendChild(web);
+      form.appendChild(trampa);
+
+      var check = el("label", "ntb-check");
+      var cb = el("input"); cb.type = "checkbox"; cb.name = "privacidad";
+      check.appendChild(cb);
+      var txt = el("span");
+      txt.appendChild(document.createTextNode(T("He leído y acepto la ")));
+      var pol = el("a", null, T("política de privacidad"));
+      pol.href = "privacidad"; pol.target = "_blank";
+      txt.appendChild(pol);
+      txt.appendChild(document.createTextNode("."));
+      check.appendChild(txt);
+      form.appendChild(check);
+
+      var error = el("p", "ntb-error");
+      error.hidden = !mensaje;
+      if (mensaje) error.textContent = mensaje;
+      form.appendChild(error);
+
+      var enviar = el("button", "ntb-submit", T("Confirmar reserva"));
+      enviar.type = "submit";
+      form.appendChild(enviar);
+      raiz.appendChild(form);
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var d = {
+          accion: "reservar",
+          inicio: estado.hora,
+          tipo: estado.tipo,
+          nombre: form.nombre.value.trim(),
+          email: form.email.value.trim(),
+          telefono: form.telefono.value.trim(),
+          motivo: form.motivo.value.trim(),
+          web: form.web.value,
+          idioma: NT_LANG,
+          zona: ZONA,
+          servicio: nombreServicio(selTema.value, "es"),
+          servicioCliente: nombreServicio(selTema.value),
+          detalle: selTema.value === estado.ctx.clave ? estado.ctx.detalle : "",
+          pagina: estado.ctx.pagina
+        };
+        var fallo = "";
+        if (d.nombre.length < 2) fallo = T("Indica tu nombre y apellidos.");
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) fallo = T("Indica un correo electrónico válido.");
+        else if (d.telefono.replace(/\D/g, "").length < 6) fallo = T("Indica un teléfono válido.");
+        else if (!cb.checked) fallo = T("Debes aceptar la política de privacidad.");
+        if (fallo) { error.textContent = fallo; error.hidden = false; return; }
+
+        error.hidden = true;
+        enviar.disabled = true;
+        enviar.textContent = T("Reservando…");
+        enviarReserva(d).then(function (r) {
+          if (r && r.ok) return hecho(d, r);
+          enviar.disabled = false;
+          enviar.textContent = T("Confirmar reserva");
+          if (r && r.error === "ocupado") {
+            estado.hora = null;
+            olvidarAgenda();
+            cargarHuecos(true);
+            paso1(true);
+            return;
+          }
+          error.textContent = r && r.error === "repetida"
+            ? T("Ya tienes una reserva reciente con este email. Si necesitas cambiarla, escríbenos por WhatsApp.")
+            : T("No hemos podido completar la reserva. Inténtalo de nuevo o escríbenos por WhatsApp.");
+          error.hidden = false;
+        }, function () {
+          enviar.disabled = false;
+          enviar.textContent = T("Confirmar reserva");
+          error.textContent = T("No hemos podido completar la reserva. Inténtalo de nuevo o escríbenos por WhatsApp.");
+          error.hidden = false;
+        });
+      });
+    }
+
+    function hecho(d, r) {
+      raiz.innerHTML = "";
+      var inicio = new Date(r.inicio || d.inicio);
+      var caja = el("div", "ntb-done");
+      caja.appendChild(el("div", "ntb-done-icon", "✓"));
+      caja.appendChild(el("h2", "ntb-title", T("¡Reserva confirmada!")));
+      var cuando = el("p");
+      cuando.appendChild(el("strong", null, largo(inicio) + " · " + fHora.format(inicio)));
+      caja.appendChild(cuando);
+      caja.appendChild(el("p", null, d.tipo === "meet"
+        ? T("Te hemos enviado la invitación a tu email con el enlace de Google Meet.")
+        : T("Te hemos enviado la invitación a tu email. Te llamaremos por WhatsApp a esa hora.")));
+      caja.appendChild(el("p", null, T("Si necesitas cambiarla, escríbenos por WhatsApp.")));
+      if (alCerrar) {
+        var cerrar = el("button", "ntb-submit", T("Cerrar"));
+        cerrar.type = "button";
+        cerrar.addEventListener("click", alCerrar);
+        caja.appendChild(cerrar);
+      }
+      raiz.appendChild(caja);
+      // La agenda ha cambiado: la próxima vez se vuelve a pedir
+      peticion = null;
+      olvidarAgenda();
+    }
+
+    this.empezar = function (ctx) {
+      estado.hora = null;
+      estado.ctx = ctx || contexto(null);
+      paso1();
+    };
+  }
+
+  /* ---------- Pop-up ---------- */
+
+  var overlay = null, reservador = null, ultimoFoco = null;
+
+  function cerrarPopup() {
+    if (!overlay) return;
+    overlay.classList.remove("ntb-open");
+    document.body.classList.remove("ntb-lock");
+    if (ultimoFoco) ultimoFoco.focus();
+  }
+
+  function abrirPopup(ctx) {
+    ultimoFoco = document.activeElement;
+    if (!overlay) {
+      overlay = el("div", "ntb-overlay");
+      var caja = el("div", "ntb");
+      caja.setAttribute("role", "dialog");
+      caja.setAttribute("aria-modal", "true");
+      var x = el("button", "ntb-close", "×");
+      x.type = "button";
+      x.setAttribute("aria-label", T("Cerrar"));
+      x.addEventListener("click", cerrarPopup);
+      caja.appendChild(x);
+      overlay.appendChild(caja);
+      overlay.addEventListener("click", function (e) { if (e.target === overlay) cerrarPopup(); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && overlay.classList.contains("ntb-open")) cerrarPopup();
+      });
+      document.body.appendChild(overlay);
+      reservador = new Reservador(caja, cerrarPopup);
+    }
+    reservador.empezar(ctx);
+    overlay.classList.add("ntb-open");
+    document.body.classList.add("ntb-lock");
+    overlay.querySelector(".ntb-close").focus();
+  }
+
+  function esAsesoria(n) {
+    if (n.matches("[data-reserva], [data-cns='asesoria-gratis']")) return true;
+    if (n.tagName !== "A") return false;
+    return /^(\.\.\/|\/|\/en\/)?asesoria\/?(#.*)?$/.test(n.getAttribute("href") || "");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Captura: se adelanta a los pop-ups antiguos de "asesoría gratis"
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var n = e.target.closest && e.target.closest("a, button, [data-reserva]");
+      if (!n || !esAsesoria(n)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var nav = document.querySelector(".nav.open");
+      if (nav) { var t = document.querySelector(".nav-toggle"); if (t) t.click(); }
+      abrirPopup(contexto(n));
+    }, true);
+
+    document.querySelectorAll("[data-reserva-inline]").forEach(function (c) {
+      c.classList.add("ntb", "ntb-inline");
+      new Reservador(c).empezar(contexto(c));
+    });
+
+    // Se pide la agenda en cuanto el visitante se acerca a un botón de reserva,
+    // así el pop-up abre ya con los huecos cargados
+    function intencion(e) {
+      var n = e.target.closest && e.target.closest("a, button, [data-reserva]");
+      if (n && esAsesoria(n)) cargarHuecos();
+    }
+    document.addEventListener("pointerover", intencion, { passive: true });
+    document.addEventListener("focusin", intencion);
+    document.addEventListener("touchstart", intencion, { passive: true });
+
+    // Y, con la página ya cargada, se precarga en segundo plano (Google tarda unos segundos en arrancar)
+    window.addEventListener("load", function () {
+      setTimeout(function () { if (API) cargarHuecos(); }, 2500);
     });
   });
 })();

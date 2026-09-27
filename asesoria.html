@@ -26,7 +26,7 @@
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <!-- /seo -->
-  <link rel="stylesheet" href="css/style.css?v=20260927h" />
+  <link rel="stylesheet" href="css/style.css?v=20260927k" />
 </head>
 <body>
 
@@ -89,13 +89,10 @@
     </div>
   </section>
 
-  <!-- BLOQUE 2: Calendly -->
-  <section class="asesoria-calendly">
+  <!-- BLOQUE 2: Reservador (lo pinta js/main.js con la agenda de Google Calendar) -->
+  <section class="asesoria-calendly" id="reservar">
     <div class="container">
-      <div class="calendly-wrap">
-        <!-- Calendly: js/main.js lo carga solo si se aceptan las cookies -->
-        <div class="calendly-inline-widget" data-url="https://calendly.com/nomotax/30min" style="min-width:320px;height:700px;" hidden></div>
-      </div>
+      <div data-reserva-inline></div>
     </div>
   </section>
 
@@ -170,6 +167,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=20260927d"></script>
+  <script src="js/main.js?v=20260927j"></script>
 </body>
 </html>

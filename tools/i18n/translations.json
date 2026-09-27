@@ -2096,7 +2096,6 @@
  "6. A quién los comunicamos": "6. Who we share it with",
  "No vendemos ni cedemos tus datos a terceros. Solo los comunicamos:": "We do not sell or pass your data on to third parties. We only share it:",
  "A las administraciones públicas, juzgados y tribunales cuando exista una obligación legal.": "With public authorities, courts and tribunals when there is a legal obligation.",
- "A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y el calendario de reservas Calendly, que recibe los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.": "With providers who provide services to us (web hosting, email, video calls, management tools and the Calendly booking calendar, which receives the details of the appointments you book), acting as data processors under contract.",
  "Cuando el servicio que contratas lo requiere, y siempre con tu conocimiento, a entidades de otros países necesarias para prestarlo, como registros mercantiles, agentes registrados, notarías o entidades bancarias.": "When the service you contract requires it, and always with your knowledge, with entities in other countries needed to provide it, such as company registries, registered agents, notaries or banks.",
  "7. Transferencias internacionales": "7. International transfers",
  "Disconnected Group LLC está establecida en Estados Unidos, por lo que tus datos se tratan fuera del Espacio Económico Europeo. Además, algunos de nuestros servicios, como la constitución de sociedades o la apertura de cuentas en otros países, requieren comunicar datos a entidades de esos países. En estos casos aplicamos las garantías previstas en el capítulo V del RGPD o, cuando procede, las excepciones de su artículo 49, por ejemplo cuando la transferencia es necesaria para ejecutar el contrato que has solicitado.": "Disconnected Group LLC is established in the United States, so your data is processed outside the European Economic Area. In addition, some of our services, such as forming companies or opening accounts in other countries, require data to be shared with entities in those countries. In these cases we apply the safeguards provided for in Chapter V of the GDPR or, where appropriate, the derogations in its Article 49, for example when the transfer is necessary to perform the contract you have requested.",
@@ -2122,9 +2121,6 @@
  "2. Cookies que utiliza este sitio": "2. Cookies used on this site",
  "Este sitio web no utiliza cookies analíticas ni publicitarias propias.": "This website does not use its own analytics or advertising cookies.",
  "Solo podrían instalarse cookies técnicas estrictamente necesarias para el funcionamiento del sitio o por motivos de seguridad del servidor de alojamiento, que están exentas de consentimiento.": "Only technical cookies strictly necessary for the site to work, or for the hosting server's security, could be set; these are exempt from consent.",
- "La única herramienta de terceros integrada es el calendario de": "The only third-party tool embedded is the",
- "Calendly": "Calendly",
- ", en la página de": "calendar, on the",
  "asesoría gratis": "free consultation",
  "Tipo": "Type",
  "Para qué sirve": "What it's for",
@@ -2152,11 +2148,8 @@
  "Contacta con NomoTax por WhatsApp o por email, o reserva directamente una asesoría fiscal gratuita de 30 minutos.": "Contact NomoTax on WhatsApp or by email, or book a free 30-minute tax consultation directly.",
  "Constituimos tu LLC en Estados Unidos con visión fiscal internacional: constitución, EIN, cuentas bancarias y compliance anual, 100% online y sin intermediarios.": "We set up your US LLC with an international tax perspective: formation, EIN, bank accounts and annual compliance, 100% online and with no middlemen.",
  "Última actualización: 27 de septiembre de 2026": "Last updated: 27 September 2026",
- ", que permite reservar tu cita. Calendly instala sus propias cookies, por eso el calendario": "page, which lets you book your appointment. Calendly sets its own cookies, so the calendar",
- "solo se carga si las aceptas": "only loads if you accept them",
- "en el aviso que aparece al entrar en la web. Si las rechazas, puedes reservar igualmente abriendo el calendario en la web de Calendly.": "in the notice shown when you enter the site. If you reject them, you can still book by opening the calendar on the Calendly website.",
- "Solo Calendly y solo si lo aceptas": "Only Calendly, and only if you accept",
- "Puedes cambiar tu elección sobre las cookies de terceros en cualquier momento:": "You can change your choice about third-party cookies at any time:",
- "Cambiar mis preferencias de cookies": "Change my cookie preferences",
- "Si incorporamos nuevas cookies que requieran tu consentimiento, actualizaremos esta política y te volveremos a pedir permiso mediante el aviso de cookies.": "If we add new cookies that require your consent, we will update this policy and ask for your permission again through the cookie notice."
+ "Si incorporamos nuevas cookies que requieran tu consentimiento, actualizaremos esta política y te volveremos a pedir permiso mediante el aviso de cookies.": "If we add new cookies that require your consent, we will update this policy and ask for your permission again through the cookie notice.",
+ "A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y Google, cuyo calendario y Google Meet reciben los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.": "To providers who render services to us (web hosting, email, video calls, management tools and Google, whose calendar and Google Meet receive the details of the appointments you book), who act as data processors under contract.",
+ "La web no integra servicios de terceros que instalen cookies. Cuando reservas una": "The site does not embed third-party services that set cookies. When you book a",
+ ", los datos de la cita se envían directamente a nuestro calendario de Google, sin usar cookies en tu navegador.": ", the appointment details are sent directly to our Google calendar, without using cookies in your browser."
 }
