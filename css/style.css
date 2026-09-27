@@ -199,16 +199,14 @@ ul {
   outline-offset: 3px;
 }
 
-/* Selector de idioma ES / EN: pequeño, a la derecha del menú */
-.nav {
-  margin-left: auto;
-}
-
+/* Selector de idioma ES / EN: pequeño, a la izquierda del menú para que
+   el botón de asesoría quede pegado al borde derecho */
 .lang-switch {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  margin-left: 18px;
+  margin-left: auto;
+  margin-right: 18px;
   padding: 3px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
@@ -377,25 +375,6 @@ ul {
 
 .mega-list a:hover .chevron-hover {
   opacity: 1;
-}
-
-/* Enlace a la página que reúne todos los servicios del menú */
-.mega-all {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
-  padding: 12px 8px 2px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--color-text);
-  transition: color var(--transition);
-}
-
-.mega-all:hover {
-  color: #5c7a00;
 }
 
 /* ===== HERO ===== */
@@ -1731,11 +1710,6 @@ a.service-chip:hover::after {
     color: var(--color-accent);
   }
 
-  .mega-all {
-    border-top-color: rgba(205, 245, 100, 0.2);
-    color: var(--color-accent);
-  }
-
   .mega-menu-wide .mega-grid {
     grid-template-columns: 1fr;
     min-width: 0;
@@ -1955,8 +1929,7 @@ a.service-chip:hover::after {
   /* Desplegables del menú: contenido en cascada */
   .mega-menu.open .mega-eyebrow,
   .mega-menu.open .mega-featured,
-  .mega-menu.open .mega-list li,
-  .mega-menu.open .mega-all {
+  .mega-menu.open .mega-list li {
     animation: nt-rise-sm 0.28s ease both;
   }
 
@@ -1965,7 +1938,6 @@ a.service-chip:hover::after {
   .mega-menu.open .mega-list li:nth-child(2) { animation-delay: 0.08s; }
   .mega-menu.open .mega-list li:nth-child(3) { animation-delay: 0.11s; }
   .mega-menu.open .mega-list li:nth-child(4) { animation-delay: 0.14s; }
-  .mega-menu.open .mega-all { animation-delay: 0.18s; }
 
   /* Pop-ups: el panel se asienta con un leve desplazamiento */
   .gst-modal-overlay .gst-modal {
