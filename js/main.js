@@ -1876,6 +1876,15 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
 
     function limpiar() { raiz.innerHTML = ""; cabecera(); }
 
+    function arriba() {
+      if (contenedor.classList.contains("ntb-inline")) {
+        var y = contenedor.getBoundingClientRect().top;
+        if (y < 0) contenedor.scrollIntoView({ block: "start" });
+      } else {
+        contenedor.scrollTop = 0;
+      }
+    }
+
     function tema() {
       if (estado.ctx.clave === "general") return;
       var chip = el("p", "ntb-topic");
@@ -1960,6 +1969,25 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
       }
       izq.appendChild(cal);
 
+      // En móvil, en lugar del calendario: tira deslizable solo con los días que tienen huecos
+      var tira = el("div", "ntb-strip");
+      dias.forEach(function (k) {
+        var f = fechaDeClave(k);
+        var chip = el("button", "ntb-chip" + (k === estado.dia ? " is-selected" : ""));
+        chip.type = "button";
+        chip.setAttribute("aria-label", largo(new Date(estado.porDia[k][0])));
+        chip.appendChild(el("small", null, fSemana.format(f).replace(".", "")));
+        chip.appendChild(el("strong", null, String(f.getUTCDate())));
+        chip.appendChild(el("small", null, fMesCorto.format(f).replace(".", "")));
+        chip.addEventListener("click", function () { estado.dia = k; estado.hora = null; pintarCalendario(); });
+        tira.appendChild(chip);
+      });
+      izq.appendChild(tira);
+      requestAnimationFrame(function () {
+        var sel = tira.querySelector(".is-selected");
+        if (sel) tira.scrollLeft = sel.offsetLeft - (tira.clientWidth - sel.offsetWidth) / 2;
+      });
+
       var etiqueta = el("span", "ntb-label", largo(new Date(estado.porDia[estado.dia][0])));
       etiqueta.style.textTransform = "none";
       der.appendChild(etiqueta);
@@ -1994,6 +2022,7 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
       cambiar.type = "button";
       cambiar.addEventListener("click", function () { pintarCalendario(); });
       resumen.appendChild(cambiar);
+      cambiar.addEventListener("click", arriba);
       raiz.appendChild(resumen);
 
       var form = el("form");
@@ -2060,8 +2089,11 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
 
       var enviar = el("button", "ntb-submit", T("Confirmar reserva"));
       enviar.type = "submit";
-      form.appendChild(enviar);
+      var acciones = el("div", "ntb-actions");
+      acciones.appendChild(enviar);
+      form.appendChild(acciones);
       raiz.appendChild(form);
+      arriba();
 
       form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -2100,6 +2132,7 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
             olvidarAgenda();
             cargarHuecos(true);
             paso1(true);
+            arriba();
             return;
           }
           error.textContent = r && r.error === "repetida"
@@ -2135,6 +2168,7 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
         caja.appendChild(cerrar);
       }
       raiz.appendChild(caja);
+      arriba();
       // La agenda ha cambiado: la próxima vez se vuelve a pedir
       peticion = null;
       olvidarAgenda();
