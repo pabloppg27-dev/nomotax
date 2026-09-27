@@ -89,7 +89,8 @@ var NT_EN = {
   "Si necesitas cambiarla, escríbenos por WhatsApp.": "If you need to change it, message us on WhatsApp.",
   "Cerrar": "Close",
   "Sobre": "About",
-  "¿Sobre qué servicio?": "Which service is it about?"
+  "¿Sobre qué servicio?": "Which service is it about?",
+  "Volver arriba": "Back to top"
 };
 function T(texto) {
   return NT_LANG === "en" && NT_EN.hasOwnProperty(texto) ? NT_EN[texto] : texto;
@@ -2258,3 +2259,33 @@ var NT_RESERVAS_API = "https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l
     });
   });
 })();
+
+/* ============================================================
+   BOTÓN "VOLVER ARRIBA"
+   Aparece al bajar más de una pantalla y sube con desplazamiento
+   suave (o directo si el dispositivo pide reducir el movimiento).
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", function () {
+  var boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "nt-top";
+  boton.setAttribute("aria-label", T("Volver arriba"));
+  boton.title = T("Volver arriba");
+  boton.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 10l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  document.body.appendChild(boton);
+
+  var reducir = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  boton.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: reducir ? "auto" : "smooth" });
+  });
+
+  var pendiente = false;
+  function actualizar() {
+    pendiente = false;
+    boton.classList.toggle("is-visible", window.scrollY > window.innerHeight * 0.9);
+  }
+  window.addEventListener("scroll", function () {
+    if (!pendiente) { pendiente = true; requestAnimationFrame(actualizar); }
+  }, { passive: true });
+  actualizar();
+});

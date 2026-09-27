@@ -2764,3 +2764,76 @@ textarea.ntb-input {
     font-size: 1rem;
   }
 }
+
+/* ============================================================
+   BOTÓN "VOLVER ARRIBA"
+   Discreto, encima del botón de WhatsApp; aparece al bajar.
+   ============================================================ */
+.nt-top {
+  position: fixed;
+  right: 38px;
+  bottom: 100px;
+  z-index: 290;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba(17, 17, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  color: #CDF564;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s, border-color 0.2s ease, background 0.2s ease;
+}
+
+.nt-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.nt-top:hover,
+.nt-top:focus-visible {
+  background: #111110;
+  border-color: #CDF564;
+  outline: none;
+}
+
+.nt-top svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 900px) {
+  .nt-top {
+    right: 27px;
+    bottom: 82px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .nt-top svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Con el aviso de cookies abierto en móvil, sube junto al de WhatsApp */
+@media (max-width: 600px) {
+  body.nt-cookies-open .nt-top {
+    bottom: calc(var(--nt-cookies-h, 0px) + 88px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nt-top {
+    transition: none;
+  }
+}
