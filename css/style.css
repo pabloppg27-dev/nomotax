@@ -1986,3 +1986,156 @@ a.service-chip:hover::after {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ============================================================
+   AVISO DE COOKIES
+   Tarjeta negra abajo a la izquierda (a lo ancho en móvil).
+   Aceptar y Rechazar tienen el mismo peso, como pide la AEPD.
+   ============================================================ */
+.nt-cookies {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 400;
+  width: min(420px, calc(100vw - 48px));
+  padding: 20px 22px;
+  background: #111110;
+  color: #e9e9e4;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid #CDF564;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.nt-cookies[hidden] {
+  display: none;
+}
+
+.nt-cookies-title {
+  display: block;
+  margin-bottom: 6px;
+  color: #CDF564;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nt-cookies p {
+  margin: 0 0 16px;
+}
+
+.nt-cookies a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nt-cookies-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.nt-cookies-actions button {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.nt-cookies-actions button:hover {
+  border-color: #fff;
+}
+
+.nt-cookies-actions .nt-cookies-accept {
+  background: #CDF564;
+  border-color: #CDF564;
+  color: #111110;
+}
+
+.nt-cookies-actions .nt-cookies-accept:hover {
+  background: #d9f98a;
+  border-color: #d9f98a;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nt-cookies {
+    animation: nt-rise 0.35s ease-out both;
+  }
+}
+
+@media (max-width: 600px) {
+  .nt-cookies {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    padding: 18px;
+  }
+
+  /* El botón de WhatsApp sube mientras el aviso está abierto */
+  body.nt-cookies-open .whatsapp-float {
+    bottom: calc(var(--nt-cookies-h, 0px) + 24px);
+  }
+}
+
+/* Calendly sin consentimiento: se muestra este aviso en lugar del calendario */
+.calendly-consent {
+  padding: 56px 32px;
+  text-align: center;
+  color: #1c1f26;
+}
+
+.calendly-consent p {
+  max-width: 460px;
+  margin: 0 auto 22px;
+  color: #5c6470;
+}
+
+.calendly-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.calendly-consent-actions button,
+.calendly-consent-actions a {
+  padding: 12px 22px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.calendly-consent-actions button {
+  border: 1px solid #111110;
+  background: #111110;
+  color: #CDF564;
+}
+
+.calendly-consent-actions a {
+  border: 1px solid rgba(17, 17, 16, 0.25);
+  color: #111110;
+}
+
+.legal-cookie-btn {
+  margin-top: 4px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 1px solid #111110;
+  background: #111110;
+  color: #CDF564;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -6,6 +6,9 @@ txt	NomoTax | Asesoría fiscal nacional e internacional
 @alt	NomoTax
 txt	Nomo
 txt	Tax
+@aria-label	Idioma
+txt	ES
+txt	EN
 txt	Nacional
 txt	Optimización fiscal España
 txt	Asesoría fiscal, mercantil y laboral
@@ -14,7 +17,6 @@ txt	Estructuras holding
 txt	Ley Beckham (impatriados)
 txt	Ganancias patrimoniales
 txt	Deducciones I+D y Cultura
-txt	Ver todos los servicios
 txt	Internacional
 txt	Fiscalidad internacional
 txt	LLC en EE.UU.
@@ -24,9 +26,6 @@ txt	Nómadas digitales
 txt	Gestoría
 txt	Consultoría
 txt	Asesoría gratis
-@aria-label	Idioma
-txt	ES
-txt	EN
 @aria-label	Abrir menú
 txt	Fiscalidad nacional e internacional
 txt	Maximizamos tu rentabilidad optimizando tu
@@ -2158,6 +2157,7 @@ txt	Podemos actualizar esta política para adaptarla a cambios normativos o de n
 ##### cookies
 txt	Política de cookies | NomoTax
 @content	Política de cookies de NomoTax: qué cookies utiliza este sitio web y cómo puedes gestionarlas.
+txt	Última actualización: 27 de septiembre de 2026
 txt	Esta política explica qué son las cookies y cómo se utilizan en este sitio web, conforme al artículo 22.2 de la Ley 34/2002 (LSSI-CE) y a la normativa de protección de datos.
 txt	1. Qué son las cookies
 txt	Las cookies son pequeños archivos que un sitio web guarda en tu navegador cuando lo visitas. Sirven, por ejemplo, para que el sitio funcione correctamente, para recordar tus preferencias o para medir cómo se usa.
@@ -2168,7 +2168,9 @@ txt	La única herramienta de terceros integrada es el calendario de
 txt	Calendly
 txt	, en la página de
 txt	asesoría gratis
-txt	, que permite reservar tu cita. Al cargar esa página, Calendly puede instalar sus propias cookies, necesarias para el funcionamiento del calendario y otras según su política de cookies.
+txt	, que permite reservar tu cita. Calendly instala sus propias cookies, por eso el calendario
+txt	solo se carga si las aceptas
+txt	en el aviso que aparece al entrar en la web. Si las rechazas, puedes reservar igualmente abriendo el calendario en la web de Calendly.
 txt	Tipo
 txt	Para qué sirve
 txt	¿Necesita consentimiento?
@@ -2183,10 +2185,12 @@ txt	Mostrar anuncios según tus intereses.
 txt	De terceros
 txt	Funciones de servicios externos integrados en el sitio.
 txt	Según su finalidad
-txt	Solo Calendly, en la página de asesoría gratis
+txt	Solo Calendly y solo si lo aceptas
 txt	3. Enlaces a servicios de terceros
 txt	Algunos botones, como el de WhatsApp, te llevan a servicios de terceros. Al pulsarlos, esos servicios pueden instalar sus propias cookies según sus políticas, sobre las que NomoTax no tiene control.
 txt	4. Cómo gestionar las cookies
 txt	Puedes permitir, bloquear o eliminar las cookies desde la configuración de tu navegador, normalmente en el apartado de privacidad o seguridad (Chrome, Safari, Firefox, Edge y el resto de navegadores habituales lo permiten). Si bloqueas las cookies técnicas, es posible que algunas partes del sitio no funcionen correctamente.
+txt	Puedes cambiar tu elección sobre las cookies de terceros en cualquier momento:
+txt	Cambiar mis preferencias de cookies
 txt	5. Cambios en esta política
-txt	Si en el futuro incorporamos cookies que requieran tu consentimiento, te lo pediremos mediante un aviso antes de instalarlas y actualizaremos esta política.
+txt	Si incorporamos nuevas cookies que requieran tu consentimiento, actualizaremos esta política y te volveremos a pedir permiso mediante el aviso de cookies.

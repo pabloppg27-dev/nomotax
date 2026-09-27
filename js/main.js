@@ -53,7 +53,15 @@ var NT_EN = {
   "Completa todos los campos.": "Please complete all fields.",
   "Elige una fecha a partir de mañana.": "Choose a date from tomorrow onwards.",
   "La fecha de notificación no puede ser posterior a hoy.": "The notification date cannot be later than today.",
-  "Elige un día de lunes a viernes.": "Choose a weekday (Monday to Friday)."
+  "Elige un día de lunes a viernes.": "Choose a weekday (Monday to Friday).",
+  "El calendario de reservas funciona con Calendly, que usa sus propias cookies. Acéptalas para verlo aquí o ábrelo directamente en su web.": "The booking calendar runs on Calendly, which uses its own cookies. Accept them to see it here, or open it directly on their website.",
+  "Aceptar y ver el calendario": "Accept and show the calendar",
+  "Abrir en Calendly": "Open in Calendly",
+  "Aviso de cookies": "Cookie notice",
+  "Usamos cookies técnicas para que la web funcione y, si lo aceptas, las de Calendly para que puedas reservar tu cita desde aquí. ": "We use technical cookies to make the site work and, if you accept, Calendly's cookies so you can book your appointment right here. ",
+  "Política de cookies": "Cookie policy",
+  "Rechazar": "Reject",
+  "Aceptar": "Accept"
 };
 function T(texto) {
   return NT_LANG === "en" && NT_EN.hasOwnProperty(texto) ? NT_EN[texto] : texto;
@@ -1568,3 +1576,122 @@ document.addEventListener("DOMContentLoaded", function () {
 
   elementos.forEach(function (el) { observador.observe(el); });
 });
+
+/* ============================================================
+   AVISO DE COOKIES
+   ------------------------------------------------------------
+   La web solo usa cookies técnicas; la única de terceros es el
+   calendario de Calendly (página de asesoría gratis), que no se
+   carga hasta que el usuario acepta. La elección se guarda en el
+   navegador y se puede cambiar desde la política de cookies
+   (cualquier elemento con data-cookies-config abre el aviso).
+   ============================================================ */
+(function () {
+  var CLAVE = "nt-cookies";
+
+  function leer() {
+    try { return localStorage.getItem(CLAVE); } catch (e) { return null; }
+  }
+
+  function guardar(valor) {
+    try { localStorage.setItem(CLAVE, valor); } catch (e) {}
+  }
+
+  function cargarCalendly() {
+    var widget = document.querySelector(".calendly-inline-widget");
+    if (!widget || widget.getAttribute("data-cargado")) return;
+    widget.setAttribute("data-cargado", "1");
+    var aviso = document.querySelector(".calendly-consent");
+    if (aviso) aviso.parentNode.removeChild(aviso);
+    widget.hidden = false;
+    var s = document.createElement("script");
+    s.src = "https://assets.calendly.com/assets/external/widget.js";
+    s.async = true;
+    document.body.appendChild(s);
+  }
+
+  function avisoCalendly() {
+    var widget = document.querySelector(".calendly-inline-widget");
+    if (!widget || document.querySelector(".calendly-consent")) return;
+    widget.hidden = true;
+    var aviso = document.createElement("div");
+    aviso.className = "calendly-consent";
+    aviso.innerHTML =
+      "<p></p><div class=\"calendly-consent-actions\">" +
+      "<button type=\"button\"></button><a target=\"_blank\" rel=\"noopener noreferrer\"></a></div>";
+    aviso.querySelector("p").textContent = T("El calendario de reservas funciona con Calendly, que usa sus propias cookies. Acéptalas para verlo aquí o ábrelo directamente en su web.");
+    var boton = aviso.querySelector("button");
+    boton.textContent = T("Aceptar y ver el calendario");
+    boton.addEventListener("click", function () { elegir("aceptadas"); });
+    var enlace = aviso.querySelector("a");
+    enlace.textContent = T("Abrir en Calendly");
+    enlace.href = widget.getAttribute("data-url");
+    widget.parentNode.insertBefore(aviso, widget);
+  }
+
+  var banner = null;
+
+  function cerrarBanner() {
+    if (banner) banner.hidden = true;
+    document.body.classList.remove("nt-cookies-open");
+  }
+
+  function elegir(valor) {
+    var antes = leer();
+    guardar(valor);
+    cerrarBanner();
+    if (valor === "aceptadas") {
+      cargarCalendly();
+    } else if (antes === "aceptadas" && document.querySelector(".calendly-inline-widget[data-cargado]")) {
+      // Calendly ya estaba cargado: se recarga la página para quitarlo
+      window.location.reload();
+    } else {
+      avisoCalendly();
+    }
+  }
+
+  function mostrarBanner() {
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.className = "nt-cookies";
+      banner.setAttribute("role", "dialog");
+      banner.setAttribute("aria-live", "polite");
+      banner.setAttribute("aria-label", T("Aviso de cookies"));
+      banner.innerHTML =
+        "<span class=\"nt-cookies-title\"></span><p></p>" +
+        "<div class=\"nt-cookies-actions\"><button type=\"button\" class=\"nt-cookies-reject\"></button>" +
+        "<button type=\"button\" class=\"nt-cookies-accept\"></button></div>";
+      banner.querySelector(".nt-cookies-title").textContent = "Cookies";
+      var p = banner.querySelector("p");
+      p.appendChild(document.createTextNode(T("Usamos cookies técnicas para que la web funcione y, si lo aceptas, las de Calendly para que puedas reservar tu cita desde aquí. ")));
+      var mas = document.createElement("a");
+      mas.href = "cookies";
+      mas.textContent = T("Política de cookies");
+      p.appendChild(mas);
+      var rechazar = banner.querySelector(".nt-cookies-reject");
+      rechazar.textContent = T("Rechazar");
+      rechazar.addEventListener("click", function () { elegir("rechazadas"); });
+      var aceptar = banner.querySelector(".nt-cookies-accept");
+      aceptar.textContent = T("Aceptar");
+      aceptar.addEventListener("click", function () { elegir("aceptadas"); });
+      document.body.appendChild(banner);
+    }
+    banner.hidden = false;
+    document.body.classList.add("nt-cookies-open");
+    document.body.style.setProperty("--nt-cookies-h", banner.offsetHeight + "px");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var eleccion = leer();
+    if (eleccion === "aceptadas") cargarCalendly();
+    else avisoCalendly();
+    if (!eleccion) mostrarBanner();
+
+    document.addEventListener("click", function (e) {
+      var el = e.target.closest && e.target.closest("[data-cookies-config]");
+      if (!el) return;
+      e.preventDefault();
+      mostrarBanner();
+    });
+  });
+})();
