@@ -2187,3 +2187,20 @@ txt	4. Cómo gestionar las cookies
 txt	Puedes permitir, bloquear o eliminar las cookies desde la configuración de tu navegador, normalmente en el apartado de privacidad o seguridad (Chrome, Safari, Firefox, Edge y el resto de navegadores habituales lo permiten). Si bloqueas las cookies técnicas, es posible que algunas partes del sitio no funcionen correctamente.
 txt	5. Cambios en esta política
 txt	Si incorporamos nuevas cookies que requieran tu consentimiento, actualizaremos esta política y te volveremos a pedir permiso mediante el aviso de cookies.
+
+##### 404
+@content	noindex
+txt	Página no encontrada | NomoTax
+txt	Error 404
+txt	Esta página no existe
+txt	Puede que el enlace esté mal escrito o que la página haya cambiado de dirección. Te dejamos por dónde seguir.
+txt	Inicio
+txt	Volver a la portada
+txt	Todos nuestros servicios de un vistazo.
+txt	Reserva 30 minutos
+txt	Te orientamos sin compromiso.
+txt	Gestoría, holdings, Ley Beckham y más.
+txt	LLC, residencia fiscal y estructuras.
+txt	¿Buscabas algo concreto? Escríbenos por
+txt	o a
+txt	y te ayudamos.

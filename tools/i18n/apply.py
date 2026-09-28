@@ -4,7 +4,7 @@ ROOT=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..
 HERE=os.path.dirname(os.path.abspath(__file__))+'/'
 PAGES=['index','nacional','internacional','asesoria-fiscal-mercantil-laboral','consultoria','holding','ley-beckham',
  'ganancias-patrimoniales','deducciones-id-cultura','cambio-residencia-fiscal','estructuras-internacionales',
- 'nomadas-digitales','llc-usa','asesoria','contacto','aviso-legal','privacidad','cookies']
+ 'nomadas-digitales','llc-usa','asesoria','contacto','aviso-legal','privacidad','cookies','404']
 ATTRS={'alt','placeholder','aria-label','title','content','data-title','data-subtitle','data-submit','data-success',
  'data-error','data-price','data-plan','data-llc-plan','data-llc-pack'}
 # data-value no se traduce donde el JavaScript compara valores concretos
@@ -80,11 +80,15 @@ for p in PAGES:
     s=s.replace('<html lang="es">','<html lang="en">',1)
     f=p+'.html'
     # Enlaces sin .html: la portada es la carpeta ("./" en español, "../" desde /en/)
-    c='' if p=='index' else p
+    c='' if p in ('index','404') else p
     old_sw='<a href="%s" class="is-active" lang="es" aria-current="true">ES</a>\n        <a href="en/%s" lang="en" hreflang="en">EN</a>'%(c or './',c)
     new_sw='<a href="../%s" lang="es" hreflang="es">ES</a>\n        <a href="%s" class="is-active" lang="en" aria-current="true">EN</a>'%(c,c or './')
     assert s.count(old_sw)==1,(p,'selector')
     s=s.replace(old_sw,new_sw)
+    if p=='404':
+        # La página de error se sirve en cualquier ruta: en inglés sus enlaces cuelgan de /en/
+        assert s.count('<base href="/" />')==1
+        s=s.replace('<base href="/" />','<base href="/en/" />')
     open(ROOT+'en/'+f,'w',encoding='utf-8').write(s)
 print('ok', len(PAGES), 'páginas en /en/')
 

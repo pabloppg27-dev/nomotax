@@ -4,7 +4,7 @@ ROOT=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..
 OUT=os.path.dirname(os.path.abspath(__file__))+'/'
 PAGES=['index','nacional','internacional','asesoria-fiscal-mercantil-laboral','consultoria','holding','ley-beckham',
  'ganancias-patrimoniales','deducciones-id-cultura','cambio-residencia-fiscal','estructuras-internacionales',
- 'nomadas-digitales','llc-usa','asesoria','contacto','aviso-legal','privacidad','cookies']
+ 'nomadas-digitales','llc-usa','asesoria','contacto','aviso-legal','privacidad','cookies','404']
 ATTRS=['alt','placeholder','aria-label','title','content','data-title','data-subtitle','data-submit','data-success',
  'data-error','data-price','data-plan','data-llc-plan','data-llc-pack']
 TOK=re.compile(r'(<!--.*?-->|<[^>]+>)',re.S)
