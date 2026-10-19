@@ -2052,9 +2052,9 @@ txt	Elige día y hora en nuestro calendario.
 txt	WhatsApp
 txt	Solo atendemos por WhatsApp: escríbenos.
 txt	Ideal si quieres enviarnos documentación.
-txt	Domicilio social
-txt	Disconnected Group LLC
-txt	30 N Gould St, Ste R, Sheridan, WY 82801, Estados Unidos
+txt	Domicilio
+txt	Pablo Pérez del Pulgar Gil
+txt	Ronda Maiols 1, 08192 Sant Quirze del Vallès, Barcelona, España
 txt	¿Ya sabes qué necesitas? Consulta nuestros servicios de
 txt	fiscalidad en España
 txt	y de
@@ -2062,16 +2062,15 @@ txt	fiscalidad internacional
 
 ##### aviso-legal
 txt	Aviso legal | NomoTax
-@content	Aviso legal de NomoTax, nombre comercial de Disconnected Group LLC: datos del titular y condiciones de uso del sitio web.
-txt	Última actualización: 26 de septiembre de 2026
+@content	Aviso legal de NomoTax, nombre comercial de Pablo Pérez del Pulgar Gil: datos del titular y condiciones de uso del sitio web.
+txt	Última actualización: 19 de octubre de 2026
 @aria-label	Documentos legales
 txt	Política de privacidad
 txt	Política de cookies
 txt	En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se facilitan los datos identificativos del titular de este sitio web.
 txt	Titular
 txt	Nombre comercial
-txt	Identificación fiscal (EIN)
-txt	Domicilio
+txt	23927599D
 txt	Teléfono / WhatsApp
 txt	1. Objeto
 txt	Este aviso legal regula el acceso y el uso de este sitio web, a través del cual NomoTax informa sobre sus servicios de asesoría fiscal, contable y laboral, consultoría y estructuras nacionales e internacionales. Acceder al sitio web te atribuye la condición de usuario e implica la aceptación de este aviso legal. Si no estás de acuerdo con él, te pedimos que no utilices el sitio.
@@ -2089,7 +2088,7 @@ txt	La normativa tributaria cambia con frecuencia y es distinta en cada país. N
 txt	4. Precios y contratación
 txt	Los precios que aparecen en el sitio web son orientativos. El precio definitivo de cada servicio se confirma por escrito antes de empezar, en función del alcance de tu caso. Enviar un formulario de solicitud o reserva no supone contratar ningún servicio: la contratación se formaliza cuando ambas partes aceptan la propuesta.
 txt	5. Propiedad intelectual e industrial
-txt	Todos los contenidos del sitio web (textos, diseños, gráficos, logotipos, código y marcas, incluida la marca NomoTax) son titularidad de Disconnected Group LLC o de terceros que han autorizado su uso. Queda prohibida su reproducción, distribución, comunicación pública o transformación sin autorización expresa por escrito, salvo para uso personal y privado.
+txt	Todos los contenidos del sitio web (textos, diseños, gráficos, logotipos, código y marcas, incluida la marca NomoTax) son titularidad de Pablo Pérez del Pulgar Gil o de terceros que han autorizado su uso. Queda prohibida su reproducción, distribución, comunicación pública o transformación sin autorización expresa por escrito, salvo para uso personal y privado.
 txt	6. Enlaces a terceros
 txt	El sitio web puede incluir enlaces a sitios o servicios de terceros, como WhatsApp. NomoTax no controla esos sitios ni se responsabiliza de sus contenidos, de su disponibilidad ni de sus políticas de privacidad.
 txt	7. Responsabilidad
@@ -2138,7 +2137,7 @@ txt	A las administraciones públicas, juzgados y tribunales cuando exista una ob
 txt	A proveedores que nos prestan servicios (alojamiento web, correo electrónico, videollamada, herramientas de gestión y Google, cuyo calendario y Google Meet reciben los datos de las citas que reservas), que actúan como encargados del tratamiento bajo contrato.
 txt	Cuando el servicio que contratas lo requiere, y siempre con tu conocimiento, a entidades de otros países necesarias para prestarlo, como registros mercantiles, agentes registrados, notarías o entidades bancarias.
 txt	7. Transferencias internacionales
-txt	Disconnected Group LLC está establecida en Estados Unidos, por lo que tus datos se tratan fuera del Espacio Económico Europeo. Además, algunos de nuestros servicios, como la constitución de sociedades o la apertura de cuentas en otros países, requieren comunicar datos a entidades de esos países. En estos casos aplicamos las garantías previstas en el capítulo V del RGPD o, cuando procede, las excepciones de su artículo 49, por ejemplo cuando la transferencia es necesaria para ejecutar el contrato que has solicitado.
+txt	Algunos de nuestros servicios, como la constitución de sociedades o la apertura de cuentas en otros países, requieren comunicar datos a entidades de esos países, que pueden estar situadas fuera del Espacio Económico Europeo. En estos casos aplicamos las garantías previstas en el capítulo V del RGPD o, cuando procede, las excepciones de su artículo 49, por ejemplo cuando la transferencia es necesaria para ejecutar el contrato que has solicitado.
 txt	8. Tus derechos
 txt	Puedes ejercer en cualquier momento tus derechos de
 txt	acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad
