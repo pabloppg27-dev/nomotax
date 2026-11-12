@@ -9,6 +9,7 @@ import type { EstadoTrabajador, Profile } from '../lib/types'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, notify } from '../components/ui'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
+type LlamadaPend = { id: string; owner_id: string; tipo: 'llamame' | 'cita'; inicio: string | null; modalidad: string | null; telefono: string | null; tema: string | null; franja: string | null; meet_link: string | null; created_at: string }
 type Pendiente = { id: string; owner_id: string; nombre: string; fecha_inicio: string; estado: EstadoTrabajador; created_at: string }
 
 export default function Asesor() {
@@ -18,10 +19,11 @@ export default function Asesor() {
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState(false)
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
+  const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
 
   const cargar = useCallback(async () => {
     const anio = new Date().getFullYear()
-    const [p, g, f, w] = await Promise.all([
+    const [p, g, f, w, ll] = await Promise.all([
       supabase.from('profiles').select('*').eq('role', 'client').order('nombre'),
       supabase.from('expenses').select('owner_id, estado, base, fecha, created_at').gte('created_at', `${anio - 1}-01-01`),
       supabase.from('invoices').select('owner_id, estado, base, fecha, created_at').neq('estado', 'borrador').gte('fecha', `${anio}-01-01`),
@@ -30,7 +32,9 @@ export default function Asesor() {
         .select('id, owner_id, nombre, fecha_inicio, estado, created_at')
         .in('estado', ['solicitada', 'en_tramite'])
         .order('fecha_inicio'),
+      supabase.from('llamadas').select('*').eq('estado', 'pendiente').order('created_at'),
     ])
+    setLlamadas((ll.data as LlamadaPend[]) ?? [])
     setPendientes((w.data as Pendiente[]) ?? [])
     const gastos = (g.data ?? []) as { owner_id: string; estado: string; base: number; fecha: string | null; created_at: string }[]
     const facturas = (f.data ?? []) as { owner_id: string; base: number; created_at: string }[]
@@ -69,6 +73,13 @@ export default function Asesor() {
     navigate(`/laboral/trabajadores/${pend.id}`)
   }
 
+  const marcarHecha = async (id: string) => {
+    const { error } = await supabase.from('llamadas').update({ estado: 'hecha' }).eq('id', id)
+    if (error) return notify(await errorMessage(error), 'error')
+    setLlamadas((ls) => ls.filter((l) => l.id !== id))
+    notify('Llamada marcada como hecha')
+  }
+
   const nombreCliente = (id: string) => {
     const c = filas?.find((x) => x.id === id)
     return c?.nombre || c?.email || 'Cliente'
@@ -85,6 +96,42 @@ export default function Asesor() {
           </Button>
         }
       />
+
+      {llamadas.length > 0 && (
+        <Card className="mb-6 overflow-hidden">
+          <div className="border-b border-line bg-lima/30 px-4 py-3">
+            <h2 className="font-semibold">Llamadas pendientes ({llamadas.length})</h2>
+          </div>
+          <ul className="divide-y divide-line">
+            {llamadas.map((l) => (
+              <li key={l.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{nombreCliente(l.owner_id)}</span>
+                  <span className="block truncate text-sm text-muted">
+                    {l.tipo === 'cita' && l.inicio
+                      ? `Cita ${new Date(l.inicio).toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${l.modalidad === 'meet' ? 'Google Meet' : 'llamarle'}`
+                      : `Pide que le llames · ${l.franja ?? 'cuando puedas'}`}
+                    {l.tema ? ` · ${l.tema}` : ''}
+                  </span>
+                </span>
+                {l.telefono && (
+                  <a href={`tel:${l.telefono.replace(/\s/g, '')}`} className="num text-sm font-medium underline">
+                    {l.telefono}
+                  </a>
+                )}
+                {l.meet_link && (
+                  <a href={l.meet_link} target="_blank" rel="noreferrer" className="text-sm underline">
+                    Meet
+                  </a>
+                )}
+                <Button size="sm" variant="secondary" onClick={() => marcarHecha(l.id)}>
+                  Hecha
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {pendientes.length > 0 && (
         <Card className="mb-6 overflow-hidden">

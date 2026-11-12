@@ -56,6 +56,7 @@ function doPost(e) {
     return responder({ ok: false, error: 'formato' });
   }
   if (datos.accion === 'reservar') return responder(reservar(datos));
+  if (datos.accion === 'llamame') return responder(llamame(datos));
   return responder({ ok: false, error: 'accion' });
 }
 
@@ -131,8 +132,11 @@ function reservar(d) {
   var email = limpiar(d.email, 150).toLowerCase();
   var telefono = limpiar(d.telefono, 30);
   var motivo = limpiar(d.motivo, 1000);
-  var tipo = d.tipo === 'whatsapp' ? 'whatsapp' : 'meet';
+  var tipo = d.tipo === 'whatsapp' ? 'whatsapp' : d.tipo === 'telefono' ? 'telefono' : 'meet';
   var en = d.idioma === 'en';
+  // Citas pedidas por clientes desde el área privada (clientes.nomotax.io)
+  var cliente = d.origen === 'clientes';
+  var empresa = limpiar(d.empresa, 120);
   var zonaCliente = limpiar(d.zona, 60);
   // Servicio desde el que se reserva: en español para ti y en el idioma del cliente para su invitación
   var servicio = limpiar(d.servicio, 80) || 'Consulta general';
@@ -153,14 +157,17 @@ function reservar(d) {
     // El hueco tiene que seguir libre (evita dobles reservas)
     if (huecosLibres().huecos.indexOf(inicio.toISOString()) < 0) return { ok: false, error: 'ocupado' };
 
-    // Una reserva por email cada 6 horas
+    // Web: una reserva por email cada 6 horas. Clientes: una cada 30 minutos (evita dobles clics)
     var cache = CacheService.getScriptCache();
-    if (cache.get('r:' + email)) return { ok: false, error: 'repetida' };
+    var claveCache = (cliente ? 'c:' : 'r:') + email;
+    if (cache.get(claveCache)) return { ok: false, error: 'repetida' };
 
     var fin = new Date(inicio.getTime() + CONFIG.duracion * 60000);
     var modalidad = tipo === 'meet'
       ? (en ? 'Video call (Google Meet — the link is in this invitation)' : 'Videollamada (Google Meet — el enlace está en esta invitación)')
-      : (en ? 'WhatsApp call to ' + telefono : 'Llamada por WhatsApp al ' + telefono);
+      : tipo === 'telefono'
+        ? 'Te llamamos al ' + telefono
+        : (en ? 'WhatsApp call to ' + telefono : 'Llamada por WhatsApp al ' + telefono);
 
     var descripcion = (en
       ? ['Free 30-minute tax consultation with NomoTax.', '',
@@ -173,9 +180,19 @@ function reservar(d) {
          '¿Necesitas cambiarla? Escríbenos por WhatsApp (' + CONFIG.whatsapp + ') o a ' + CONFIG.email + '.']
     ).filter(function (l, i, a) { return l !== '' || a[i - 1] !== ''; }).join('\n');
 
+    if (cliente) {
+      descripcion = ['Llamada con tu asesor de NomoTax (30 minutos).', '',
+        'Empresa: ' + (empresa || '—'), 'Modalidad: ' + modalidad, 'Nombre: ' + nombre, 'Email: ' + email, 'Teléfono: ' + telefono,
+        motivo ? 'Motivo: ' + motivo : '', '',
+        '¿Necesitas cambiarla? Escríbenos por WhatsApp (' + CONFIG.whatsapp + ') o a ' + CONFIG.email + '.'
+      ].filter(function (l, i, a) { return l !== '' || a[i - 1] !== ''; }).join('\n');
+    }
+
     var evento = {
-      summary: (en ? 'Free consultation NomoTax · ' : 'Asesoría gratuita NomoTax · ') + tema + ' · ' + nombre +
-        (tipo === 'whatsapp' ? ' (WhatsApp)' : ''),
+      summary: cliente
+        ? 'Llamada cliente NomoTax · ' + (empresa ? empresa + ' · ' : '') + nombre + (tipo !== 'meet' ? ' (teléfono)' : '')
+        : (en ? 'Free consultation NomoTax · ' : 'Asesoría gratuita NomoTax · ') + tema + ' · ' + nombre +
+          (tipo === 'whatsapp' ? ' (WhatsApp)' : ''),
       description: descripcion,
       start: { dateTime: inicio.toISOString(), timeZone: CONFIG.zona },
       end: { dateTime: fin.toISOString(), timeZone: CONFIG.zona },
@@ -188,38 +205,72 @@ function reservar(d) {
       };
     }
     var creado = Calendar.Events.insert(evento, CONFIG.calendario, { conferenceDataVersion: 1, sendUpdates: 'all' });
-    cache.put('r:' + email, '1', 6 * 3600);
+    cache.put(claveCache, '1', cliente ? 1800 : 6 * 3600);
     cache.remove('huecos');
 
     avisarPropietario(inicio, nombre, email, telefono, motivo, tipo, zonaCliente, en, creado,
-      servicio + (detalle ? ' (' + detalle + ')' : ''), pagina);
+      cliente ? 'Cliente · ' + (empresa || nombre) : servicio + (detalle ? ' (' + detalle + ')' : ''), pagina, cliente);
     return { ok: true, inicio: inicio.toISOString(), meet: creado.hangoutLink || '' };
   } finally {
     cerrojo.releaseLock();
   }
 }
 
-function avisarPropietario(inicio, nombre, email, telefono, motivo, tipo, zonaCliente, en, creado, servicio, pagina) {
+function avisarPropietario(inicio, nombre, email, telefono, motivo, tipo, zonaCliente, en, creado, servicio, pagina, cliente) {
   try {
     var cuando = Utilities.formatDate(inicio, CONFIG.zona, 'dd/MM/yyyy HH:mm');
     MailApp.sendEmail({
       to: Session.getEffectiveUser().getEmail(),
-      subject: 'Nueva reserva · ' + servicio + ' · ' + nombre + ' · ' + Utilities.formatDate(inicio, CONFIG.zona, 'dd/MM HH:mm'),
+      subject: (cliente ? 'Nueva cita de cliente · ' : 'Nueva reserva · ') + servicio + ' · ' + nombre + ' · ' +
+        Utilities.formatDate(inicio, CONFIG.zona, 'dd/MM HH:mm'),
       body: [
-        'Nueva asesoría gratuita reservada desde nomotax.io', '',
+        cliente ? 'Un cliente ha reservado una llamada desde el área de clientes' : 'Nueva asesoría gratuita reservada desde nomotax.io', '',
         'Servicio: ' + servicio,
         'Cuándo: ' + cuando + ' (hora de España)',
-        'Modalidad: ' + (tipo === 'meet' ? 'Google Meet' + (creado.hangoutLink ? ' · ' + creado.hangoutLink : '') : 'Llamada por WhatsApp'),
+        'Modalidad: ' + (tipo === 'meet' ? 'Google Meet' + (creado.hangoutLink ? ' · ' + creado.hangoutLink : '') : tipo === 'telefono' ? 'Llamarle al teléfono' : 'Llamada por WhatsApp'),
         'Nombre: ' + nombre, 'Email: ' + email, 'Teléfono: ' + telefono,
         'Motivo: ' + (motivo || '—'),
         'Idioma de la web: ' + (en ? 'inglés' : 'español') + (zonaCliente ? ' · zona horaria del cliente: ' + zonaCliente : ''),
-        'Reservado desde: https://nomotax.io' + (pagina || '/'), '',
+        'Reservado desde: ' + (cliente ? 'https://clientes.nomotax.io' : 'https://nomotax.io' + (pagina || '/')), '',
         'Evento: ' + (creado.htmlLink || '')
       ].join('\n')
     });
   } catch (err) {
     console.error(err);
   }
+}
+
+/* ---------- «Llámame cuando puedas» (área de clientes) ---------- */
+
+function llamame(d) {
+  if (d.web) return { ok: true };
+  var nombre = limpiar(d.nombre, 100);
+  var email = limpiar(d.email, 150).toLowerCase();
+  var telefono = limpiar(d.telefono, 30);
+  var empresa = limpiar(d.empresa, 120);
+  var tema = limpiar(d.tema, 1000);
+  var franja = limpiar(d.franja, 60);
+  if (nombre.length < 2) return { ok: false, error: 'nombre' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { ok: false, error: 'email' };
+  if (telefono.replace(/\D/g, '').length < 6) return { ok: false, error: 'telefono' };
+
+  // Una petición por email cada 10 minutos
+  var cache = CacheService.getScriptCache();
+  if (cache.get('l:' + email)) return { ok: false, error: 'repetida' };
+
+  MailApp.sendEmail({
+    to: Session.getEffectiveUser().getEmail(),
+    subject: 'Llamar a cliente · ' + (empresa || nombre) + ' · ' + telefono,
+    body: [
+      'Un cliente pide que le llames desde el área de clientes.', '',
+      'Empresa: ' + (empresa || '—'), 'Nombre: ' + nombre, 'Teléfono: ' + telefono, 'Email: ' + email,
+      'Mejor momento: ' + (franja || 'cuando puedas'),
+      'Tema: ' + (tema || '—'), '',
+      'La petición también aparece en tu panel: https://clientes.nomotax.io/asesor'
+    ].join('\n')
+  });
+  cache.put('l:' + email, '1', 600);
+  return { ok: true };
 }
 
 function limpiar(valor, max) {

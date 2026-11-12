@@ -10,6 +10,7 @@ import {
   Users,
   ArrowLeft,
   IdCard,
+  Headset,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { cx } from './ui'
@@ -76,6 +77,18 @@ export default function Layout() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
+          <NavLink
+            to="/mi-asesor"
+            className={({ isActive }) =>
+              cx(
+                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
+                isActive ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/5 hover:text-white',
+              )
+            }
+          >
+            <img src="/pablo-asesor.jpg" alt="" className="size-[22px] rounded-full object-cover ring-1 ring-lima" />
+            Mi asesor
+          </NavLink>
           {isAdvisor && (
             <NavLink
               to="/asesor"
@@ -118,6 +131,9 @@ export default function Layout() {
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-ink px-4 py-3 lg:hidden">
           <Logo dark />
           <div className="flex items-center gap-1">
+            <NavLink to="/mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
+              <Headset className="size-5" />
+            </NavLink>
             {isAdvisor && (
               <NavLink to="/asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Panel del asesor">
                 <Briefcase className="size-5" />

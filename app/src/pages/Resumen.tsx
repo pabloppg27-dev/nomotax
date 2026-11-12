@@ -8,6 +8,7 @@ import { nombreCategoria } from '../lib/categorias'
 import { vencida } from '../lib/estados'
 import type { Expense, Invoice, Quote } from '../lib/types'
 import MonthlyChart, { type Mes } from '../components/MonthlyChart'
+import { AsesorCard } from './MiAsesor'
 import PeriodPicker from '../components/PeriodPicker'
 import { Button, Card, Loading, cx } from '../components/ui'
 
@@ -188,6 +189,9 @@ export default function Resumen() {
             </Card>
 
             <Card className="flex flex-col p-5 sm:p-6">
+              <div className="mb-5 border-b border-line pb-5">
+                <AsesorCard compacta onAgendar={() => navigate('/mi-asesor')} />
+              </div>
               <h2 className="font-semibold">Acciones rápidas</h2>
               <p className="mb-4 text-sm text-muted">Lo que más vas a usar.</p>
               <div className="grid gap-2 sm:grid-cols-2">

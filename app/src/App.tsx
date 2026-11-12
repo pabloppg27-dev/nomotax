@@ -19,6 +19,7 @@ import NuevaAlta from './pages/laboral/NuevaAlta'
 import FichaTrabajador from './pages/laboral/FichaTrabajador'
 import Nominas from './pages/laboral/Nominas'
 import Empresa from './pages/laboral/Empresa'
+import MiAsesor from './pages/MiAsesor'
 
 function Protegido({ children }: { children: ReactNode }) {
   const { session, loading, me } = useAuth()
@@ -96,6 +97,7 @@ export default function App() {
             <Route path="laboral/nominas" element={<Nominas />} />
             <Route path="laboral/empresa" element={<Empresa />} />
             <Route path="perfil" element={<Perfil />} />
+            <Route path="mi-asesor" element={<MiAsesor />} />
             <Route
               path="asesor"
               element={
