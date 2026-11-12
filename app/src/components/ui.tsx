@@ -224,14 +224,18 @@ export function Modal({
           wide ? 'sm:max-w-5xl' : 'sm:max-w-lg',
         )}
       >
-        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
           <h2 className="text-lg font-semibold">{title}</h2>
           <button onClick={onClose} className="rounded-full p-1.5 text-muted hover:bg-ink/5" aria-label="Cerrar">
             <X className="size-5" />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3 safe-bottom">{footer}</div>}
+        <div className="overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        {footer && (
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body,
