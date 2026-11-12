@@ -6,6 +6,7 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, trimestreActual, type Periodo } from '../lib/format'
 import { CATEGORIAS, nombreCategoria } from '../lib/categorias'
 import { necesitaRevision } from '../lib/contabilidad.ts'
+import { columnasDivisa, importeMoneda } from '../lib/divisas'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
 import { nuevoId } from '../lib/id'
 import type { Expense } from '../lib/types'
@@ -91,6 +92,7 @@ export default function Gastos() {
               ...imp,
               naturaleza: ocr.naturaleza === 'inversion' ? 'inversion' : 'gasto',
               revision: necesitaRevision(ocr.naturaleza, imp.base) ? 'pendiente' : null,
+              ...columnasDivisa(ocr),
               ocr,
             })
             .eq('id', fila.id)
@@ -244,7 +246,12 @@ export default function Gastos() {
                   </td>
                   <td className="num hidden text-right md:table-cell md:px-4 md:py-3">{eur(g.base)}</td>
                   <td className="num hidden text-right md:table-cell md:px-4 md:py-3">{eur(g.cuota_iva)}</td>
-                  <td className="num order-2 text-right font-medium md:order-none md:px-4 md:py-3">{eur(g.total)}</td>
+                  <td className="num order-2 text-right font-medium md:order-none md:px-4 md:py-3">
+                    {eur(g.total)}
+                    {g.moneda && g.moneda !== 'EUR' && g.importe_original !== null && (
+                      <span className="block text-xs font-normal text-muted">{importeMoneda(g.importe_original, g.moneda)}</span>
+                    )}
+                  </td>
                   <td className="order-5 col-span-2 md:order-none md:px-4 md:py-3 md:text-right">
                     {g.revision === 'pendiente' ? (
                       <Badge tono="ambar">{isAdvisor ? '¿Amortización?' : 'En revisión por tu asesor'}</Badge>

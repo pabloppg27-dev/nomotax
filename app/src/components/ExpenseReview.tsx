@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, Check, Landmark, Sparkles, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, supabase } from '../lib/supabase'
-import { eur, limpiarNif, num, round2 } from '../lib/format'
+import { eur, fecha as fmtFecha, limpiarNif, num, round2 } from '../lib/format'
 import { CATEGORIAS } from '../lib/categorias'
 import { importesDe, leerFactura } from '../lib/upload'
 import type { Expense, OcrResult } from '../lib/types'
+import { aEuros, columnasDivisa, importeMoneda } from '../lib/divisas'
 import { CUENTA_CATEGORIA, TIPOS_INMOVILIZADO, necesitaRevision, type Inmovilizado } from '../lib/contabilidad.ts'
 import DocPreview from './DocPreview'
 import NumInput from './NumInput'
@@ -101,6 +102,20 @@ export default function ExpenseReview({
   const descuadre = Math.abs(calculado - form.total) > 0.02
   const varios = (ocr?.desglose_iva?.length ?? 0) > 1
 
+  /** Factura en otra moneda: al cambiar la fecha se aplica el cambio del BCE de ese día */
+  const cambiarFecha = async (f: string | null) => {
+    setForm({ ...form, fecha: f })
+    if (!ocr?.divisa || !f) return
+    try {
+      const o = await aEuros(ocr, f)
+      const imp = importesDe(o)
+      setOcr(o)
+      setForm((x) => x && { ...x, fecha: f, base: imp.base, cuota_iva: imp.cuota_iva, cuota_irpf: imp.cuota_irpf, total: imp.total })
+    } catch (e) {
+      notify((e as Error).message, 'error')
+    }
+  }
+
   const releer = async () => {
     if (!gasto.file_path) return
     setLeyendo(true)
@@ -142,6 +157,7 @@ export default function ExpenseReview({
       fecha_pago: form.pagado ? form.fecha_pago : null,
       proveedor_nif: limpiarNif(form.proveedor_nif),
       estado: 'revisado',
+      ...(ocr?.divisa ? columnasDivisa(ocr) : {}),
       ocr,
     }
     if (decidido) {
@@ -246,6 +262,16 @@ export default function ExpenseReview({
               </span>
             </div>
           )}
+          {ocr?.divisa && (
+            <div className="rounded-xl bg-paper px-3 py-2.5 text-sm">
+              <p className="font-medium">
+                Factura en {ocr.divisa.moneda}: {importeMoneda(ocr.divisa.originales.total, ocr.divisa.moneda)} = {eur(form.total)}
+              </p>
+              <p className="text-muted">
+                Cambio oficial del BCE del {fmtFecha(ocr.divisa.fecha_cambio)}: 1€ = {num(ocr.divisa.tasa, 4)} {ocr.divisa.moneda}. Los importes de abajo ya están en euros.
+              </p>
+            </div>
+          )}
           {ocr && !ocr.es_factura && (
             <div className="flex gap-2 rounded-xl bg-ambar/10 px-3 py-2.5 text-sm text-ambar">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
@@ -264,7 +290,7 @@ export default function ExpenseReview({
               <Input value={form.numero ?? ''} onChange={(e) => set('numero', e.target.value)} />
             </Field>
             <Field label="Fecha">
-              <Input type="date" value={form.fecha ?? ''} onChange={(e) => set('fecha', e.target.value || null)} />
+              <Input type="date" value={form.fecha ?? ''} onChange={(e) => cambiarFecha(e.target.value || null)} />
             </Field>
             <Field label="Categoría">
               <Select value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>

@@ -17,7 +17,7 @@ import {
   TIPOS_INMOVILIZADO,
 } from './contabilidad.ts'
 
-const EUR = '#,##0.00 "€";[Red]-#,##0.00 "€"'
+const EUR = '#,##0.00"€";[Red]-#,##0.00"€"'
 const TINTA = 'FF111110'
 const LIMA = 'FFCDF564'
 const GRIS = 'FFF2F2EE'

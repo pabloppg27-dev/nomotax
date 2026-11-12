@@ -106,6 +106,10 @@ export interface Invoice extends DocBase {
   emitida_at: string | null
   tipo: 'ordinaria' | 'rectificativa'
   fecha_cobro: string | null
+  moneda?: string | null
+  importe_original?: number | null
+  tipo_cambio?: number | null
+  fecha_cambio?: string | null
   rectifica_id: string | null
   rectifica_numero: string | null
   rectifica_fecha: string | null
@@ -140,6 +144,10 @@ export interface Expense {
   fecha_pago: string | null
   cuenta: string | null
   naturaleza: 'gasto' | 'inversion'
+  moneda?: string | null
+  importe_original?: number | null
+  tipo_cambio?: number | null
+  fecha_cambio?: string | null
   revision: 'pendiente' | 'gasto' | 'inmovilizado' | null
 }
 
@@ -164,6 +172,8 @@ export interface OcrResult {
   notas: string | null
   naturaleza?: 'gasto' | 'inversion'
   tipo_inmovilizado?: string | null
+  /** Si la factura venía en otra moneda: cambio del BCE aplicado e importes originales */
+  divisa?: import('./divisas').Divisa
 }
 
 /* ------------------------------------------------------------- Laboral */

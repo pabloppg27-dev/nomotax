@@ -6,6 +6,7 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
 import { analizarFacturas } from '../lib/estados'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
+import { columnasDivisa } from '../lib/divisas'
 import type { Invoice } from '../lib/types'
 import IngresoExterno from '../components/IngresoExterno'
 import PeriodPicker from '../components/PeriodPicker'
@@ -103,6 +104,7 @@ export default function Facturas() {
           irpf_pct: imp.irpf_pct ?? 0,
           total: imp.total,
           lineas: [{ concepto: ocr.concepto || 'Según factura', cantidad: 1, precio: imp.base, iva: imp.iva_pct ?? 0 }],
+          ...columnasDivisa(ocr),
           ocr,
         }
       } catch (e) {

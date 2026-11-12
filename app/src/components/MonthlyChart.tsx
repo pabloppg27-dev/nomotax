@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { eur, MESES_CORTOS } from '../lib/format'
+import { eur, MESES_CORTOS, num } from '../lib/format'
 import { cx } from './ui'
 
 export type Mes = Record<string, number>
@@ -30,7 +30,6 @@ function escala(max: number) {
 }
 
 const compacto = new Intl.NumberFormat('es-ES', { notation: 'compact', maximumFractionDigits: 1 })
-const completo = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 })
 
 export default function MonthlyChart({
   meses,
@@ -53,7 +52,7 @@ export default function MonthlyChart({
     total.modo === 'resta' ? (m[a.key] ?? 0) - (m[b?.key] ?? 0) : series.reduce((s, x) => s + (m[x.key] ?? 0), 0)
   const max = Math.max(...meses.map((m) => (apilado ? valorTotal(m) : Math.max(...series.map((x) => m[x.key] ?? 0)))), 0)
   const { top, ticks } = escala(max)
-  const fmtTick = (v: number) => (top >= 10000 ? compacto.format(v) : completo.format(v))
+  const fmtTick = (v: number) => (top >= 10000 ? compacto.format(v) : num(v, 0))
   const H = 200
 
   return (

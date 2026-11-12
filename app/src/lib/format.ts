@@ -1,8 +1,18 @@
-const eurFmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' })
-const numFmt = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 })
+/**
+ * Formato español de Pablo: punto de miles siempre (también en 4 cifras: 1.234),
+ * coma decimal y el € pegado al número: 1.234,56€
+ */
+function agrupar(n: number, decimales: number, fijos: boolean): string {
+  const v = Number.isFinite(n) ? n : 0
+  let [ent, frac = ''] = Math.abs(v).toFixed(decimales).split('.')
+  if (!fijos) frac = frac.replace(/0+$/, '')
+  ent = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  const negativo = v < 0 && Number(Math.abs(v).toFixed(decimales)) !== 0
+  return `${negativo ? '-' : ''}${ent}${frac ? `,${frac}` : ''}`
+}
 
-export const eur = (n: number | null | undefined) => eurFmt.format(Number(n ?? 0))
-export const num = (n: number | null | undefined) => numFmt.format(Number(n ?? 0))
+export const eur = (n: number | null | undefined) => `${agrupar(Number(n ?? 0), 2, true)}€`
+export const num = (n: number | null | undefined, decimales = 2) => agrupar(Number(n ?? 0), decimales, false)
 
 export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
 

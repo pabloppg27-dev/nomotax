@@ -1,6 +1,7 @@
 import { BUCKET, errorMessage, invocar, supabase } from './supabase'
 import { nuevoId } from './id'
 import type { OcrResult } from './types'
+import { aEuros } from './divisas'
 
 const MAX_LADO = 2000
 const ACEPTADOS = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
@@ -49,7 +50,13 @@ export async function subirDocumento(ownerId: string, carpeta: 'gastos' | 'factu
 export async function leerFactura(path: string, tipo: 'gasto' | 'emitida', ownerId: string): Promise<OcrResult> {
   const data = await invocar<{ datos?: OcrResult }>('ocr-factura', { path, tipo, owner_id: ownerId })
   if (!data?.datos) throw new Error('No se han podido leer los datos')
-  return data.datos as OcrResult
+  const ocr = data.datos as OcrResult
+  // Siempre en euros: si viene en otra moneda, se convierte al cambio del BCE del día de la factura
+  try {
+    return await aEuros(ocr)
+  } catch (e) {
+    return { ...ocr, notas: [ocr.notas, `Factura en ${ocr.moneda}: ${(e as Error).message}. Pon los importes en euros a mano.`].filter(Boolean).join(' ') }
+  }
 }
 
 const suma = (xs: number[]) => Math.round(xs.reduce((s, x) => s + x, 0) * 100) / 100
