@@ -27,3 +27,34 @@ jobs:
             **/README.md
             tools/**
             marketing/**
+            app/**
+
+  # Área de clientes (app/) → clientes.nomotax.io
+  deploy-app:
+    needs: deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./app/dist/
+          server-dir: /domains/nomotax.io/public_html/clientes/

@@ -199,6 +199,74 @@ ul {
   outline-offset: 3px;
 }
 
+/* Acceso al área de clientes (clientes.nomotax.io): discreto, junto al botón principal */
+.nav > a.nav-login {
+  margin-left: 20px;
+  padding: 11px 16px;
+  border: 1px solid rgba(205, 245, 100, 0.45);
+  border-radius: 8px;
+  color: #f2f2f0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.nav > a.nav-login::after {
+  display: none;
+}
+
+.nav > a.nav-login:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.nav > a.nav-login + .btn {
+  margin-left: 10px;
+}
+
+.nav > a.nav-login,
+.nav .btn {
+  white-space: nowrap;
+}
+
+/* Pantallas intermedias: menú más compacto para que quepan los dos botones */
+@media (min-width: 901px) and (max-width: 1120px) {
+  .nav > a,
+  .nav > .nav-item > .mega-trigger {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .nav > a::after,
+  .nav > .nav-item > .mega-trigger::after {
+    left: 9px;
+    right: 9px;
+  }
+
+  .nav > a.nav-login {
+    margin-left: 8px;
+    padding: 10px 12px;
+  }
+
+  .nav > a.nav-login + .btn {
+    margin-left: 8px;
+    padding: 11px 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .nav > a.nav-login {
+    margin: 8px 0 0;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav > a.nav-login + .btn {
+    margin-left: 0;
+  }
+}
+
 /* Selector de idioma ES / EN: pequeño, a la izquierda del menú para que
    el botón de asesoría quede pegado al borde derecho */
 .lang-switch {
