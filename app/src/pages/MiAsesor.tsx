@@ -40,10 +40,18 @@ export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean
         <a href={mail} className="mt-0.5 inline-block text-sm font-medium text-ink underline-offset-2 hover:underline">
           {ASESOR.email}
         </a>
+        <a href={`tel:${ASESOR.telefono}`} className="num block text-sm font-medium text-ink underline-offset-2 hover:underline">
+          {ASESOR.telefonoVisible}
+        </a>
         <div className={cx('mt-3 flex flex-wrap gap-2', !compacta && 'justify-center sm:justify-start')}>
           <a href={enlaceWhatsapp(saludo)} target="_blank" rel="noreferrer">
             <Button size={compacta ? 'sm' : 'md'} variant="accent" icon={<MessageCircle className="size-4" />}>
               WhatsApp
+            </Button>
+          </a>
+          <a href={`tel:${ASESOR.telefono}`}>
+            <Button size={compacta ? 'sm' : 'md'} variant="secondary" icon={<Phone className="size-4" />}>
+              Llamar
             </Button>
           </a>
           <a href={mail}>

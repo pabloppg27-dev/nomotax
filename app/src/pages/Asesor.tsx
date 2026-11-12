@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Copy, Plus, Search, Users } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Copy, Plus, Search, Users } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
@@ -242,6 +242,9 @@ export default function Asesor() {
                     <td className="min-w-0 md:px-4 md:py-3">
                       <p className="truncate font-medium">{c.nombre || 'Sin nombre'}</p>
                       <p className="truncate text-sm text-muted">{[c.nif, c.email].filter(Boolean).join(' · ')}</p>
+                      {c.bienvenida_enviada_at && (
+                        <p className="text-xs text-verde">Bienvenida enviada el {fecha(c.bienvenida_enviada_at.slice(0, 10))}</p>
+                      )}
                     </td>
                     <td className="num text-right md:px-4 md:py-3">
                       <span className="mr-1 text-xs text-muted md:hidden">Facturado</span>
@@ -275,23 +278,25 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
   const [nombre, setNombre] = useState('')
   const [nif, setNif] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const [resultado, setResultado] = useState<{ email: string; password: string } | null>(null)
+  const [resultado, setResultado] = useState<{ email: string; password: string; bienvenida: 'no' | 'enviada' | 'error' } | null>(null)
+  const [bienvenida, setBienvenida] = useState(true)
 
   const cerrar = () => {
     setEmail('')
     setNombre('')
     setNif('')
     setResultado(null)
+    setBienvenida(true)
     onClose()
   }
 
   const crear = async (e?: FormEvent) => {
     e?.preventDefault()
     setEnviando(true)
-    const { data, error } = await supabase.functions.invoke('invitar-cliente', { body: { email, nombre, nif } })
+    const { data, error } = await supabase.functions.invoke('invitar-cliente', { body: { email, nombre, nif, bienvenida } })
     setEnviando(false)
     if (error) return notify(await errorMessage(error), 'error')
-    setResultado({ email: data.email, password: data.password })
+    setResultado({ email: data.email, password: data.password, bienvenida: data.bienvenida ?? 'no' })
     onCreated()
   }
 
@@ -315,7 +320,7 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
               Cancelar
             </Button>
             <Button onClick={() => crear()} loading={enviando} disabled={!email}>
-              Crear acceso
+              {bienvenida ? 'Crear y enviar bienvenida' : 'Crear sin enviar correo'}
             </Button>
           </>
         )
@@ -323,8 +328,19 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
     >
       {resultado ? (
         <div className="space-y-3">
+          {resultado.bienvenida === 'enviada' ? (
+            <p className="flex gap-2 rounded-xl bg-verde/10 px-3 py-2.5 text-[15px] text-verde">
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+              Correo de bienvenida enviado a {resultado.email} desde info@nomotax.io (te llega una copia).
+            </p>
+          ) : resultado.bienvenida === 'error' ? (
+            <p className="rounded-xl bg-ambar/10 px-3 py-2.5 text-[15px] text-ambar">
+              El cliente está creado, pero el correo de bienvenida no se ha podido enviar. Mándale este mensaje tú.
+            </p>
+          ) : null}
           <p className="text-[15px]">
-            Envíale este mensaje a tu cliente. <strong>La contraseña solo se muestra ahora.</strong>
+            {resultado.bienvenida === 'enviada' ? 'Por si quieres mandárselo también por WhatsApp:' : 'Envíale este mensaje a tu cliente.'}{' '}
+            <strong>La contraseña solo se muestra ahora.</strong>
           </p>
           <pre className="whitespace-pre-wrap rounded-xl bg-paper p-4 text-sm">{mensaje}</pre>
           <Button
@@ -350,6 +366,13 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
           <Field label="NIF / CIF">
             <Input value={nif} onChange={(e) => setNif(e.target.value)} />
           </Field>
+          <label className="flex items-start gap-2.5 rounded-xl border border-line p-3 text-[15px]">
+            <input type="checkbox" className="mt-1 size-4 accent-ink" checked={bienvenida} onChange={(e) => setBienvenida(e.target.checked)} />
+            <span>
+              Enviar correo de bienvenida{email ? ` a ${email}` : ''}
+              <span className="block text-sm text-muted">Desde info@nomotax.io, con sus accesos y los primeros pasos. Te llega una copia.</span>
+            </span>
+          </label>
           <button type="submit" hidden />
         </form>
       )}

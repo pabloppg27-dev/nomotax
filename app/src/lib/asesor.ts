@@ -8,6 +8,8 @@ export const ASESOR = {
   whatsapp: '34642757633',
   whatsappVisible: '+34 642 75 76 33',
   email: 'pablo@nomotax.io',
+  telefono: '+34642757633', // teléfono de NomoTax (el de la web)
+  telefonoVisible: '+34 642 75 76 33',
 }
 
 // El mismo motor que usa la web (js/main.js → NT_RESERVAS_API)

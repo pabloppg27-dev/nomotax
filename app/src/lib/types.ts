@@ -18,6 +18,7 @@ export interface Profile {
   serie_presupuesto: string
   serie_rectificativa: string
   pie_factura: string | null
+  bienvenida_enviada_at?: string | null
   created_at: string
 }
 

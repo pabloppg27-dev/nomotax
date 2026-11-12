@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
   const { data: me } = await asUser.from("profiles").select("role").eq("id", userData.user.id).single();
   if (me?.role !== "advisor") return json({ error: "Solo el asesor puede dar de alta clientes" }, 403);
 
-  let body: { email?: string; nombre?: string; nif?: string };
+  let body: { email?: string; nombre?: string; nif?: string; bienvenida?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -109,5 +109,36 @@ Deno.serve(async (req) => {
       .eq("id", created.user.id);
   }
 
-  return json({ id: created.user.id, email, password });
+  // Correo de bienvenida (sale desde info@nomotax.io con un Apps Script de esa cuenta)
+  let bienvenida: "no" | "enviada" | "error" = "no";
+  if (body.bienvenida) {
+    bienvenida = await enviarBienvenida(email, body.nombre ?? null, password);
+    if (bienvenida === "enviada") {
+      await admin.from("profiles").update({ bienvenida_enviada_at: new Date().toISOString() }).eq("id", created.user.id);
+    }
+  }
+
+  return json({ id: created.user.id, email, password, bienvenida });
 });
+
+async function enviarBienvenida(email: string, nombre: string | null, password: string): Promise<"enviada" | "error"> {
+  const destino = Deno.env.get("BIENVENIDA_URL");
+  const clave = Deno.env.get("BIENVENIDA_CLAVE");
+  if (!destino || !clave) {
+    console.error("Faltan los secretos BIENVENIDA_URL / BIENVENIDA_CLAVE");
+    return "error";
+  }
+  try {
+    const r = await fetch(destino, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ accion: "bienvenida", clave, email, nombre, password }),
+    });
+    const out = await r.json().catch(() => null);
+    if (out?.ok) return "enviada";
+    console.error("Bienvenida", r.status, out?.error);
+  } catch (e) {
+    console.error("Bienvenida", e);
+  }
+  return "error";
+}
