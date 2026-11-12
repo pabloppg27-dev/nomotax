@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, hoyISO, proximoPlazoTrimestral, trimestreActual, type Periodo } from '../lib/format'
 import { nombreCategoria } from '../lib/categorias'
-import { vencida } from '../lib/estados'
+import { analizarFacturas } from '../lib/estados'
 import type { Expense, Invoice, Quote } from '../lib/types'
 import MonthlyChart, { type Mes } from '../components/MonthlyChart'
 import { AsesorCard } from './MiAsesor'
@@ -60,9 +60,9 @@ export default function Resumen() {
     for (const g of gPer) porCat.set(g.categoria, (porCat.get(g.categoria) ?? 0) + Number(g.base))
     const categorias = [...porCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
 
-    const hoy = hoyISO()
-    const pendienteCobro = datos.facturas.filter((f) => f.estado === 'emitida')
-    const vencidas = pendienteCobro.filter((f) => vencida(f.estado, f.vencimiento, hoy))
+    const info = analizarFacturas(datos.facturas, hoyISO())
+    const pendienteCobro = datos.facturas.filter((f) => (info.get(f.id)?.pendiente ?? 0) > 0)
+    const vencidas = pendienteCobro.filter((f) => info.get(f.id)?.vencida)
     return {
       ingresos,
       gastos,
@@ -73,7 +73,7 @@ export default function Resumen() {
       retenciones,
       meses,
       categorias,
-      pendienteCobro: pendienteCobro.reduce((s, f) => s + Number(f.total), 0),
+      pendienteCobro: pendienteCobro.reduce((s, f) => s + (info.get(f.id)?.pendiente ?? 0), 0),
       nPendienteCobro: pendienteCobro.length,
       vencidas: vencidas.length,
       porRevisar: datos.gastos.filter((g) => g.estado === 'pendiente').length,

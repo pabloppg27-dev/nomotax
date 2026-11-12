@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { CalendarClock, CheckCircle2, Loader2, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { ASESOR, cargarHuecos, enlaceWhatsapp, enviarAlMotor, mensajeError } from '../lib/asesor'
+import { ASESOR, cargarHuecos, enlaceEmail, enlaceWhatsapp, enviarAlMotor, mensajeError } from '../lib/asesor'
 import { Button, Card, Field, Input, Loading, Select, Textarea, cx, notify } from '../components/ui'
 
 type Llamada = {
@@ -25,6 +25,7 @@ const fLargo = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric
 export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean; onAgendar?: () => void }) {
   const { owner } = useAuth()
   const saludo = `Hola ${ASESOR.corto}, soy ${owner?.nombre ?? ''}. `
+  const mail = enlaceEmail(`Consulta de ${owner?.nombre ?? 'un cliente'}`, `Hola ${ASESOR.corto},\n\n`)
   return (
     <div className={cx('flex items-center gap-4', compacta ? '' : 'flex-col text-center sm:flex-row sm:text-left')}>
       <img
@@ -36,10 +37,18 @@ export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean
         <p className={cx('uppercase tracking-[0.12em] text-muted', compacta ? 'text-[11px]' : 'text-xs')}>Tu asesor</p>
         <p className={cx('font-semibold tracking-tight', compacta ? 'text-[17px]' : 'text-2xl')}>{ASESOR.nombre}</p>
         <p className="text-sm text-muted">{ASESOR.cargo}</p>
+        <a href={mail} className="mt-0.5 inline-block text-sm font-medium text-ink underline-offset-2 hover:underline">
+          {ASESOR.email}
+        </a>
         <div className={cx('mt-3 flex flex-wrap gap-2', !compacta && 'justify-center sm:justify-start')}>
           <a href={enlaceWhatsapp(saludo)} target="_blank" rel="noreferrer">
             <Button size={compacta ? 'sm' : 'md'} variant="accent" icon={<MessageCircle className="size-4" />}>
               WhatsApp
+            </Button>
+          </a>
+          <a href={mail}>
+            <Button size={compacta ? 'sm' : 'md'} variant="secondary" icon={<Mail className="size-4" />}>
+              Email
             </Button>
           </a>
           {onAgendar && (
@@ -85,7 +94,7 @@ export default function MiAsesor() {
       <Card className="relative mb-6 overflow-hidden p-6 sm:p-8">
         <AsesorCard onAgendar={() => agendaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
         <p className="mx-auto mt-5 max-w-xl text-center text-[15px] text-ink/75 sm:mx-0 sm:text-left">
-          Escríbeme por WhatsApp para dudas rápidas o reserva una llamada: elige un hueco en mi agenda o pídeme que te llame en cuanto pueda.
+          Escríbeme por WhatsApp para dudas rápidas, mándame un email si quieres adjuntar documentos, o reserva una llamada: elige un hueco en mi agenda o pídeme que te llame en cuanto pueda.
         </p>
       </Card>
 

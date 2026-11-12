@@ -4,7 +4,7 @@ import { FileText, FileUp, Loader2, Plus } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
-import { estadoFactura } from '../lib/estados'
+import { analizarFacturas } from '../lib/estados'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
 import type { Invoice } from '../lib/types'
 import IngresoExterno from '../components/IngresoExterno'
@@ -58,19 +58,19 @@ export default function Facturas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cargar])
 
-  const hoy = hoyISO()
+  const info = useMemo(() => analizarFacturas(lista ?? [], hoyISO()), [lista])
 
   const visibles = useMemo(
     () =>
       (lista ?? []).filter((f) => {
         if (f.estado !== 'borrador' && !enPeriodo(f.fecha, periodo)) return false
         if (filtro === 'borrador') return f.estado === 'borrador'
-        if (filtro === 'pendientes') return f.estado === 'emitida'
+        if (filtro === 'pendientes') return (info.get(f.id)?.pendiente ?? 0) > 0
         if (filtro === 'cobrada') return f.estado === 'cobrada'
         if (filtro === 'externa') return f.origen === 'externa'
         return true
       }),
-    [lista, periodo, filtro],
+    [lista, periodo, filtro, info],
   )
 
   const kpis = useMemo(() => {
@@ -78,9 +78,9 @@ export default function Facturas() {
     return {
       base: emitidas.reduce((s, f) => s + Number(f.base), 0),
       iva: emitidas.reduce((s, f) => s + Number(f.cuota_iva), 0),
-      pendiente: (lista ?? []).filter((f) => f.estado === 'emitida').reduce((s, f) => s + Number(f.total), 0),
+      pendiente: (lista ?? []).reduce((s, f) => s + (info.get(f.id)?.pendiente ?? 0), 0),
     }
-  }, [lista, periodo])
+  }, [lista, periodo, info])
 
   const subirExterna = async (files: File[]) => {
     if (!ownerId || !files[0]) return
@@ -204,7 +204,7 @@ export default function Facturas() {
             </thead>
             <tbody>
               {visibles.map((f) => {
-                const est = estadoFactura(f, hoy)
+                const est = info.get(f.id) ?? { label: f.estado, tono: 'gris' as const }
                 return (
                   <tr
                     key={f.id}

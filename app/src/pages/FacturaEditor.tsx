@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { fecha as fmtFecha, fechaLarga, hoyISO, sumarDias } from '../lib/format'
 import { calcularTotales, lineaVacia } from '../lib/totals'
-import { CAUSAS_RECTIFICACION, estadoFactura } from '../lib/estados'
+import { CAUSAS_RECTIFICACION, analizarFacturas } from '../lib/estados'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
 import type { CausaRectificacion, ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
 import ContactPicker from '../components/ContactPicker'
@@ -31,7 +31,9 @@ export default function FacturaEditor() {
   const [notas, setNotas] = useState('')
   const [causa, setCausa] = useState<CausaRectificacion>('R1')
   const [motivo, setMotivo] = useState('')
-  const [rectificadaPor, setRectificadaPor] = useState<Pick<Invoice, 'id' | 'numero' | 'estado' | 'total'>[]>([])
+  type Min = Pick<Invoice, 'id' | 'numero' | 'estado' | 'total' | 'tipo' | 'rectifica_id' | 'vencimiento'>
+  const [rectificadaPor, setRectificadaPor] = useState<Min[]>([])
+  const [original, setOriginal] = useState<Min | null>(null)
   const [guardando, setGuardando] = useState(false)
 
   const aplicar = (f: Invoice) => {
@@ -67,14 +69,23 @@ export default function FacturaEditor() {
         }
         aplicar(data as Invoice)
         setCargando(false)
+        const rid = (data as Invoice).rectifica_id
+        if (rid) {
+          supabase
+            .from('invoices')
+            .select('id, numero, estado, total, tipo, rectifica_id, vencimiento')
+            .eq('id', rid)
+            .maybeSingle()
+            .then(({ data: o }) => setOriginal((o as Min) ?? null))
+        }
       })
     // Rectificativas que corrigen esta factura
     supabase
       .from('invoices')
-      .select('id, numero, estado, total')
+      .select('id, numero, estado, total, tipo, rectifica_id, vencimiento')
       .eq('rectifica_id', id)
       .order('created_at')
-      .then(({ data }) => setRectificadaPor((data as Pick<Invoice, 'id' | 'numero' | 'estado' | 'total'>[]) ?? []))
+      .then(({ data }) => setRectificadaPor((data as Min[]) ?? []))
   }, [id, navigate])
 
   const totales = useMemo(() => calcularTotales(lineas, irpf), [lineas, irpf])
@@ -284,7 +295,14 @@ export default function FacturaEditor() {
     navigate('/facturas')
   }
 
-  const est = factura && factura.estado !== 'borrador' ? estadoFactura(factura, hoyISO()) : factura ? { label: 'Borrador', tono: 'gris' as const } : null
+  const est =
+    factura && factura.estado !== 'borrador'
+      ? analizarFacturas([factura, ...rectificadaPor, ...(original ? [original] : [])], hoyISO()).get(factura.id) ?? null
+      : factura
+        ? { label: 'Borrador', tono: 'gris' as const }
+        : null
+  // Anulada del todo por rectificativas, o rectificativa ya descontada de una factura sin cobrar: no hay cobro ni abono que marcar
+  const sinMovimiento = est?.label === 'Anulada' || est?.label === 'Aplicada'
   const titulo = esRectificativa
     ? factura?.numero
       ? `Rectificativa ${factura.numero}`
@@ -429,7 +447,7 @@ export default function FacturaEditor() {
             <Button icon={<Download className="size-4" />} onClick={pdf}>
               Descargar PDF
             </Button>
-            {factura.estado === 'emitida' ? (
+            {sinMovimiento ? null : factura.estado === 'emitida' ? (
               <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => cambiarEstado('cobrada')}>
                 {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
               </Button>
@@ -438,7 +456,7 @@ export default function FacturaEditor() {
                 {esRectificativa ? 'Marcar como pendiente de abono' : 'Marcar como pendiente de cobro'}
               </Button>
             )}
-            {!esRectificativa && (
+            {!esRectificativa && !sinMovimiento && (
               <Button variant="secondary" icon={<FileMinus className="size-4" />} onClick={crearRectificativa}>
                 Crear factura rectificativa
               </Button>

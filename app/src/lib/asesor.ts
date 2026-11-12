@@ -7,11 +7,16 @@ export const ASESOR = {
   foto: '/pablo-asesor.jpg',
   whatsapp: '34642757633',
   whatsappVisible: '+34 642 75 76 33',
+  email: 'pablo@nomotax.io',
 }
 
 // El mismo motor que usa la web (js/main.js → NT_RESERVAS_API)
 const RESERVAS_API =
   'https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l8Xh8duZxgbzydO1ZdTsa6qtKR_sRxtNiZjF07rqmnIUyzjSmzAKQ/exec'
+
+export function enlaceEmail(asunto: string, cuerpo: string): string {
+  return `mailto:${ASESOR.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`
+}
 
 export function enlaceWhatsapp(texto: string): string {
   return `https://wa.me/${ASESOR.whatsapp}?text=${encodeURIComponent(texto)}`
