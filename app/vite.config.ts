@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // host: true → accesible desde otros dispositivos de la misma wifi (pruebas en el móvil)
-  server: { port: 5173, host: true },
+  // Solo en este ordenador. Para probar en el móvil por wifi: npm run movil
+  server: { port: 5173 },
 })
