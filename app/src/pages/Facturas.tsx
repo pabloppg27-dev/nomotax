@@ -4,7 +4,7 @@ import { FileText, FileUp, Loader2, Plus } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
-import { ESTADOS_FACTURA, vencida } from '../lib/estados'
+import { estadoFactura } from '../lib/estados'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
 import type { Invoice } from '../lib/types'
 import IngresoExterno from '../components/IngresoExterno'
@@ -204,8 +204,7 @@ export default function Facturas() {
             </thead>
             <tbody>
               {visibles.map((f) => {
-                const est = ESTADOS_FACTURA[f.estado]
-                const venc = vencida(f.estado, f.vencimiento, hoy)
+                const est = estadoFactura(f, hoy)
                 return (
                   <tr
                     key={f.id}
@@ -215,6 +214,7 @@ export default function Facturas() {
                     <td className="font-medium sm:px-4 sm:py-3">
                       {f.numero || <span className="text-muted">Borrador</span>}
                       {f.origen === 'externa' && <span className="ml-2 text-xs font-normal text-muted">subida</span>}
+                      {f.tipo === 'rectificativa' && <span className="ml-2 text-xs font-normal text-muted">rectificativa</span>}
                     </td>
                     <td className="order-4 text-sm text-muted sm:order-none sm:px-4 sm:py-3 sm:text-[15px] sm:text-ink">{fecha(f.fecha)}</td>
                     <td className="order-3 col-span-2 truncate text-sm text-ink/80 sm:order-none sm:max-w-64 sm:px-4 sm:py-3 sm:text-[15px] sm:text-ink">
@@ -222,7 +222,7 @@ export default function Facturas() {
                     </td>
                     <td className="order-5 justify-self-end sm:order-none sm:px-4 sm:py-3">
                       <span className="inline-flex gap-1">
-                        <Badge tono={venc ? 'rojo' : est.tono}>{venc ? 'Vencida' : est.label}</Badge>
+                        <Badge tono={est.tono}>{est.label}</Badge>
                         {f.contabilizado && <Badge tono="verde">Contab.</Badge>}
                       </span>
                     </td>

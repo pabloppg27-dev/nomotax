@@ -16,6 +16,7 @@ export interface Profile {
   logo_path: string | null
   serie_factura: string
   serie_presupuesto: string
+  serie_rectificativa: string
   pie_factura: string | null
   created_at: string
 }
@@ -103,7 +104,15 @@ export interface Invoice extends DocBase {
   ocr: OcrResult | null
   contabilizado: boolean
   emitida_at: string | null
+  tipo: 'ordinaria' | 'rectificativa'
+  rectifica_id: string | null
+  rectifica_numero: string | null
+  rectifica_fecha: string | null
+  causa_rectificacion: CausaRectificacion | null
+  motivo_rectificacion: string | null
 }
+
+export type CausaRectificacion = 'R1' | 'R2' | 'R3' | 'R4'
 
 export interface Expense {
   id: string

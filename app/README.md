@@ -8,7 +8,7 @@ App web para clientes de NomoTax: gastos con lectura automática (OCR con Claude
 
 ## Puesta en marcha (una sola vez)
 
-1. **Base de datos.** Supabase → SQL Editor → New query → pega `supabase/schema.sql` entero → Run. Después, igual con `supabase/laboral.sql`.
+1. **Base de datos.** Supabase → SQL Editor → New query → pega `supabase/schema.sql` entero → Run. Después, igual con `supabase/laboral.sql` y `supabase/rectificativas.sql`.
 2. **Login cerrado.** Authentication → Sign In / Providers → desactiva «Allow new users to sign up».
    Authentication → URL Configuration → Site URL `http://localhost:5173` (luego `https://clientes.nomotax.io`).
 3. **Tu usuario.** Authentication → Users → Add user → con tu email y contraseña (marca «Auto confirm»).

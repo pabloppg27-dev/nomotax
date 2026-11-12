@@ -36,7 +36,7 @@ export default function TotalsBox({
             ))}
           </Select>
         </span>
-        <span className="num">{totales.cuota_irpf ? `−${eur(totales.cuota_irpf)}` : eur(0)}</span>
+        <span className="num">{eur(-totales.cuota_irpf || 0)}</span>
       </div>
       <div className="mt-3 flex items-center justify-between rounded-xl bg-ink px-4 py-3 text-white">
         <span className="font-medium">Total</span>

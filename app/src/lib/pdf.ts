@@ -4,6 +4,7 @@ import { signedUrl } from './supabase'
 import { calcularTotales, importeLinea } from './totals'
 import { direccionCompleta, eur, fecha, num } from './format'
 import { MODO_PRUEBAS_FACTURAS } from './config'
+import { CAUSAS_RECTIFICACION } from './estados'
 import type { ClienteSnapshot, Emisor, Invoice, Quote } from './types'
 
 type Tipo = 'factura' | 'presupuesto'
@@ -68,6 +69,8 @@ export async function descargarPdf(
   const W = 210
   const M = 18
   const esFactura = tipo === 'factura'
+  const inv = d as Invoice
+  const rectificativa = esFactura && inv.tipo === 'rectificativa'
   const estado = (d as Invoice).estado
   const borrador = estado === 'borrador'
   const pruebas = esFactura && MODO_PRUEBAS_FACTURAS
@@ -94,9 +97,9 @@ export async function descargarPdf(
 
   // Título y número
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(22)
+  doc.setFontSize(rectificativa ? 16 : 22)
   doc.setTextColor(...INK)
-  doc.text(esFactura ? 'FACTURA' : 'PRESUPUESTO', W - M, 22, { align: 'right' })
+  doc.text(rectificativa ? 'FACTURA RECTIFICATIVA' : esFactura ? 'FACTURA' : 'PRESUPUESTO', W - M, 22, { align: 'right' })
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   const meta: [string, string][] = [
@@ -167,7 +170,7 @@ export async function descargarPdf(
   }
   fila('Base imponible', eur(t.base))
   for (const r of t.desglose) fila(`IVA ${num(r.tipo)} %${t.desglose.length > 1 ? ` (base ${eur(r.base)})` : ''}`, eur(r.cuota))
-  if (t.cuota_irpf) fila(`Retención IRPF ${num(Number(d.irpf_pct))} %`, `−${eur(t.cuota_irpf)}`)
+  if (t.cuota_irpf) fila(`Retención IRPF ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf))
   y += 1
   doc.setFillColor(...LIMA)
   doc.roundedRect(xl - 4, y - 5, W - M - xl + 4, 11, 2, 2, 'F')
@@ -180,6 +183,15 @@ export async function descargarPdf(
 
   // Notas, forma de pago, pie
   const bloques: [string, string][] = []
+  if (rectificativa) {
+    const causa = CAUSAS_RECTIFICACION.find((c) => c.id === inv.causa_rectificacion)
+    bloques.push([
+      'Factura rectificativa',
+      `Rectifica la factura nº ${inv.rectifica_numero ?? ''}${inv.rectifica_fecha ? ` de fecha ${fecha(inv.rectifica_fecha)}` : ''}.` +
+        (causa ? ` Causa: ${causa.id} · ${causa.nombre}.` : '') +
+        (inv.motivo_rectificacion ? ` Motivo: ${inv.motivo_rectificacion}` : ''),
+    ])
+  }
   if (d.notas) bloques.push(['Notas', d.notas])
   if (esFactura && emisor.iban) bloques.push(['Forma de pago', `Transferencia bancaria a ${emisor.iban}`])
   if (emisor.pie_factura) bloques.push(['', emisor.pie_factura])

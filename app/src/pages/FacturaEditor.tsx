@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CheckCircle2, Copy, Download, Save, Send, Trash2, Undo2 } from 'lucide-react'
+import { CheckCircle2, Copy, Download, FileMinus, Save, Send, Trash2, Undo2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { fechaLarga, hoyISO, sumarDias } from '../lib/format'
+import { fecha as fmtFecha, fechaLarga, hoyISO, sumarDias } from '../lib/format'
 import { calcularTotales, lineaVacia } from '../lib/totals'
-import { ESTADOS_FACTURA, vencida } from '../lib/estados'
+import { CAUSAS_RECTIFICACION, estadoFactura } from '../lib/estados'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
-import type { ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
+import type { CausaRectificacion, ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
 import ContactPicker from '../components/ContactPicker'
 import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
 import LinesEditor from '../components/LinesEditor'
 import TotalsBox from '../components/TotalsBox'
-import { Badge, Button, Field, Input, Loading, Textarea, confirmar, notify } from '../components/ui'
+import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, confirmar, notify } from '../components/ui'
 
 export default function FacturaEditor() {
   const { id } = useParams()
@@ -29,6 +29,9 @@ export default function FacturaEditor() {
   const [lineas, setLineas] = useState<Linea[]>([lineaVacia()])
   const [irpf, setIrpf] = useState(0)
   const [notas, setNotas] = useState('')
+  const [causa, setCausa] = useState<CausaRectificacion>('R1')
+  const [motivo, setMotivo] = useState('')
+  const [rectificadaPor, setRectificadaPor] = useState<Pick<Invoice, 'id' | 'numero' | 'estado' | 'total'>[]>([])
   const [guardando, setGuardando] = useState(false)
 
   const aplicar = (f: Invoice) => {
@@ -40,6 +43,8 @@ export default function FacturaEditor() {
     setLineas(f.lineas?.length ? f.lineas : [lineaVacia()])
     setIrpf(Number(f.irpf_pct))
     setNotas(f.notas ?? '')
+    setCausa(f.causa_rectificacion ?? 'R1')
+    setMotivo(f.motivo_rectificacion ?? '')
   }
 
   useEffect(() => {
@@ -63,6 +68,13 @@ export default function FacturaEditor() {
         aplicar(data as Invoice)
         setCargando(false)
       })
+    // Rectificativas que corrigen esta factura
+    supabase
+      .from('invoices')
+      .select('id, numero, estado, total')
+      .eq('rectifica_id', id)
+      .order('created_at')
+      .then(({ data }) => setRectificadaPor((data as Pick<Invoice, 'id' | 'numero' | 'estado' | 'total'>[]) ?? []))
   }, [id, navigate])
 
   const totales = useMemo(() => calcularTotales(lineas, irpf), [lineas, irpf])
@@ -71,6 +83,7 @@ export default function FacturaEditor() {
   if (cargando || !ownerId || !owner) return <Loading />
 
   const faltanDatosPropios = !owner.nombre || !owner.nif || !owner.direccion
+  const esRectificativa = factura?.tipo === 'rectificativa'
 
   const payload = () => ({
     owner_id: ownerId,
@@ -85,6 +98,7 @@ export default function FacturaEditor() {
     cuota_irpf: totales.cuota_irpf,
     total: totales.total,
     notas: notas.trim() || null,
+    ...(esRectificativa ? { causa_rectificacion: causa, motivo_rectificacion: motivo.trim() || null } : {}),
   })
 
   const validar = () => {
@@ -132,6 +146,10 @@ export default function FacturaEditor() {
 
   const emitir = async () => {
     if (!validar()) return
+    if (esRectificativa && !motivo.trim()) {
+      notify('Explica el motivo de la rectificación antes de emitirla', 'error')
+      return
+    }
     if (faltanDatosPropios) {
       notify('Completa tu nombre, NIF y dirección en «Mi perfil» antes de emitir', 'error')
       return
@@ -145,7 +163,7 @@ export default function FacturaEditor() {
       if (!seguir) return
     }
     const ok = await confirmar({
-      titulo: 'Emitir factura',
+      titulo: esRectificativa ? 'Emitir factura rectificativa' : 'Emitir factura',
       texto:
         `Se le asignará el siguiente número de la serie ${factura?.serie ?? owner.serie_factura} con fecha ${fechaLarga(fecha)}. ` +
         'Una vez emitida no se puede modificar ni borrar.' +
@@ -154,7 +172,48 @@ export default function FacturaEditor() {
     })
     if (!ok) return
     const f = await guardar({ estado: 'emitida' })
-    if (f) notify(`Factura ${f.numero} emitida`)
+    if (f) notify(`${esRectificativa ? 'Rectificativa' : 'Factura'} ${f.numero} emitida`)
+  }
+
+  /** Un clic: borrador de rectificativa que anula la factura entera (importes en negativo) */
+  const crearRectificativa = async () => {
+    if (!factura) return
+    const ok = await confirmar({
+      titulo: 'Crear factura rectificativa',
+      texto:
+        `Se creará un borrador en la serie ${owner.serie_rectificativa || 'R'} que anula la factura ${factura.numero} (los mismos conceptos en negativo). ` +
+        'Si solo hay que corregir una parte, deja en el borrador únicamente la diferencia antes de emitirla.' +
+        (rectificadaPor.length ? ` Ojo: esta factura ya tiene ${rectificadaPor.length} rectificativa${rectificadaPor.length > 1 ? 's' : ''}.` : ''),
+      accion: 'Crear rectificativa',
+    })
+    if (!ok) return
+    const negativas = (factura.lineas ?? []).map((l) => ({ ...l, precio: -Number(l.precio) }))
+    const t = calcularTotales(negativas, Number(factura.irpf_pct))
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert({
+        owner_id: ownerId,
+        tipo: 'rectificativa',
+        serie: owner.serie_rectificativa || 'R',
+        rectifica_id: factura.id,
+        rectifica_numero: factura.numero,
+        rectifica_fecha: factura.fecha,
+        causa_rectificacion: 'R1',
+        contact_id: factura.contact_id,
+        cliente: factura.cliente,
+        fecha: hoyISO(),
+        lineas: negativas,
+        irpf_pct: factura.irpf_pct,
+        base: t.base,
+        cuota_iva: t.cuota_iva,
+        cuota_irpf: t.cuota_irpf,
+        total: t.total,
+      })
+      .select()
+      .single()
+    if (error) return notify(await errorMessage(error), 'error')
+    notify('Borrador de rectificativa creado: revisa el motivo y emítela')
+    navigate(`/facturas/${data.id}`)
   }
 
   const cambiarEstado = async (estado: 'emitida' | 'cobrada') => {
@@ -225,17 +284,25 @@ export default function FacturaEditor() {
     navigate('/facturas')
   }
 
-  const est = factura ? ESTADOS_FACTURA[factura.estado] : null
-  const esVencida = factura ? vencida(factura.estado, factura.vencimiento, hoyISO()) : false
+  const est = factura && factura.estado !== 'borrador' ? estadoFactura(factura, hoyISO()) : factura ? { label: 'Borrador', tono: 'gris' as const } : null
+  const titulo = esRectificativa
+    ? factura?.numero
+      ? `Rectificativa ${factura.numero}`
+      : 'Borrador de factura rectificativa'
+    : factura?.numero
+      ? `Factura ${factura.numero}`
+      : factura
+        ? 'Borrador de factura'
+        : 'Nueva factura'
 
   return (
     <DocShell
       back="/facturas"
       backLabel="Facturas"
-      title={factura?.numero ? `Factura ${factura.numero}` : factura ? 'Borrador de factura' : 'Nueva factura'}
+      title={titulo}
       badge={
         <>
-          {est && <Badge tono={esVencida ? 'rojo' : est.tono}>{esVencida ? 'Vencida' : est.label}</Badge>}
+          {est && <Badge tono={est.tono}>{est.label}</Badge>}
           {factura?.contabilizado && <Badge tono="verde">Contabilizada</Badge>}
         </>
       }
@@ -254,6 +321,59 @@ export default function FacturaEditor() {
             <div className="mb-6 rounded-xl bg-ink/5 px-4 py-3 text-sm text-ink/75">
               <strong>Modo pruebas.</strong> La emisión de facturas todavía no está conectada a Verifactu: los PDF salen
               marcados como documento de pruebas.
+            </div>
+          )}
+          {esRectificativa && factura && (
+            <Card className="mb-6 border-ink/20 p-5 sm:p-6">
+              <p className="mb-4 text-[15px]">
+                Rectifica la factura{' '}
+                {factura.rectifica_id ? (
+                  <Link to={`/facturas/${factura.rectifica_id}`} className="font-medium underline">
+                    {factura.rectifica_numero}
+                  </Link>
+                ) : (
+                  <strong>{factura.rectifica_numero}</strong>
+                )}
+                {factura.rectifica_fecha && ` del ${fmtFecha(factura.rectifica_fecha)}`}.
+                {!bloqueada && (
+                  <span className="mt-1 block text-sm text-muted">
+                    Por defecto anula la factura entera. Si solo corriges una parte, deja en los conceptos únicamente la diferencia.
+                  </span>
+                )}
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Field label="Causa">
+                  <Select value={causa} disabled={bloqueada} onChange={(e) => setCausa(e.target.value as CausaRectificacion)}>
+                    {CAUSAS_RECTIFICACION.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.id} · {c.nombre}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Motivo (aparece en la factura)">
+                  <Input
+                    value={motivo}
+                    disabled={bloqueada}
+                    onChange={(e) => setMotivo(e.target.value)}
+                    placeholder="Ej.: error en el precio del servicio"
+                  />
+                </Field>
+              </div>
+            </Card>
+          )}
+          {rectificadaPor.length > 0 && (
+            <div className="mb-6 rounded-xl bg-ambar/10 px-4 py-3 text-sm">
+              Esta factura está rectificada por{' '}
+              {rectificadaPor.map((r, i) => (
+                <span key={r.id}>
+                  {i > 0 && ', '}
+                  <Link to={`/facturas/${r.id}`} className="font-medium underline">
+                    {r.numero ?? 'un borrador'}
+                  </Link>
+                </span>
+              ))}
+              .
             </div>
           )}
           {factura?.quote_id && (
@@ -288,7 +408,7 @@ export default function FacturaEditor() {
             <Input type="date" value={vencimiento} disabled={bloqueada} onChange={(e) => setVencimiento(e.target.value)} />
           </Field>
           <p className="col-span-2 text-sm text-muted">
-            Serie <strong className="text-ink">{factura?.serie ?? owner.serie_factura}</strong>
+            Serie <strong className="text-ink">{factura?.serie ?? owner.serie_factura}</strong>{esRectificativa && ' (rectificativas)'}
             {factura?.numero ? ` · Nº ${factura.numero}` : ' · el número se asigna al emitir'}
           </p>
         </div>
@@ -311,16 +431,24 @@ export default function FacturaEditor() {
             </Button>
             {factura.estado === 'emitida' ? (
               <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => cambiarEstado('cobrada')}>
-                Marcar como cobrada
+                {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
               </Button>
             ) : (
               <Button variant="secondary" icon={<Undo2 className="size-4" />} onClick={() => cambiarEstado('emitida')}>
-                Marcar como pendiente de cobro
+                {esRectificativa ? 'Marcar como pendiente de abono' : 'Marcar como pendiente de cobro'}
               </Button>
             )}
-            <Button variant="ghost" icon={<Copy className="size-4" />} onClick={duplicar}>
-              Duplicar como borrador
-            </Button>
+            {!esRectificativa && (
+              <Button variant="secondary" icon={<FileMinus className="size-4" />} onClick={crearRectificativa}>
+                Crear factura rectificativa
+              </Button>
+            )}
+            {!esRectificativa && (
+              <Button variant="ghost" icon={<Copy className="size-4" />} onClick={duplicar}>
+                Duplicar como borrador
+              </Button>
+            )}
+            <p className="px-1 text-xs text-muted">Las facturas emitidas no se pueden modificar ni borrar: se corrigen con una rectificativa.</p>
             {isAdvisor && (
               <label className="mt-2 flex items-center gap-2 px-1 text-sm">
                 <input type="checkbox" className="size-4 accent-ink" checked={factura.contabilizado} onChange={toggleContabilizado} />
@@ -331,7 +459,7 @@ export default function FacturaEditor() {
         ) : (
           <>
             <Button variant="accent" icon={<Send className="size-4" />} onClick={emitir} disabled={guardando}>
-              Emitir factura
+              {esRectificativa ? 'Emitir rectificativa' : 'Emitir factura'}
             </Button>
             <Button icon={<Save className="size-4" />} loading={guardando} onClick={guardarBorrador}>
               Guardar borrador

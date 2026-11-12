@@ -20,6 +20,7 @@ type Editable = Pick<
   | 'iban'
   | 'serie_factura'
   | 'serie_presupuesto'
+  | 'serie_rectificativa'
   | 'pie_factura'
 >
 
@@ -46,6 +47,7 @@ export default function Perfil() {
       iban: owner.iban,
       serie_factura: owner.serie_factura,
       serie_presupuesto: owner.serie_presupuesto,
+      serie_rectificativa: owner.serie_rectificativa ?? 'R',
       pie_factura: owner.pie_factura,
     })
     if (owner.logo_path) signedUrl(owner.logo_path, 3600).then(setLogoUrl)
@@ -67,6 +69,7 @@ export default function Perfil() {
         iban: form.iban ? form.iban.toUpperCase().replace(/\s+/g, ' ').trim() : null,
         serie_factura: (form.serie_factura || 'F').toUpperCase().trim(),
         serie_presupuesto: (form.serie_presupuesto || 'P').toUpperCase().trim(),
+        serie_rectificativa: (form.serie_rectificativa || 'R').toUpperCase().trim(),
       })
       .eq('id', owner.id)
     setGuardando(false)
@@ -147,6 +150,9 @@ export default function Perfil() {
               </Field>
               <Field label="Serie de presupuestos" hint="Ej.: P → P2026-001">
                 <Input value={form.serie_presupuesto} onChange={set('serie_presupuesto')} maxLength={6} />
+              </Field>
+              <Field label="Serie de rectificativas" hint="Obligatoria y distinta: R → R2026-0001">
+                <Input value={form.serie_rectificativa} onChange={set('serie_rectificativa')} maxLength={6} />
               </Field>
               <Field label="Texto al pie de la factura" className="sm:col-span-2" hint="Opcional: condiciones de pago, registro mercantil…">
                 <Textarea value={form.pie_factura ?? ''} onChange={set('pie_factura')} />
