@@ -9,6 +9,7 @@ import {
   UserRound,
   Users,
   ArrowLeft,
+  IdCard,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { cx } from './ui'
@@ -19,6 +20,7 @@ const NAV = [
   { to: '/facturas', label: 'Facturas', icon: FileText },
   { to: '/presupuestos', label: 'Presupuestos', icon: ClipboardList },
   { to: '/clientes', label: 'Clientes', icon: Users },
+  { to: '/laboral', label: 'Laboral', icon: IdCard },
 ]
 
 function Logo({ dark = false }: { dark?: boolean }) {
@@ -143,22 +145,22 @@ export default function Layout() {
         </main>
 
         {/* Navegación inferior (móvil) */}
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-white/95 backdrop-blur safe-bottom lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-white/95 backdrop-blur safe-bottom lg:hidden">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                cx('flex flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'text-ink font-medium' : 'text-muted')
+                cx('flex flex-col items-center gap-1 py-2 text-[10.5px]', isActive ? 'text-ink font-medium' : 'text-muted')
               }
             >
               {({ isActive }) => (
                 <>
-                  <span className={cx('grid h-7 w-12 place-items-center rounded-full', isActive && 'bg-lima')}>
+                  <span className={cx('grid h-7 w-11 place-items-center rounded-full', isActive && 'bg-lima')}>
                     <Icon className="size-[18px]" />
                   </span>
-                  {label}
+                  {label === 'Presupuestos' ? 'Presup.' : label}
                 </>
               )}
             </NavLink>

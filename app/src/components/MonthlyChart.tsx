@@ -2,13 +2,21 @@ import { useState } from 'react'
 import { eur, MESES_CORTOS } from '../lib/format'
 import { cx } from './ui'
 
-export interface Mes {
-  ingresos: number
-  gastos: number
+export type Mes = Record<string, number>
+
+export interface Serie {
+  key: string
+  label: string
+  color: string
 }
 
 const C_INGRESOS = '#111110' // tinta NomoTax
 const C_GASTOS = '#b3e04d' // lima oscuro NomoTax
+
+const SERIES_DEFECTO: Serie[] = [
+  { key: 'ingresos', label: 'Ingresos', color: C_INGRESOS },
+  { key: 'gastos', label: 'Gastos', color: C_GASTOS },
+]
 
 function escala(max: number) {
   if (max <= 0) return { top: 1000, ticks: [0, 500, 1000] }
@@ -24,10 +32,26 @@ function escala(max: number) {
 const compacto = new Intl.NumberFormat('es-ES', { notation: 'compact', maximumFractionDigits: 1 })
 const completo = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 })
 
-export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: number }) {
+export default function MonthlyChart({
+  meses,
+  anio,
+  series = SERIES_DEFECTO,
+  total = { label: 'Resultado', modo: 'resta' },
+  apilado = false,
+}: {
+  meses: Mes[]
+  anio: number
+  series?: Serie[]
+  total?: { label: string; modo: 'resta' | 'suma' }
+  /** Barras apiladas (para sumas, p. ej. coste = salario + SS) */
+  apilado?: boolean
+}) {
   const [activo, setActivo] = useState<number | null>(null)
   const [tabla, setTabla] = useState(false)
-  const max = Math.max(...meses.flatMap((m) => [m.ingresos, m.gastos]), 0)
+  const [a, b] = series
+  const valorTotal = (m: Mes) =>
+    total.modo === 'resta' ? (m[a.key] ?? 0) - (m[b?.key] ?? 0) : series.reduce((s, x) => s + (m[x.key] ?? 0), 0)
+  const max = Math.max(...meses.map((m) => (apilado ? valorTotal(m) : Math.max(...series.map((x) => m[x.key] ?? 0)))), 0)
   const { top, ticks } = escala(max)
   const fmtTick = (v: number) => (top >= 10000 ? compacto.format(v) : completo.format(v))
   const H = 200
@@ -36,12 +60,11 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4 text-sm text-ink/75">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-2.5 rounded-sm" style={{ background: C_INGRESOS }} /> Ingresos
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-2.5 rounded-sm" style={{ background: C_GASTOS }} /> Gastos
-          </span>
+          {series.map((x) => (
+            <span key={x.key} className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-sm" style={{ background: x.color }} /> {x.label}
+            </span>
+          ))}
         </div>
         <button onClick={() => setTabla(!tabla)} className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline">
           {tabla ? 'Ver gráfico' : 'Ver tabla'}
@@ -54,9 +77,12 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
             <thead className="text-xs uppercase tracking-wide text-muted">
               <tr className="border-b border-line">
                 <th className="py-2 text-left font-medium">Mes</th>
-                <th className="py-2 font-medium">Ingresos</th>
-                <th className="py-2 font-medium">Gastos</th>
-                <th className="py-2 font-medium">Resultado</th>
+                {series.map((x) => (
+                  <th key={x.key} className="py-2 font-medium">
+                    {x.label}
+                  </th>
+                ))}
+                <th className="py-2 font-medium">{total.label}</th>
               </tr>
             </thead>
             <tbody>
@@ -65,9 +91,12 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
                   <td className="py-1.5 text-left capitalize">
                     {MESES_CORTOS[i]} {anio}
                   </td>
-                  <td className="py-1.5">{eur(m.ingresos)}</td>
-                  <td className="py-1.5">{eur(m.gastos)}</td>
-                  <td className="py-1.5 font-medium">{eur(m.ingresos - m.gastos)}</td>
+                  {series.map((x) => (
+                    <td key={x.key} className="py-1.5">
+                      {eur(m[x.key] ?? 0)}
+                    </td>
+                  ))}
+                  <td className="py-1.5 font-medium">{eur(valorTotal(m))}</td>
                 </tr>
               ))}
             </tbody>
@@ -98,7 +127,7 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
                 <button
                   key={i}
                   type="button"
-                  aria-label={`${MESES_CORTOS[i]}: ingresos ${eur(m.ingresos)}, gastos ${eur(m.gastos)}`}
+                  aria-label={`${MESES_CORTOS[i]}: ${series.map((x) => `${x.label} ${eur(m[x.key] ?? 0)}`).join(', ')}`}
                   onPointerEnter={() => setActivo(i)}
                   onPointerLeave={() => setActivo(null)}
                   onFocus={() => setActivo(i)}
@@ -106,18 +135,33 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
                   onClick={() => setActivo(activo === i ? null : i)}
                   className={cx('relative flex h-full items-end justify-center gap-[2px] rounded-md outline-none', activo === i && 'bg-ink/[0.04]')}
                 >
-                  {(['ingresos', 'gastos'] as const).map((k) => (
+                  {apilado ? (
                     <span
-                      key={k}
-                      className="block w-[min(40%,14px)] rounded-t-[4px] transition-opacity"
-                      style={{
-                        height: `${(m[k] / top) * 100}%`,
-                        minHeight: m[k] > 0 ? 2 : 0,
-                        background: k === 'ingresos' ? C_INGRESOS : C_GASTOS,
-                        opacity: activo === null || activo === i ? 1 : 0.45,
-                      }}
-                    />
-                  ))}
+                      className="flex w-[min(60%,22px)] flex-col-reverse gap-[2px] transition-opacity"
+                      style={{ height: `${(valorTotal(m) / top) * 100}%`, opacity: activo === null || activo === i ? 1 : 0.45 }}
+                    >
+                      {series.map((x, j) => (
+                        <span
+                          key={x.key}
+                          className={cx('block w-full', j === series.length - 1 && 'rounded-t-[4px]')}
+                          style={{ flexGrow: m[x.key] ?? 0, flexBasis: 0, background: x.color, minHeight: (m[x.key] ?? 0) > 0 ? 2 : 0 }}
+                        />
+                      ))}
+                    </span>
+                  ) : (
+                    series.map((x) => (
+                      <span
+                        key={x.key}
+                        className="block w-[min(40%,14px)] rounded-t-[4px] transition-opacity"
+                        style={{
+                          height: `${((m[x.key] ?? 0) / top) * 100}%`,
+                          minHeight: (m[x.key] ?? 0) > 0 ? 2 : 0,
+                          background: x.color,
+                          opacity: activo === null || activo === i ? 1 : 0.45,
+                        }}
+                      />
+                    ))
+                  )}
                 </button>
               ))}
             </div>
@@ -144,11 +188,12 @@ export default function MonthlyChart({ meses, anio }: { meses: Mes[]; anio: numb
                 <p className="mb-1.5 text-xs capitalize text-muted">
                   {MESES_CORTOS[activo]} {anio}
                 </p>
-                <Fila color={C_INGRESOS} label="Ingresos" valor={meses[activo].ingresos} />
-                <Fila color={C_GASTOS} label="Gastos" valor={meses[activo].gastos} />
+                {series.map((x) => (
+                  <Fila key={x.key} color={x.color} label={x.label} valor={meses[activo][x.key] ?? 0} />
+                ))}
                 <div className="mt-1.5 flex justify-between border-t border-line pt-1.5">
-                  <span className="text-muted">Resultado</span>
-                  <strong className="num">{eur(meses[activo].ingresos - meses[activo].gastos)}</strong>
+                  <span className="text-muted">{total.label}</span>
+                  <strong className="num">{eur(valorTotal(meses[activo]))}</strong>
                 </div>
               </div>
             )}

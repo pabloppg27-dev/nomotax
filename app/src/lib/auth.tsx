@@ -104,7 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     storeOwner(null)
-    await supabase.auth.signOut()
+    // Solo este dispositivo: no cerrar la sesión del móvil o de otras pestañas
+    await supabase.auth.signOut({ scope: 'local' })
   }, [])
 
   const value = useMemo<AuthState>(() => {

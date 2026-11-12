@@ -148,3 +148,129 @@ export interface OcrResult {
   categoria: string
   notas: string | null
 }
+
+/* ------------------------------------------------------------- Laboral */
+
+export interface PerfilLaboral {
+  owner_id: string
+  convenio_nombre: string | null
+  convenio_codigo: string | null
+  periodo_prueba: string | null
+  pagas_convenio: number
+  horas_semana_convenio: number
+  notas: string | null
+}
+
+export interface CentroTrabajo {
+  id: string
+  owner_id: string
+  nombre: string
+  direccion: string | null
+  cp: string | null
+  ciudad: string | null
+  provincia: string | null
+  ccc: string | null
+}
+
+export interface CategoriaConvenio {
+  id: string
+  owner_id: string
+  nombre: string
+  grupo_cotizacion: number | null
+  salario_min_mensual: number | null
+  orden: number
+}
+
+export type EstadoTrabajador = 'solicitada' | 'en_tramite' | 'alta' | 'baja'
+
+export interface Trabajador {
+  id: string
+  owner_id: string
+  estado: EstadoTrabajador
+  nombre: string
+  dni: string
+  dni_caducidad: string | null
+  nss: string | null
+  nss_tramitar: boolean
+  fecha_nacimiento: string | null
+  domicilio: string | null
+  telefono: string | null
+  iban: string | null
+  nivel_estudios: string | null
+  fecha_inicio: string
+  centro_id: string | null
+  puesto: string | null
+  tipo_contrato: string
+  fecha_fin: string | null
+  motivo_temporal: string | null
+  sustituye_a: string | null
+  jornada: 'completa' | 'parcial'
+  horas_semana: number | null
+  horario: string | null
+  teletrabajo: boolean
+  salario_bruto_mensual: number
+  pagas: 12 | 14
+  observaciones: string | null
+  categoria_id: string | null
+  notas_asesor: string | null
+  fecha_baja: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type TipoDocTrabajador = 'dni' | 'contrato' | 'alta_ss' | 'teletrabajo' | 'modelo_145' | 'otro'
+
+export interface DocTrabajador {
+  id: string
+  owner_id: string
+  trabajador_id: string
+  tipo: TipoDocTrabajador
+  nombre: string | null
+  path: string
+  subido_por: string | null
+  created_at: string
+}
+
+export interface Nomina {
+  id: string
+  owner_id: string
+  trabajador_id: string | null
+  anio: number
+  mes: number
+  tipo: 'mensual' | 'extra' | 'finiquito' | 'atrasos' | 'otro'
+  estado: 'borrador' | 'publicada'
+  file_path: string
+  nombre_leido: string | null
+  dni_leido: string | null
+  bruto: number
+  neto: number
+  irpf: number
+  irpf_pct: number | null
+  ss_trabajador: number
+  ss_empresa: number
+  variables: number
+  coste_total: number
+  conceptos: { concepto: string; importe: number }[] | null
+  ocr: NominaOcr | null
+  publicada_at: string | null
+  created_at: string
+}
+
+export interface NominaOcr {
+  es_nomina: boolean
+  trabajador: { nombre: string | null; dni: string | null; nss: string | null }
+  empresa: string | null
+  periodo_mes: number | null
+  periodo_anio: number | null
+  tipo: Nomina['tipo']
+  total_devengado: number | null
+  total_deducciones: number | null
+  liquido: number | null
+  irpf_importe: number | null
+  irpf_pct: number | null
+  ss_trabajador: number | null
+  ss_empresa: number | null
+  variables: number | null
+  conceptos_variables: { concepto: string | null; importe: number }[]
+  notas: string | null
+}

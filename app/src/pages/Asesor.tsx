@@ -4,10 +4,12 @@ import { ArrowRight, Copy, Plus, Search, Users } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
-import type { Profile } from '../lib/types'
+import { ESTADOS_TRABAJADOR, diasHabilesHasta } from '../lib/laboral'
+import type { EstadoTrabajador, Profile } from '../lib/types'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, notify } from '../components/ui'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
+type Pendiente = { id: string; owner_id: string; nombre: string; fecha_inicio: string; estado: EstadoTrabajador; created_at: string }
 
 export default function Asesor() {
   const { me, setOwner } = useAuth()
@@ -15,14 +17,21 @@ export default function Asesor() {
   const [filas, setFilas] = useState<Fila[] | null>(null)
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState(false)
+  const [pendientes, setPendientes] = useState<Pendiente[]>([])
 
   const cargar = useCallback(async () => {
     const anio = new Date().getFullYear()
-    const [p, g, f] = await Promise.all([
+    const [p, g, f, w] = await Promise.all([
       supabase.from('profiles').select('*').eq('role', 'client').order('nombre'),
       supabase.from('expenses').select('owner_id, estado, base, fecha, created_at').gte('created_at', `${anio - 1}-01-01`),
       supabase.from('invoices').select('owner_id, estado, base, fecha, created_at').neq('estado', 'borrador').gte('fecha', `${anio}-01-01`),
+      supabase
+        .from('trabajadores')
+        .select('id, owner_id, nombre, fecha_inicio, estado, created_at')
+        .in('estado', ['solicitada', 'en_tramite'])
+        .order('fecha_inicio'),
     ])
+    setPendientes((w.data as Pendiente[]) ?? [])
     const gastos = (g.data ?? []) as { owner_id: string; estado: string; base: number; fecha: string | null; created_at: string }[]
     const facturas = (f.data ?? []) as { owner_id: string; base: number; created_at: string }[]
     setFilas(
@@ -55,6 +64,16 @@ export default function Asesor() {
     navigate('/')
   }
 
+  const abrirAlta = async (pend: Pendiente) => {
+    await setOwner(pend.owner_id)
+    navigate(`/laboral/trabajadores/${pend.id}`)
+  }
+
+  const nombreCliente = (id: string) => {
+    const c = filas?.find((x) => x.id === id)
+    return c?.nombre || c?.email || 'Cliente'
+  }
+
   return (
     <>
       <PageHeader
@@ -66,6 +85,36 @@ export default function Asesor() {
           </Button>
         }
       />
+
+      {pendientes.length > 0 && (
+        <Card className="mb-6 overflow-hidden">
+          <div className="border-b border-line bg-lima/30 px-4 py-3">
+            <h2 className="font-semibold">Altas pendientes ({pendientes.length})</h2>
+          </div>
+          <ul className="divide-y divide-line">
+            {pendientes.map((pend) => {
+              const dias = diasHabilesHasta(pend.fecha_inicio)
+              const est = ESTADOS_TRABAJADOR[pend.estado]
+              return (
+                <li key={pend.id}>
+                  <button onClick={() => abrirAlta(pend)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-paper">
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium">{pend.nombre}</span>
+                      <span className="block truncate text-sm text-muted">{nombreCliente(pend.owner_id)}</span>
+                    </span>
+                    <span className={`text-sm ${dias < 3 ? 'font-medium text-rojo' : 'text-muted'}`}>
+                      Empieza el {fecha(pend.fecha_inicio)}
+                      {dias < 3 ? ` · ${dias <= 0 ? '¡ya!' : `${dias} día${dias === 1 ? '' : 's'} hábil${dias === 1 ? '' : 'es'}`}` : ''}
+                    </span>
+                    <Badge tono={est.tono}>{est.label}</Badge>
+                    <ArrowRight className="size-4 text-muted" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </Card>
+      )}
 
       {filas === null ? (
         <Loading />

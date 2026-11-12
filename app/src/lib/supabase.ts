@@ -30,3 +30,29 @@ export async function signedUrl(path: string, seconds = 600): Promise<string | n
   const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, seconds)
   return data?.signedUrl ?? null
 }
+
+/** Abre un archivo privado en otra pestaña (la ventana se abre ya, para que Safari no la bloquee) */
+export async function abrirDocumento(path: string) {
+  const w = window.open('', '_blank')
+  const url = await signedUrl(path, 300)
+  if (!url) {
+    w?.close()
+    return
+  }
+  if (w) w.location.href = url
+  else window.location.href = url
+}
+
+/** Llama a una Edge Function. Si la sesión ya no es válida, cierra sesión aquí y lo explica. */
+export async function invocar<T>(fn: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(fn, { body })
+  if (error) {
+    const status = (error as { context?: Response }).context?.status
+    if (status === 401) {
+      await supabase.auth.signOut({ scope: 'local' })
+      throw new Error('Tu sesión ha caducado: vuelve a iniciar sesión')
+    }
+    throw new Error(await errorMessage(error))
+  }
+  return data as T
+}

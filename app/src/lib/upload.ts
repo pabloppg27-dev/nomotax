@@ -1,4 +1,4 @@
-import { BUCKET, errorMessage, supabase } from './supabase'
+import { BUCKET, errorMessage, invocar, supabase } from './supabase'
 import { nuevoId } from './id'
 import type { OcrResult } from './types'
 
@@ -47,8 +47,7 @@ export async function subirDocumento(ownerId: string, carpeta: 'gastos' | 'factu
 }
 
 export async function leerFactura(path: string, tipo: 'gasto' | 'emitida', ownerId: string): Promise<OcrResult> {
-  const { data, error } = await supabase.functions.invoke('ocr-factura', { body: { path, tipo, owner_id: ownerId } })
-  if (error) throw new Error(await errorMessage(error))
+  const data = await invocar<{ datos?: OcrResult }>('ocr-factura', { path, tipo, owner_id: ownerId })
   if (!data?.datos) throw new Error('No se han podido leer los datos')
   return data.datos as OcrResult
 }

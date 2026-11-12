@@ -14,6 +14,11 @@ import PresupuestoEditor from './pages/PresupuestoEditor'
 import Clientes from './pages/Clientes'
 import Perfil from './pages/Perfil'
 import Asesor from './pages/Asesor'
+import Trabajadores from './pages/laboral/Trabajadores'
+import NuevaAlta from './pages/laboral/NuevaAlta'
+import FichaTrabajador from './pages/laboral/FichaTrabajador'
+import Nominas from './pages/laboral/Nominas'
+import Empresa from './pages/laboral/Empresa'
 
 function Protegido({ children }: { children: ReactNode }) {
   const { session, loading, me } = useAuth()
@@ -84,6 +89,12 @@ export default function App() {
             <Route path="presupuestos/nuevo" element={<PresupuestoEditor />} />
             <Route path="presupuestos/:id" element={<PresupuestoEditor />} />
             <Route path="clientes" element={<Clientes />} />
+            <Route path="laboral" element={<Trabajadores />} />
+            <Route path="laboral/alta" element={<NuevaAlta />} />
+            <Route path="laboral/alta/:id" element={<NuevaAlta />} />
+            <Route path="laboral/trabajadores/:id" element={<FichaTrabajador />} />
+            <Route path="laboral/nominas" element={<Nominas />} />
+            <Route path="laboral/empresa" element={<Empresa />} />
             <Route path="perfil" element={<Perfil />} />
             <Route
               path="asesor"
