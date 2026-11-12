@@ -7,10 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "movil": "vite build && vite preview --host --port 4173 --strictPort"
+    "movil": "vite build && vite preview --host --port 4173 --strictPort",
+    "sincronizar": "node --env-file-if-exists=scripts/sincronizar.env scripts/sincronizar.ts",
+    "sincronizar:instalar": "zsh scripts/instalar-copia.sh",
+    "sincronizar:quitar": "zsh scripts/instalar-copia.sh --quitar"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
+    "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
     "lucide-react": "^1.72.0",
@@ -20,6 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",

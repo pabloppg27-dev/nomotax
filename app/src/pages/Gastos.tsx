@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AlertCircle, CheckCircle2, Loader2, Receipt, Search } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, trimestreActual, type Periodo } from '../lib/format'
 import { CATEGORIAS, nombreCategoria } from '../lib/categorias'
+import { necesitaRevision } from '../lib/contabilidad.ts'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
 import { nuevoId } from '../lib/id'
 import type { Expense } from '../lib/types'
@@ -15,7 +17,8 @@ import { Badge, Card, Empty, Input, Loading, PageHeader, Select, notify } from '
 type Tarea = { key: string; nombre: string; estado: 'subiendo' | 'leyendo' | 'hecho' | 'error'; error?: string }
 
 export default function Gastos() {
-  const { ownerId } = useAuth()
+  const { ownerId, isAdvisor } = useAuth()
+  const [params, setParams] = useSearchParams()
   const [gastos, setGastos] = useState<Expense[] | null>(null)
   const [periodo, setPeriodo] = useState<Periodo>(trimestreActual())
   const [categoria, setCategoria] = useState('')
@@ -37,7 +40,16 @@ export default function Gastos() {
   }, [ownerId])
 
   useEffect(() => {
-    cargar()
+    cargar().then((lista) => {
+      // Enlace directo desde el panel del asesor: /gastos?revisar=<id>
+      const id = params.get('revisar')
+      const g = id && lista.find((x) => x.id === id)
+      if (g) {
+        setAbierto(g)
+        setParams({}, { replace: true })
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cargar])
 
   const actualizarTarea = (key: string, patch: Partial<Tarea>) =>
@@ -77,6 +89,8 @@ export default function Gastos() {
               concepto: ocr.concepto,
               categoria: ocr.categoria,
               ...imp,
+              naturaleza: ocr.naturaleza === 'inversion' ? 'inversion' : 'gasto',
+              revision: necesitaRevision(ocr.naturaleza, imp.base) ? 'pendiente' : null,
               ocr,
             })
             .eq('id', fila.id)
@@ -232,7 +246,9 @@ export default function Gastos() {
                   <td className="num hidden text-right md:table-cell md:px-4 md:py-3">{eur(g.cuota_iva)}</td>
                   <td className="num order-2 text-right font-medium md:order-none md:px-4 md:py-3">{eur(g.total)}</td>
                   <td className="order-5 col-span-2 md:order-none md:px-4 md:py-3 md:text-right">
-                    {g.estado === 'pendiente' ? (
+                    {g.revision === 'pendiente' ? (
+                      <Badge tono="ambar">{isAdvisor ? '¿Amortización?' : 'En revisión por tu asesor'}</Badge>
+                    ) : g.estado === 'pendiente' ? (
                       <Badge tono="lima">Revisar</Badge>
                     ) : g.contabilizado ? (
                       <Badge tono="verde">Contabilizado</Badge>

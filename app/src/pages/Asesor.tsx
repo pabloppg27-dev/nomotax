@@ -10,6 +10,7 @@ import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, n
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
 type LlamadaPend = { id: string; owner_id: string; tipo: 'llamame' | 'cita'; inicio: string | null; modalidad: string | null; telefono: string | null; tema: string | null; franja: string | null; meet_link: string | null; created_at: string }
+type Amortizable = { id: string; owner_id: string; proveedor: string | null; concepto: string | null; base: number; fecha: string | null }
 type Pendiente = { id: string; owner_id: string; nombre: string; fecha_inicio: string; estado: EstadoTrabajador; created_at: string }
 
 export default function Asesor() {
@@ -20,10 +21,11 @@ export default function Asesor() {
   const [alta, setAlta] = useState(false)
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
+  const [amortizables, setAmortizables] = useState<Amortizable[]>([])
 
   const cargar = useCallback(async () => {
     const anio = new Date().getFullYear()
-    const [p, g, f, w, ll] = await Promise.all([
+    const [p, g, f, w, ll, am] = await Promise.all([
       supabase.from('profiles').select('*').eq('role', 'client').order('nombre'),
       supabase.from('expenses').select('owner_id, estado, base, fecha, created_at').gte('created_at', `${anio - 1}-01-01`),
       supabase.from('invoices').select('owner_id, estado, base, fecha, created_at').neq('estado', 'borrador').gte('fecha', `${anio}-01-01`),
@@ -33,7 +35,9 @@ export default function Asesor() {
         .in('estado', ['solicitada', 'en_tramite'])
         .order('fecha_inicio'),
       supabase.from('llamadas').select('*').eq('estado', 'pendiente').order('created_at'),
+      supabase.from('expenses').select('id, owner_id, proveedor, concepto, base, fecha').eq('revision', 'pendiente').order('fecha'),
     ])
+    setAmortizables((am.data as Amortizable[]) ?? [])
     setLlamadas((ll.data as LlamadaPend[]) ?? [])
     setPendientes((w.data as Pendiente[]) ?? [])
     const gastos = (g.data ?? []) as { owner_id: string; estado: string; base: number; fecha: string | null; created_at: string }[]
@@ -128,6 +132,37 @@ export default function Asesor() {
                 <Button size="sm" variant="secondary" onClick={() => marcarHecha(l.id)}>
                   Hecha
                 </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {amortizables.length > 0 && (
+        <Card className="mb-6 overflow-hidden">
+          <div className="border-b border-line bg-ambar/10 px-4 py-3">
+            <h2 className="font-semibold">Posibles amortizaciones por revisar ({amortizables.length})</h2>
+            <p className="text-sm text-muted">Compras de más de 300 € que parecen inversión. Decide si son gasto o inmovilizado.</p>
+          </div>
+          <ul className="divide-y divide-line">
+            {amortizables.map((a) => (
+              <li key={a.id}>
+                <button
+                  onClick={async () => {
+                    await setOwner(a.owner_id)
+                    navigate(`/gastos?revisar=${a.id}`)
+                  }}
+                  className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-paper"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{a.concepto || a.proveedor || 'Gasto'}</span>
+                    <span className="block truncate text-sm text-muted">
+                      {nombreCliente(a.owner_id)} · {a.proveedor ?? ''} · {fecha(a.fecha)}
+                    </span>
+                  </span>
+                  <span className="num font-medium">{eur(a.base)}</span>
+                  <ArrowRight className="size-4 text-muted" />
+                </button>
               </li>
             ))}
           </ul>

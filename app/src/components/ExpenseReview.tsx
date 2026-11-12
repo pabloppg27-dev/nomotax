@@ -1,19 +1,38 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, Check, Sparkles, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, Landmark, Sparkles, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, supabase } from '../lib/supabase'
 import { eur, limpiarNif, num, round2 } from '../lib/format'
 import { CATEGORIAS } from '../lib/categorias'
 import { importesDe, leerFactura } from '../lib/upload'
 import type { Expense, OcrResult } from '../lib/types'
+import { CUENTA_CATEGORIA, TIPOS_INMOVILIZADO, necesitaRevision, type Inmovilizado } from '../lib/contabilidad.ts'
 import DocPreview from './DocPreview'
 import NumInput from './NumInput'
 import { Button, Field, Input, Modal, Select, confirmar, notify } from './ui'
 
 type Form = Pick<
   Expense,
-  'fecha' | 'proveedor' | 'proveedor_nif' | 'numero' | 'concepto' | 'categoria' | 'base' | 'iva_pct' | 'cuota_iva' | 'irpf_pct' | 'cuota_irpf' | 'total' | 'contabilizado'
+    | 'fecha'
+  | 'proveedor'
+  | 'proveedor_nif'
+  | 'numero'
+  | 'concepto'
+  | 'categoria'
+  | 'base'
+  | 'iva_pct'
+  | 'cuota_iva'
+  | 'irpf_pct'
+  | 'cuota_irpf'
+  | 'total'
+  | 'contabilizado'
+  | 'naturaleza'
+  | 'pagado'
+  | 'fecha_pago'
 >
+
+/** Lo que decide el asesor: gasto del año o inmovilizado que se amortiza */
+type Decision = { tipo: 'gasto' | 'inmovilizado' | null; cuenta: string; inmoId?: string; clase: string; coeficiente: number; fecha_inicio: string; nombre: string }
 
 export default function ExpenseReview({
   gasto,
@@ -29,6 +48,7 @@ export default function ExpenseReview({
   const [guardando, setGuardando] = useState(false)
   const [leyendo, setLeyendo] = useState(false)
   const [ocr, setOcr] = useState<OcrResult | null>(null)
+  const [dec, setDec] = useState<Decision | null>(null)
 
   useEffect(() => {
     setOcr(gasto?.ocr ?? null)
@@ -47,8 +67,32 @@ export default function ExpenseReview({
       cuota_irpf: Number(gasto.cuota_irpf),
       total: Number(gasto.total),
       contabilizado: gasto.contabilizado,
+      naturaleza: gasto.naturaleza ?? 'gasto',
+      pagado: gasto.pagado ?? true,
+      fecha_pago: gasto.fecha_pago ?? null,
     })
-  }, [gasto])
+    const tipoOcr = gasto.ocr?.tipo_inmovilizado
+    const clase = TIPOS_INMOVILIZADO.find((t) => t.id === tipoOcr) ?? TIPOS_INMOVILIZADO[0]
+    const base: Decision = {
+      tipo: gasto.revision === 'gasto' || gasto.revision === 'inmovilizado' ? gasto.revision : null,
+      cuenta: gasto.cuenta ?? '',
+      clase: clase.id,
+      coeficiente: clase.coeficiente,
+      fecha_inicio: gasto.fecha ?? '',
+      nombre: gasto.concepto ?? '',
+    }
+    setDec(base)
+    if (isAdvisor)
+      supabase
+        .from('inmovilizados')
+        .select('*')
+        .eq('expense_id', gasto.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          const i = data as Inmovilizado | null
+          if (i) setDec({ ...base, inmoId: i.id, clase: i.tipo, coeficiente: Number(i.coeficiente), fecha_inicio: i.fecha_inicio, nombre: i.nombre })
+        })
+  }, [gasto, isAdvisor])
 
   if (!gasto || !form) return null
 
@@ -72,6 +116,7 @@ export default function ExpenseReview({
         numero: o.numero ?? form.numero,
         concepto: o.concepto ?? form.concepto,
         categoria: o.categoria || form.categoria,
+        naturaleza: o.naturaleza === 'inversion' ? 'inversion' : 'gasto',
         base: imp.base,
         iva_pct: imp.iva_pct,
         cuota_iva: imp.cuota_iva,
@@ -88,14 +133,52 @@ export default function ExpenseReview({
 
   const guardar = async () => {
     if (!form.fecha) return notify('Falta la fecha de la factura', 'error')
+    const d = dec as Decision
+    const decidido = isAdvisor && dec ? dec.tipo : null
+    if (decidido === 'inmovilizado' && (!d.fecha_inicio || !d.coeficiente)) return notify('Falta la fecha de alta o el coeficiente del inmovilizado', 'error')
     setGuardando(true)
-    const { error } = await supabase
-      .from('expenses')
-      .update({ ...form, proveedor_nif: limpiarNif(form.proveedor_nif), estado: 'revisado', ocr })
-      .eq('id', gasto.id)
+    const cambios: Record<string, unknown> = {
+      ...form,
+      fecha_pago: form.pagado ? form.fecha_pago : null,
+      proveedor_nif: limpiarNif(form.proveedor_nif),
+      estado: 'revisado',
+      ocr,
+    }
+    if (decidido) {
+      cambios.revision = d.tipo
+      cambios.cuenta = d.tipo === 'gasto' && d.cuenta.trim() ? d.cuenta.trim() : null
+    } else if (gasto.revision !== 'gasto' && gasto.revision !== 'inmovilizado') {
+      cambios.revision = necesitaRevision(form.naturaleza, form.base) ? 'pendiente' : null
+    }
+    const { error } = await supabase.from('expenses').update(cambios).eq('id', gasto.id)
+    if (error) {
+      setGuardando(false)
+      return notify(await errorMessage(error), 'error')
+    }
+    // Ficha de inmovilizado (con su amortización) o se quita si al final es gasto
+    if (decidido === 'inmovilizado') {
+      const clase = TIPOS_INMOVILIZADO.find((t) => t.id === d.clase) ?? TIPOS_INMOVILIZADO[0]
+      const fila = {
+        owner_id: gasto.owner_id,
+        expense_id: gasto.id,
+        nombre: d.nombre.trim() || form.concepto || form.proveedor || 'Inmovilizado',
+        tipo: clase.id,
+        cuenta: clase.cuenta,
+        cuenta_amortizacion: clase.amortizacion,
+        valor: form.base,
+        fecha_inicio: d.fecha_inicio,
+        coeficiente: d.coeficiente,
+      }
+      const r = d.inmoId ? await supabase.from('inmovilizados').update(fila).eq('id', d.inmoId) : await supabase.from('inmovilizados').insert(fila)
+      if (r.error) {
+        setGuardando(false)
+        return notify(await errorMessage(r.error), 'error')
+      }
+    } else if (decidido === 'gasto' && d.inmoId) {
+      await supabase.from('inmovilizados').delete().eq('id', d.inmoId)
+    }
     setGuardando(false)
-    if (error) return notify(await errorMessage(error), 'error')
-    notify('Gasto guardado')
+    notify(decidido === 'inmovilizado' ? 'Guardado como inmovilizado: se amortizará cada mes' : 'Gasto guardado')
     onChanged()
     onClose()
   }
@@ -236,6 +319,99 @@ export default function ExpenseReview({
               </p>
             )}
           </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" className="size-4 accent-ink" checked={form.pagado} onChange={(e) => set('pagado', e.target.checked)} />
+              Ya está pagada
+            </label>
+            {form.pagado && (
+              <label className="flex items-center gap-2 text-muted">
+                el día
+                <Input
+                  type="date"
+                  className="!h-9 w-40 !text-sm"
+                  value={form.fecha_pago ?? form.fecha ?? ''}
+                  onChange={(e) => set('fecha_pago', e.target.value || null)}
+                />
+              </label>
+            )}
+          </div>
+
+          {!isAdvisor && gasto.revision === 'pendiente' && (
+            <div className="flex gap-2 rounded-xl bg-ambar/10 px-3 py-2.5 text-sm text-ambar">
+              <Landmark className="mt-0.5 size-4 shrink-0" />
+              Parece una compra duradera (más de 300 €). Tu asesor revisará si se amortiza en varios años.
+            </div>
+          )}
+
+          {isAdvisor && dec && (
+            <div className="rounded-xl border border-line p-4">
+              <p className="mb-1 flex items-center gap-2 font-medium">
+                <Landmark className="size-4" /> Contabilidad (solo asesor)
+              </p>
+              <p className="mb-3 text-sm text-muted">
+                {gasto.revision === 'pendiente'
+                  ? 'La IA cree que es una inversión. ¿Es gasto del año o inmovilizado que se amortiza?'
+                  : form.naturaleza === 'inversion'
+                    ? 'La IA lo marcó como inversión.'
+                    : '¿Cómo se contabiliza?'}
+              </p>
+              <div className="mb-3 inline-flex rounded-full bg-paper p-1 text-sm">
+                {(['gasto', 'inmovilizado'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setDec({ ...dec, tipo: t })}
+                    className={`rounded-full px-4 py-1.5 ${dec.tipo === t ? 'bg-ink text-white' : 'text-muted hover:text-ink'}`}
+                  >
+                    {t === 'gasto' ? 'Es gasto' : 'Es inmovilizado'}
+                  </button>
+                ))}
+              </div>
+              {dec.tipo === 'gasto' && (
+                <Field label="Cuenta de gasto (opcional)">
+                  <Input
+                    value={dec.cuenta}
+                    onChange={(e) => setDec({ ...dec, cuenta: e.target.value.replace(/\D/g, '') })}
+                    placeholder={`Por la categoría: ${CUENTA_CATEGORIA[form.categoria] ?? '629'}`}
+                  />
+                </Field>
+              )}
+              {dec.tipo === 'inmovilizado' && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Nombre del bien" className="sm:col-span-2">
+                    <Input value={dec.nombre} onChange={(e) => setDec({ ...dec, nombre: e.target.value })} placeholder="Ej.: MacBook Pro 14" />
+                  </Field>
+                  <Field label="Tipo de bien" className="sm:col-span-2">
+                    <Select
+                      value={dec.clase}
+                      onChange={(e) => {
+                        const c = TIPOS_INMOVILIZADO.find((t) => t.id === e.target.value)!
+                        setDec({ ...dec, clase: c.id, coeficiente: c.coeficiente })
+                      }}
+                    >
+                      {TIPOS_INMOVILIZADO.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.nombre} · {t.cuenta}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field label="Coeficiente anual %">
+                    <NumInput className="text-right" value={dec.coeficiente} onValue={(n) => setDec({ ...dec, coeficiente: n })} />
+                  </Field>
+                  <Field label="Puesta en funcionamiento">
+                    <Input type="date" value={dec.fecha_inicio} onChange={(e) => setDec({ ...dec, fecha_inicio: e.target.value })} />
+                  </Field>
+                  <p className="text-sm text-muted sm:col-span-2">
+                    Valor {eur(form.base)} · cuota anual {eur(round2((form.base * dec.coeficiente) / 100))} · se amortiza en unos{' '}
+                    {dec.coeficiente ? Math.ceil(100 / dec.coeficiente) : '–'} años
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {isAdvisor && (
             <label className="flex items-center gap-2 text-sm">

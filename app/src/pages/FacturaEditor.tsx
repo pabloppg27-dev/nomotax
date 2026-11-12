@@ -13,7 +13,7 @@ import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
 import LinesEditor from '../components/LinesEditor'
 import TotalsBox from '../components/TotalsBox'
-import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, confirmar, notify } from '../components/ui'
+import { Badge, Button, Card, Field, Input, Loading, Modal, Select, Textarea, confirmar, notify } from '../components/ui'
 
 export default function FacturaEditor() {
   const { id } = useParams()
@@ -35,6 +35,7 @@ export default function FacturaEditor() {
   const [rectificadaPor, setRectificadaPor] = useState<Min[]>([])
   const [original, setOriginal] = useState<Min | null>(null)
   const [guardando, setGuardando] = useState(false)
+  const [fechaCobro, setFechaCobro] = useState<string | null>(null)
 
   const aplicar = (f: Invoice) => {
     setFactura(f)
@@ -227,9 +228,15 @@ export default function FacturaEditor() {
     navigate(`/facturas/${data.id}`)
   }
 
-  const cambiarEstado = async (estado: 'emitida' | 'cobrada') => {
+  const cambiarEstado = async (estado: 'emitida' | 'cobrada', cobro: string | null = null) => {
     if (!factura) return
-    const { data, error } = await supabase.from('invoices').update({ estado }).eq('id', factura.id).select().single()
+    const { data, error } = await supabase
+      .from('invoices')
+      .update({ estado, fecha_cobro: estado === 'cobrada' ? cobro : null })
+      .eq('id', factura.id)
+      .select()
+      .single()
+    setFechaCobro(null)
     if (error) return notify(await errorMessage(error), 'error')
     aplicar(data as Invoice)
     notify(estado === 'cobrada' ? 'Marcada como cobrada' : 'Marcada como pendiente de cobro')
@@ -314,6 +321,7 @@ export default function FacturaEditor() {
         : 'Nueva factura'
 
   return (
+    <>
     <DocShell
       back="/facturas"
       backLabel="Facturas"
@@ -448,7 +456,7 @@ export default function FacturaEditor() {
               Descargar PDF
             </Button>
             {sinMovimiento ? null : factura.estado === 'emitida' ? (
-              <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => cambiarEstado('cobrada')}>
+              <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => setFechaCobro(hoyISO())}>
                 {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
               </Button>
             ) : (
@@ -492,5 +500,27 @@ export default function FacturaEditor() {
         )
       }
     />
+    {fechaCobro !== null && (
+      <Modal
+        open
+        onClose={() => setFechaCobro(null)}
+        title={esRectificativa ? '¿Cuándo se abonó?' : '¿Cuándo la cobraste?'}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setFechaCobro(null)}>
+              Cancelar
+            </Button>
+            <Button icon={<CheckCircle2 className="size-4" />} onClick={() => cambiarEstado('cobrada', fechaCobro || hoyISO())}>
+              {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
+            </Button>
+          </>
+        }
+      >
+        <Field label="Fecha del cobro" hint="Así el banco y los clientes de la contabilidad cuadran con tu extracto.">
+          <Input type="date" value={fechaCobro} onChange={(e) => setFechaCobro(e.target.value)} />
+        </Field>
+      </Modal>
+    )}
+    </>
   )
 }

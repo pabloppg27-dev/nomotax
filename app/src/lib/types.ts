@@ -105,6 +105,7 @@ export interface Invoice extends DocBase {
   contabilizado: boolean
   emitida_at: string | null
   tipo: 'ordinaria' | 'rectificativa'
+  fecha_cobro: string | null
   rectifica_id: string | null
   rectifica_numero: string | null
   rectifica_fecha: string | null
@@ -135,6 +136,11 @@ export interface Expense {
   contabilizado: boolean
   created_at: string
   updated_at: string
+  pagado: boolean
+  fecha_pago: string | null
+  cuenta: string | null
+  naturaleza: 'gasto' | 'inversion'
+  revision: 'pendiente' | 'gasto' | 'inmovilizado' | null
 }
 
 /** Lo que devuelve la función ocr-factura */
@@ -156,6 +162,8 @@ export interface OcrResult {
   moneda: string | null
   categoria: string
   notas: string | null
+  naturaleza?: 'gasto' | 'inversion'
+  tipo_inmovilizado?: string | null
 }
 
 /* ------------------------------------------------------------- Laboral */

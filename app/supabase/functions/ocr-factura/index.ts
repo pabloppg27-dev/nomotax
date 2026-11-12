@@ -45,6 +45,12 @@ const CATEGORIAS = [
   "publicidad", "viajes", "vehiculo", "formacion", "seguros", "bancos", "tributos", "otros",
 ];
 
+// Tipos de inmovilizado (las mismas claves que usa la app para amortizar)
+const TIPOS_INMOVILIZADO = [
+  "ninguno", "equipos_informaticos", "aplicaciones", "mobiliario", "maquinaria", "utillaje",
+  "instalaciones", "transporte", "construcciones", "otro",
+];
+
 const MAX_BYTES = 15 * 1024 * 1024;
 
 // Límite de la API: máximo 16 campos con anyOf. Los textos desconocidos vienen como "" (luego se pasan a null)
@@ -57,7 +63,7 @@ const SCHEMA = {
   required: [
     "es_factura", "tipo_documento", "emisor", "receptor", "numero", "fecha", "vencimiento",
     "concepto", "desglose_iva", "base_total", "cuota_iva_total", "irpf_pct", "cuota_irpf",
-    "total", "moneda", "categoria", "notas",
+    "total", "moneda", "categoria", "naturaleza", "tipo_inmovilizado", "notas",
   ],
   properties: {
     es_factura: { type: "boolean" },
@@ -94,6 +100,8 @@ const SCHEMA = {
     total: numOpcional,
     moneda: texto,
     categoria: { type: "string", enum: CATEGORIAS },
+    naturaleza: { type: "string", enum: ["gasto", "inversion"] },
+    tipo_inmovilizado: { type: "string", enum: TIPOS_INMOVILIZADO },
     notas: texto,
   },
 };
@@ -111,6 +119,8 @@ Reglas:
 - total: el importe final a pagar de la factura.
 - concepto: resumen breve (máximo 8 palabras) de lo que se factura.
 - categoria: para gastos, la categoría contable que mejor encaje: compras (mercaderías y materias primas), suministros (luz, agua, gas, internet, teléfono), alquiler, software (software y suscripciones), material (material de oficina y equipos), profesionales (gestoría, abogados, consultores, freelance), publicidad (publicidad y marketing), viajes (transporte, alojamiento y dietas), vehiculo (combustible, reparaciones, parking, peajes), formacion, seguros, bancos (comisiones bancarias), tributos (impuestos y tasas), otros.
+- naturaleza: "inversion" si lo comprado es un bien duradero que la empresa usará más de un año (ordenadores, móviles, tablets, monitores, impresoras, muebles, maquinaria, herramientas, vehículos, instalaciones y reformas del local, licencias de software de compra única); "gasto" si se consume en el año (suministros, servicios, suscripciones mensuales o anuales, reparaciones, material fungible, comidas, viajes…). Si dudas, "gasto" y explícalo en "notas".
+- tipo_inmovilizado: si naturaleza es "inversion", el tipo de bien: equipos_informaticos (ordenadores, portátiles, móviles, tablets, monitores, impresoras), aplicaciones (software de compra única, web a medida), mobiliario, maquinaria, utillaje (herramientas), instalaciones (reformas, climatización, electricidad del local), transporte (vehículos), construcciones (edificios, locales), otro. Si es "gasto", "ninguno".
 - es_factura: false si el documento no es una factura ni un ticket (por ejemplo, un presupuesto, un albarán o una foto sin relación). Explica el motivo en "notas".
 - notas: cualquier duda que deba revisar una persona (datos ilegibles, sumas que no cuadran, factura en otra moneda, etc.). "" si no hay dudas.`;
 
