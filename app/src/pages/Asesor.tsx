@@ -81,6 +81,7 @@ export default function Asesor() {
   }
 
   const nombreCliente = (id: string) => {
+    if (id === me?.id) return me.nombre || me.email || 'Tú'
     const c = filas?.find((x) => x.id === id)
     return c?.nombre || c?.email || 'Cliente'
   }
