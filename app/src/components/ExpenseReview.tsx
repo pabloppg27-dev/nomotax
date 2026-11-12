@@ -236,7 +236,7 @@ export default function ExpenseReview({
       }
     >
       <div className="grid gap-6 md:grid-cols-[1fr_1.1fr]">
-        <div className="md:sticky md:top-0 md:self-start">
+        <div className="min-w-0 md:sticky md:top-0 md:self-start">
           <DocPreview path={gasto.file_path} />
           {gasto.file_path && (
             <Button
@@ -252,13 +252,13 @@ export default function ExpenseReview({
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {ocr && (
             <div className="flex gap-2 rounded-xl bg-lima/35 px-3 py-2.5 text-sm">
               <Sparkles className="mt-0.5 size-4 shrink-0" />
-              <span>
-                Datos leídos automáticamente. Revísalos antes de confirmar.
-                {ocr.notas && <span className="mt-1 block text-ink/75">{ocr.notas}</span>}
+              <span className="min-w-0">
+                Leído automáticamente. Revísalo y confirma.
+                {ocr.notas && <NotaIA texto={ocr.notas} />}
               </span>
             </div>
           )}
@@ -453,5 +453,21 @@ export default function ExpenseReview({
         </div>
       </div>
     </Modal>
+  )
+}
+
+/** La nota de la IA, en corto: dos líneas y «Ver más» si hace falta */
+function NotaIA({ texto }: { texto: string }) {
+  const [abierta, setAbierta] = useState(false)
+  const larga = texto.length > 110
+  return (
+    <span className="mt-1 block text-ink/75">
+      <span className={larga && !abierta ? 'line-clamp-2' : undefined}>{texto}</span>
+      {larga && (
+        <button type="button" className="mt-0.5 font-medium text-ink underline underline-offset-2" onClick={() => setAbierta(!abierta)}>
+          {abierta ? 'Ver menos' : 'Ver más'}
+        </button>
+      )}
+    </span>
   )
 }

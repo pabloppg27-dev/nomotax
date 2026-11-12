@@ -220,19 +220,19 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         className={cx(
-          'relative flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl',
+          'relative flex max-h-[calc(100dvh-max(1.5rem,env(safe-area-inset-top)))] w-full flex-col rounded-t-2xl bg-white shadow-2xl sm:max-h-[92dvh] sm:rounded-2xl',
           wide ? 'sm:max-w-5xl' : 'sm:max-w-lg',
         )}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="rounded-full p-1.5 text-muted hover:bg-ink/5" aria-label="Cerrar">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line py-2 pl-5 pr-2 sm:py-3 sm:pl-6 sm:pr-3">
+          <h2 className="min-w-0 truncate text-lg font-semibold">{title}</h2>
+          <button onClick={onClose} className="grid size-11 shrink-0 place-items-center rounded-full bg-paper text-ink hover:bg-ink/10" aria-label="Cerrar">
             <X className="size-5" />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
         {footer && (
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-line px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
             {footer}
           </div>
         )}

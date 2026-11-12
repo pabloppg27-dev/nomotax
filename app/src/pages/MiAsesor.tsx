@@ -205,7 +205,7 @@ function Llamame({ onHecho }: { onHecho: () => void }) {
   }
 
   return (
-    <form onSubmit={enviar} className="grid max-w-xl gap-4 sm:grid-cols-2">
+    <form onSubmit={enviar} className="grid max-w-xl grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2">
       <Field label="Teléfono">
         <Input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
       </Field>
@@ -340,7 +340,7 @@ function ElegirHora({ onHecho }: { onHecho: () => void }) {
   if (!dias.length) return <p className="text-sm text-muted">No quedan huecos libres en las próximas semanas. Escríbenos por WhatsApp.</p>
 
   return (
-    <form onSubmit={confirmar} className="space-y-5">
+    <form onSubmit={confirmar} className="min-w-0 space-y-5">
       <div>
         <p className="mb-2 text-[13px] font-medium text-ink/80">Día</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -390,7 +390,7 @@ function ElegirHora({ onHecho }: { onHecho: () => void }) {
       )}
 
       {hora && (
-        <div className="grid max-w-xl gap-4 border-t border-line pt-5 sm:grid-cols-2">
+        <div className="grid max-w-xl grid-cols-[minmax(0,1fr)] gap-4 border-t border-line pt-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <p className="mb-2 text-[13px] font-medium text-ink/80">¿Cómo prefieres hablar?</p>
             <div className="flex flex-wrap gap-2">
@@ -422,7 +422,7 @@ function ElegirHora({ onHecho }: { onHecho: () => void }) {
             <Textarea value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ej.: revisar la declaración del trimestre" />
           </Field>
           <div className="sm:col-span-2">
-            <Button type="submit" variant="accent" icon={<CalendarClock className="size-4" />} loading={enviando}>
+            <Button type="submit" variant="accent" className="!h-auto w-full !whitespace-normal py-3 text-left sm:w-auto" icon={<CalendarClock className="size-4 shrink-0" />} loading={enviando}>
               Confirmar cita · {fLargo.format(new Date(hora))}
             </Button>
           </div>

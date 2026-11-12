@@ -122,7 +122,7 @@ Reglas:
 - naturaleza: "inversion" si lo comprado es un bien duradero que la empresa usará más de un año (ordenadores, móviles, tablets, monitores, impresoras, muebles, maquinaria, herramientas, vehículos, instalaciones y reformas del local, licencias de software de compra única); "gasto" si se consume en el año (suministros, servicios, suscripciones mensuales o anuales, reparaciones, material fungible, comidas, viajes…). Si dudas, "gasto" y explícalo en "notas".
 - tipo_inmovilizado: si naturaleza es "inversion", el tipo de bien: equipos_informaticos (ordenadores, portátiles, móviles, tablets, monitores, impresoras), aplicaciones (software de compra única, web a medida), mobiliario, maquinaria, utillaje (herramientas), instalaciones (reformas, climatización, electricidad del local), transporte (vehículos), construcciones (edificios, locales), otro. Si es "gasto", "ninguno".
 - es_factura: false si el documento no es una factura ni un ticket (por ejemplo, un presupuesto, un albarán o una foto sin relación). Explica el motivo en "notas".
-- notas: cualquier duda que deba revisar una persona (datos ilegibles, sumas que no cuadran, factura en otra moneda, etc.). "" si no hay dudas.`;
+- notas: solo si hay algo que deba revisar una persona (datos ilegibles, sumas que no cuadran, factura que parece emitida y no recibida…). Una sola frase corta y directa, máximo 15 palabras, sin repetir importes ni NIF. Ej.: "Parece una factura emitida, no recibida." "" si no hay dudas.`;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
