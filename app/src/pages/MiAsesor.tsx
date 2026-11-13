@@ -102,7 +102,7 @@ export default function MiAsesor() {
       <Card className="relative mb-6 overflow-hidden p-6 sm:p-8">
         <AsesorCard onAgendar={() => agendaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
         <p className="mx-auto mt-5 max-w-xl text-center text-[15px] text-ink/75 sm:mx-0 sm:text-left">
-          Escríbeme por WhatsApp para dudas rápidas, mándame un email si quieres adjuntar documentos, o reserva una llamada: elige un hueco en mi agenda o pídeme que te llame en cuanto pueda.
+          Escríbeme, llámame o reserva una llamada.
         </p>
       </Card>
 
