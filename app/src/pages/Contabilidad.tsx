@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Plus, Search, Trash2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileSpreadsheet, Plus, Search, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha, rangoPeriodo, trimestreActual, type Periodo } from '../lib/format'
@@ -29,12 +29,12 @@ type Vista = 'resumen' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'balance' | 'inm
 
 const VISTAS: { id: Vista; label: string }[] = [
   { id: 'resumen', label: 'Resumen' },
-  { id: 'diario', label: 'Libro diario' },
-  { id: 'mayor', label: 'Libro mayor' },
-  { id: 'sumas', label: 'Sumas y saldos' },
   { id: 'pyg', label: 'Pérdidas y ganancias' },
   { id: 'balance', label: 'Balance' },
   { id: 'inmovilizado', label: 'Inmovilizado' },
+  { id: 'diario', label: 'Libro diario' },
+  { id: 'mayor', label: 'Libro mayor' },
+  { id: 'sumas', label: 'Sumas y saldos' },
   { id: 'manuales', label: 'Apertura y asientos manuales' },
 ]
 
@@ -45,6 +45,7 @@ export default function Contabilidad() {
   const [periodo, setPeriodo] = useState<Periodo>({ anio: trimestreActual().anio, trimestre: 0 })
   const [vista, setVista] = useState<Vista>('resumen')
   const [exportando, setExportando] = useState<string | null>(null)
+  const [otroFormato, setOtroFormato] = useState(false)
 
   const cargar = useCallback(async () => {
     if (!ownerId) return
@@ -129,11 +130,43 @@ export default function Contabilidad() {
         <Button variant="accent" icon={<FileSpreadsheet className="size-4" />} loading={exportando === 'excel'} onClick={() => exportar('excel')}>
           Descargar Excel
         </Button>
-        {(['a3', 'sage', 'holded'] as const).map((f) => (
-          <Button key={f} variant="secondary" size="md" icon={<Download className="size-4" />} loading={exportando === f} onClick={() => exportar(f)}>
-            {f === 'a3' ? 'A3' : f === 'sage' ? 'Sage' : 'Holded'}
+        <div className="relative">
+          <Button
+            variant="secondary"
+            icon={<Download className="size-4" />}
+            loading={exportando !== null && exportando !== 'excel'}
+            onClick={() => setOtroFormato(!otroFormato)}
+          >
+            Descargar en otro formato
+            <ChevronDown className="size-4" />
           </Button>
-        ))}
+          {otroFormato && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setOtroFormato(false)} />
+              <div className="absolute left-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+                {(
+                  [
+                    ['a3', 'A3', 'Excel de asientos para importar'],
+                    ['sage', 'Sage', 'CSV de asientos para importar'],
+                    ['holded', 'Holded', 'Excel de asientos para importar'],
+                  ] as const
+                ).map(([f, nombre, texto]) => (
+                  <button
+                    key={f}
+                    className="block w-full px-4 py-2.5 text-left hover:bg-paper"
+                    onClick={() => {
+                      setOtroFormato(false)
+                      exportar(f)
+                    }}
+                  >
+                    <span className="block font-medium">{nombre}</span>
+                    <span className="block text-xs text-muted">{texto}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="mb-6 flex gap-1 overflow-x-auto border-b border-line">

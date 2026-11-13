@@ -21,7 +21,7 @@ import { useAuth } from '../lib/auth'
 import { cx } from './ui'
 
 /** En el móvil: 4 fijas abajo y el resto en «Más» */
-const FIJAS = ['/', '/gastos', '/facturas', '/contabilidad']
+const FIJAS = ['/', '/gastos', '/facturas', '/clientes']
 
 const NAV = [
   { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true },
@@ -68,7 +68,9 @@ export default function Layout() {
       {/* Barra lateral (escritorio) */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-ink px-4 py-6 text-white lg:flex">
         <div className="px-2">
-          <Logo dark />
+          <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
+            <Logo dark />
+          </NavLink>
         </div>
 
         <nav className="mt-8 flex flex-col gap-1">
@@ -143,7 +145,9 @@ export default function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Cabecera (móvil) */}
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-ink px-4 py-3 lg:hidden">
-          <Logo dark />
+          <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
+            <Logo dark />
+          </NavLink>
           <div className="flex items-center gap-1">
             <NavLink to="/mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
               <Headset className="size-5" />
@@ -188,7 +192,7 @@ export default function Layout() {
                   <span className={cx('grid h-7 w-12 place-items-center rounded-full', isActive && 'bg-lima')}>
                     <Icon className="size-[19px]" />
                   </span>
-                  {label === 'Contabilidad' ? 'Conta' : label}
+                  {label}
                 </>
               )}
             </NavLink>
