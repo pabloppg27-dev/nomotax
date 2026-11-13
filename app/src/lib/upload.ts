@@ -39,7 +39,7 @@ export async function prepararArchivo(file: File): Promise<File> {
   return new File([blob], nombre, { type: 'image/jpeg' })
 }
 
-export async function subirDocumento(ownerId: string, carpeta: 'gastos' | 'facturas', file: File): Promise<string> {
+export async function subirDocumento(ownerId: string, carpeta: 'gastos' | 'facturas' | 'impuestos' | 'archivo', file: File): Promise<string> {
   const ext = file.type === 'application/pdf' ? 'pdf' : file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
   const path = `${ownerId}/${carpeta}/${nuevoId()}.${ext}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false })

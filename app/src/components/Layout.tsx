@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Briefcase,
   ClipboardList,
@@ -12,9 +13,15 @@ import {
   IdCard,
   Headset,
   BookOpen,
+  Landmark,
+  LayoutGrid,
+  X,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { cx } from './ui'
+
+/** En el móvil: 4 fijas abajo y el resto en «Más» */
+const FIJAS = ['/', '/gastos', '/facturas', '/contabilidad']
 
 const NAV = [
   { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true },
@@ -23,6 +30,7 @@ const NAV = [
   { to: '/presupuestos', label: 'Presupuestos', icon: ClipboardList },
   { to: '/clientes', label: 'Clientes', icon: Users },
   { to: '/contabilidad', label: 'Contabilidad', icon: BookOpen },
+  { to: '/impuestos', label: 'Impuestos', icon: Landmark },
   { to: '/laboral', label: 'Laboral', icon: IdCard },
 ]
 
@@ -43,6 +51,10 @@ function Logo({ dark = false }: { dark?: boolean }) {
 export default function Layout() {
   const { me, owner, isAdvisor, viewingOther, setOwner, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [mas, setMas] = useState(false)
+  useEffect(() => setMas(false), [location.pathname])
+  const enMas = !FIJAS.includes(location.pathname) && !FIJAS.slice(1).some((r) => location.pathname.startsWith(r + '/'))
 
   const salirDeCuenta = async () => {
     await setOwner(null)
@@ -162,28 +174,69 @@ export default function Layout() {
           <Outlet />
         </main>
 
-        {/* Navegación inferior (móvil) */}
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-line bg-white/95 backdrop-blur safe-bottom lg:hidden">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+        {/* Navegación inferior (móvil): 4 fijas + «Más» */}
+        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-white/95 backdrop-blur safe-bottom lg:hidden">
+          {NAV.filter((n) => FIJAS.includes(n.to)).map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
-              className={({ isActive }) =>
-                cx('flex flex-col items-center gap-1 py-2 text-[10px]', isActive ? 'text-ink font-medium' : 'text-muted')
-              }
+              className={({ isActive }) => cx('flex flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'font-medium text-ink' : 'text-muted')}
             >
               {({ isActive }) => (
                 <>
-                  <span className={cx('grid h-7 w-10 place-items-center rounded-full', isActive && 'bg-lima')}>
-                    <Icon className="size-[18px]" />
+                  <span className={cx('grid h-7 w-12 place-items-center rounded-full', isActive && 'bg-lima')}>
+                    <Icon className="size-[19px]" />
                   </span>
-                  {label === 'Presupuestos' ? 'Presup.' : label === 'Contabilidad' ? 'Conta' : label}
+                  {label === 'Contabilidad' ? 'Conta' : label}
                 </>
               )}
             </NavLink>
           ))}
+          <button onClick={() => setMas(true)} className={cx('flex flex-col items-center gap-1 py-2 text-[11px]', enMas ? 'font-medium text-ink' : 'text-muted')}>
+            <span className={cx('grid h-7 w-12 place-items-center rounded-full', enMas && 'bg-lima')}>
+              <LayoutGrid className="size-[19px]" />
+            </span>
+            Más
+          </button>
         </nav>
+
+        {mas && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]" onClick={() => setMas(false)} />
+            <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl">
+              <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
+              <div className="mb-3 flex items-center justify-between px-1">
+                <p className="font-semibold">Más opciones</p>
+                <button onClick={() => setMas(false)} className="grid size-10 place-items-center rounded-full bg-paper" aria-label="Cerrar">
+                  <X className="size-5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ...NAV.filter((n) => !FIJAS.includes(n.to)),
+                  { to: '/mi-asesor', label: 'Mi asesor', icon: Headset },
+                  ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
+                  { to: '/perfil', label: viewingOther ? 'Perfil cliente' : 'Mi perfil', icon: UserRound },
+                ].map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      cx('flex flex-col items-center gap-2 rounded-2xl px-2 py-4 text-center text-sm', isActive ? 'bg-lima font-medium' : 'bg-paper active:bg-ink/5')
+                    }
+                  >
+                    <Icon className="size-6" />
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
+              <button onClick={signOut} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm text-muted active:bg-paper">
+                <LogOut className="size-4" /> Cerrar sesión
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

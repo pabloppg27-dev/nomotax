@@ -21,6 +21,7 @@ import Nominas from './pages/laboral/Nominas'
 import Empresa from './pages/laboral/Empresa'
 import MiAsesor from './pages/MiAsesor'
 import Contabilidad from './pages/Contabilidad'
+import Impuestos from './pages/Impuestos'
 
 function Protegido({ children }: { children: ReactNode }) {
   const { session, loading, me } = useAuth()
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="presupuestos/:id" element={<PresupuestoEditor />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="contabilidad" element={<Contabilidad />} />
+            <Route path="impuestos" element={<Impuestos />} />
             <Route path="laboral" element={<Trabajadores />} />
             <Route path="laboral/alta" element={<NuevaAlta />} />
             <Route path="laboral/alta/:id" element={<NuevaAlta />} />

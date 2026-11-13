@@ -9,6 +9,8 @@ import { analizarFacturas } from '../lib/estados'
 import type { Expense, Invoice, Quote } from '../lib/types'
 import MonthlyChart, { type Mes } from '../components/MonthlyChart'
 import { AsesorCard } from './MiAsesor'
+import { AvisoPlazos } from './Impuestos'
+import { conPlazo, type DocArchivo } from '../lib/impuestos'
 import PeriodPicker from '../components/PeriodPicker'
 import { Button, Card, Loading, cx } from '../components/ui'
 
@@ -19,6 +21,18 @@ export default function Resumen() {
   const navigate = useNavigate()
   const [periodo, setPeriodo] = useState<Periodo>(trimestreActual())
   const [datos, setDatos] = useState<Datos | null>(null)
+  const [plazos, setPlazos] = useState<DocArchivo[]>([])
+
+  useEffect(() => {
+    if (!ownerId) return
+    supabase
+      .from('archivo')
+      .select('*')
+      .eq('owner_id', ownerId)
+      .not('fecha_limite', 'is', null)
+      .eq('atendida', false)
+      .then(({ data }) => setPlazos(conPlazo((data as DocArchivo[]) ?? [])))
+  }, [ownerId])
 
   useEffect(() => {
     if (!ownerId) return
@@ -99,6 +113,8 @@ export default function Resumen() {
         </div>
         <PeriodPicker value={periodo} onChange={setPeriodo} />
       </div>
+
+      {plazos.length > 0 && <AvisoPlazos lista={plazos} onVer={() => navigate('/impuestos')} />}
 
       {!calc ? (
         <Loading />
