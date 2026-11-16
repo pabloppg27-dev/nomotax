@@ -10,7 +10,7 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 ## Trabajar
 - `cd app && npm install && npm run dev` (http://localhost:5173) · `npx tsc --noEmit -p .` antes de publicar · `npm run build`.
 - Claves en `app/.env.production` (solo la publishable, pública). **Nunca** pegar claves secretas en el chat ni en el repo. `scripts/sincronizar.env` está en .gitignore.
-- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos). Se ejecutan pegándolos en Supabase → SQL Editor.
+- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos, marca). Se ejecutan pegándolos en Supabase → SQL Editor.
 - Edge Functions (`app/supabase/functions/`: ocr-factura, leer-nomina, invitar-cliente) se publican pegando el código en el editor del dashboard (no hay CLI). Secretos: `ANTHROPIC_API_KEY`, `SMTP_PASSWORD` (buzón info@nomotax.io, Hostinger).
 - Reservas/«Mi asesor»: Google Apps Script en `tools/booking/Code.gs`; Pablo pulsa «Implementar» él mismo.
 
@@ -20,7 +20,7 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 - Formato de importes: `1.234,56€` (punto de miles siempre, € pegado). Usar `eur()` / `num()` de `src/lib/format.ts`.
 - La factura sale en el idioma del país del cliente (`src/lib/idiomaFactura.ts`).
 - Móvil primero: probar a 390 px; nada que desborde en horizontal.
-- Marca: negro `#111110`, lima `#CDF564`, fondo `#f7f7f5`.
+- Marca: negro `#111110`, lima `#CDF564`, fondo `#f7f7f5`. Cada cliente puede poner su «Color de marca» (profiles.color_marca) para la franja y el total del PDF.
 - `MODO_PRUEBAS_FACTURAS` (src/lib/config.ts) sigue en true; Verifactu obligatorio desde oct. 2028 según Pablo.
 
 ## Pendiente

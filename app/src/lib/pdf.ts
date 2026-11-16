@@ -14,6 +14,27 @@ const INK: [number, number, number] = [17, 17, 16]
 const LIMA: [number, number, number] = [205, 245, 100]
 const MUTED: [number, number, number] = [107, 107, 101]
 const LINE: [number, number, number] = [229, 229, 223]
+const BLANCO: [number, number, number] = [255, 255, 255]
+
+type RGB = [number, number, number]
+
+/** Color de marca del cliente (#RRGGBB) o lima de NomoTax si no hay o no es válido. */
+function colorDeMarca(hex: string | null | undefined): RGB {
+  const m = /^#?([0-9a-f]{6})$/i.exec((hex ?? '').trim())
+  if (!m) return LIMA
+  const n = parseInt(m[1], 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+/** Texto negro o blanco, el que mejor se lea sobre ese fondo. */
+function textoSobre([r, g, b]: RGB): RGB {
+  const lin = (c: number) => {
+    const v = c / 255
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+  }
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  return L > 0.179 ? INK : BLANCO
+}
 
 async function cargarLogo(path: string | null | undefined) {
   if (!path) return null
@@ -65,7 +86,9 @@ export async function descargarPdf(
   tipo: Tipo,
   d: (Invoice | Quote) & { vencimiento?: string | null; valido_hasta?: string | null },
   emisor: Emisor,
+  colorMarca?: string | null,
 ) {
+  const MARCA = colorDeMarca(colorMarca)
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const W = 210
   const M = 18
@@ -81,7 +104,7 @@ export async function descargarPdf(
   // Franja superior
   doc.setFillColor(...INK)
   doc.rect(0, 0, W, 4, 'F')
-  doc.setFillColor(...LIMA)
+  doc.setFillColor(...MARCA)
   doc.rect(0, 4, 42, 1.2, 'F')
 
   // Logo
@@ -180,11 +203,11 @@ export async function descargarPdf(
   for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)} %${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ''}`, eur(r.cuota))
   if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf))
   y += 2
-  doc.setFillColor(...LIMA)
+  doc.setFillColor(...MARCA)
   doc.roundedRect(xl, y - 2, W - M - xl, 14, 3, 3, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12.5)
-  doc.setTextColor(...INK)
+  doc.setTextColor(...textoSobre(MARCA))
   doc.text(T.total, xl + pad, y + 6.6)
   doc.text(eur(t.total), xv, y + 6.6, { align: 'right' })
   y += 22

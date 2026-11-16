@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ImageUp, KeyRound, Trash2 } from 'lucide-react'
+import { ImageUp, KeyRound, Palette, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, signedUrl, supabase } from '../lib/supabase'
 import { limpiarNif } from '../lib/format'
@@ -207,11 +207,86 @@ export default function Perfil() {
             </div>
           </Card>
 
+          <ColorMarca ownerId={owner.id} actual={owner.color_marca ?? null} onGuardado={refresh} />
+
           {!viewingOther && <CambiarClave destacar={params.has('nueva-clave')} email={me?.email ?? ''} />}
         </div>
       </div>
     </>
   )
+}
+
+const LIMA_NOMOTAX = '#CDF564'
+
+function ColorMarca({ ownerId, actual, onGuardado }: { ownerId: string; actual: string | null; onGuardado: () => Promise<void> | void }) {
+  const [hex, setHex] = useState(actual ?? '')
+  const [guardando, setGuardando] = useState(false)
+  useEffect(() => setHex(actual ?? ''), [actual])
+
+  const normal = hex.trim() ? (hex.trim().startsWith('#') ? hex.trim() : `#${hex.trim()}`).toUpperCase() : ''
+  const valido = normal === '' || /^#[0-9A-F]{6}$/.test(normal)
+  const muestra = valido && normal ? normal : LIMA_NOMOTAX
+  const cambiado = (actual ?? '').toUpperCase() !== normal
+
+  const guardar = async (valor: string | null) => {
+    setGuardando(true)
+    const { error } = await supabase.from('profiles').update({ color_marca: valor }).eq('id', ownerId)
+    setGuardando(false)
+    if (error) return notify(await errorMessage(error), 'error')
+    await onGuardado()
+    notify(valor ? 'Color de marca guardado' : 'Vuelve el lima de NomoTax')
+  }
+
+  return (
+    <Card className="p-5">
+      <h2 className="mb-1 flex items-center gap-2 font-semibold">
+        <Palette className="size-4" /> Color de marca
+      </h2>
+      <p className="mb-4 text-sm text-muted">Franja superior y caja del total en facturas y presupuestos. Vacío: lima de NomoTax.</p>
+      <div className="flex items-center gap-3">
+        <input
+          type="color"
+          aria-label="Elegir color"
+          value={muestra.toLowerCase()}
+          onChange={(e) => setHex(e.target.value.toUpperCase())}
+          className="size-11 shrink-0 cursor-pointer rounded-lg border border-line bg-white p-1"
+        />
+        <Input
+          value={hex}
+          onChange={(e) => setHex(e.target.value)}
+          placeholder={LIMA_NOMOTAX}
+          maxLength={7}
+          className="min-w-0 font-mono uppercase"
+        />
+      </div>
+      <div className="mt-3 flex h-9 items-center justify-between rounded-lg px-3 text-sm font-bold" style={{ background: muestra, color: textoSobre(muestra) }}>
+        <span>TOTAL</span>
+        <span>1.234,56€</span>
+      </div>
+      {!valido && <p className="mt-2 text-sm text-red-600">Usa el formato #RRGGBB, por ejemplo #1D4FD7.</p>}
+      <div className="mt-3 flex gap-2">
+        <Button size="sm" variant="secondary" loading={guardando} disabled={!valido || !cambiado} onClick={() => guardar(normal || null)}>
+          Guardar color
+        </Button>
+        {actual && (
+          <Button size="sm" variant="ghost" onClick={() => guardar(null)}>
+            Volver al lima
+          </Button>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+/** Negro o blanco según la luminancia del fondo (igual que en el PDF). */
+function textoSobre(hex: string) {
+  const n = parseInt(hex.slice(1), 16)
+  const lin = (c: number) => {
+    const v = c / 255
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+  }
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255)
+  return L > 0.179 ? '#111110' : '#FFFFFF'
 }
 
 function CambiarClave({ destacar, email }: { destacar: boolean; email: string }) {

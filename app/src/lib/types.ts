@@ -18,6 +18,8 @@ export interface Profile {
   serie_presupuesto: string
   serie_rectificativa: string
   pie_factura: string | null
+  /** #RRGGBB para la franja y el total del PDF; null = lima NomoTax */
+  color_marca?: string | null
   bienvenida_enviada_at?: string | null
   created_at: string
 }
