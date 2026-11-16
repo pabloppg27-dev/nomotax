@@ -9,6 +9,7 @@ import { CAUSAS_RECTIFICACION, analizarFacturas } from '../lib/estados'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
 import type { CausaRectificacion, ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
 import ContactPicker from '../components/ContactPicker'
+import { NOMBRE_IDIOMA, idiomaDePais } from '../lib/idiomaFactura'
 import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
 import LinesEditor from '../components/LinesEditor'
@@ -414,16 +415,21 @@ export default function FacturaEditor() {
         </>
       }
       cliente={
-        <ContactPicker
-          ownerId={ownerId}
-          contactId={contactId}
-          cliente={cliente}
-          disabled={bloqueada}
-          onPick={(c) => {
-            setContactId(c.id)
-            setCliente(snapshotDe(c))
-          }}
-        />
+        <>
+          <ContactPicker
+            ownerId={ownerId}
+            contactId={contactId}
+            cliente={cliente}
+            disabled={bloqueada}
+            onPick={(c) => {
+              setContactId(c.id)
+              setCliente(snapshotDe(c))
+            }}
+          />
+          {cliente.nombre && idiomaDePais(cliente.pais) !== 'es' && (
+            <p className="mt-2 text-sm text-muted">El PDF saldrá en {NOMBRE_IDIOMA[idiomaDePais(cliente.pais)]} (cliente de {cliente.pais}).</p>
+          )}
+        </>
       }
       fechas={
         <div className="grid grid-cols-2 gap-3">

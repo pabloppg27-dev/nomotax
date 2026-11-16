@@ -6,6 +6,7 @@ import { direccionCompleta, eur, fecha, num } from './format'
 import { MODO_PRUEBAS_FACTURAS } from './config'
 import { CAUSAS_RECTIFICACION } from './estados'
 import type { ClienteSnapshot, Emisor, Invoice, Quote } from './types'
+import { TEXTOS, idiomaDePais } from './idiomaFactura'
 
 type Tipo = 'factura' | 'presupuesto'
 
@@ -39,7 +40,7 @@ async function cargarLogo(path: string | null | undefined) {
   }
 }
 
-function bloqueDatos(doc: jsPDF, x: number, y: number, titulo: string, d: ClienteSnapshot & { telefono?: string | null }) {
+function bloqueDatos(doc: jsPDF, x: number, y: number, titulo: string, d: ClienteSnapshot & { telefono?: string | null }, nif = 'NIF') {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
   doc.setTextColor(...MUTED)
@@ -50,7 +51,7 @@ function bloqueDatos(doc: jsPDF, x: number, y: number, titulo: string, d: Client
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9.5)
   let yy = y + 11
-  const lineas = [d.nif ? `NIF ${d.nif}` : null, ...direccionCompleta(d), d.email, d.telefono].filter(
+  const lineas = [d.nif ? `${nif} ${d.nif}` : null, ...direccionCompleta(d), d.email, d.telefono].filter(
     (l): l is string => Boolean(l),
   )
   for (const l of lineas) {
@@ -74,6 +75,8 @@ export async function descargarPdf(
   const estado = (d as Invoice).estado
   const borrador = estado === 'borrador'
   const pruebas = esFactura && MODO_PRUEBAS_FACTURAS
+  // Idioma según el país del cliente
+  const T = TEXTOS[idiomaDePais(d.cliente?.pais)]
 
   // Franja superior
   doc.setFillColor(...INK)
@@ -99,15 +102,15 @@ export async function descargarPdf(
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(rectificativa ? 16 : 22)
   doc.setTextColor(...INK)
-  doc.text(rectificativa ? 'FACTURA RECTIFICATIVA' : esFactura ? 'FACTURA' : 'PRESUPUESTO', W - M, 22, { align: 'right' })
+  doc.text(rectificativa ? T.rectificativa : esFactura ? T.factura : T.presupuesto, W - M, 22, { align: 'right' })
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   const meta: [string, string][] = [
-    ['Número', d.numero || (borrador ? 'Borrador' : '—')],
-    ['Fecha', fecha(d.fecha)],
+    [T.numero, d.numero || (borrador ? T.borrador : '—')],
+    [T.fecha, fecha(d.fecha)],
   ]
-  if (esFactura && d.vencimiento) meta.push(['Vencimiento', fecha(d.vencimiento)])
-  if (!esFactura && d.valido_hasta) meta.push(['Válido hasta', fecha(d.valido_hasta)])
+  if (esFactura && d.vencimiento) meta.push([T.vencimiento, fecha(d.vencimiento)])
+  if (!esFactura && d.valido_hasta) meta.push([T.validoHasta, fecha(d.valido_hasta)])
   let my = 30
   for (const [k, v] of meta) {
     doc.setTextColor(...MUTED)
@@ -119,15 +122,17 @@ export async function descargarPdf(
 
   // Emisor y cliente
   const top = 56
-  const yEmisor = bloqueDatos(doc, M, top, 'De', emisor)
-  const yCliente = bloqueDatos(doc, W / 2 + 4, top, esFactura ? 'Facturar a' : 'Para', d.cliente || {})
+  // El emisor es español: su identificador es el NIF (en otros idiomas, «NIF/VAT»)
+  const nifEmisor = T.nif === 'NIF' ? 'NIF' : 'NIF/VAT'
+  const yEmisor = bloqueDatos(doc, M, top, T.de, emisor, nifEmisor)
+  const yCliente = bloqueDatos(doc, W / 2 + 4, top, esFactura ? T.facturarA : T.para, d.cliente || {}, T.nif)
   const startY = Math.max(yEmisor, yCliente) + 6
 
   // Líneas
   autoTable(doc, {
     startY,
     margin: { left: M, right: M },
-    head: [['Concepto', 'Cant.', 'Precio', 'IVA', 'Importe']],
+    head: [[T.concepto, T.cant, T.precio, T.impuesto, T.importe]],
     body: d.lineas.map((l) => [l.concepto, num(l.cantidad), eur(l.precio), `${num(l.iva)} %`, eur(importeLinea(l))]),
     theme: 'plain',
     styles: { font: 'helvetica', fontSize: 9.5, cellPadding: { top: 3, bottom: 3, left: 2.5, right: 2.5 }, textColor: INK },
@@ -158,42 +163,45 @@ export async function descargarPdf(
     doc.addPage()
     y = 24
   }
-  const xl = W - M - 70
+  // Bloque de totales: los importes van con margen interior para que no queden pegados al borde del recuadro lima
+  const xl = W - M - 78 // inicio del bloque
+  const pad = 5 // aire interior a izquierda y derecha
+  const xv = W - M - pad // columna de importes
   const fila = (label: string, valor: string) => {
     doc.setFontSize(9.5)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...MUTED)
-    doc.text(label, xl, y)
+    doc.text(label, xl + pad, y)
     doc.setTextColor(...INK)
-    doc.text(valor, W - M, y, { align: 'right' })
+    doc.text(valor, xv, y, { align: 'right' })
     y += 5.8
   }
-  fila('Base imponible', eur(t.base))
-  for (const r of t.desglose) fila(`IVA ${num(r.tipo)} %${t.desglose.length > 1 ? ` (base ${eur(r.base)})` : ''}`, eur(r.cuota))
-  if (t.cuota_irpf) fila(`Retención IRPF ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf))
-  y += 1
+  fila(T.base, eur(t.base))
+  for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)} %${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ''}`, eur(r.cuota))
+  if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf))
+  y += 2
   doc.setFillColor(...LIMA)
-  doc.roundedRect(xl - 4, y - 5, W - M - xl + 4, 11, 2, 2, 'F')
+  doc.roundedRect(xl, y - 2, W - M - xl, 14, 3, 3, 'F')
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
+  doc.setFontSize(12.5)
   doc.setTextColor(...INK)
-  doc.text('TOTAL', xl, y + 2)
-  doc.text(eur(t.total), W - M, y + 2, { align: 'right' })
-  y += 16
+  doc.text(T.total, xl + pad, y + 6.6)
+  doc.text(eur(t.total), xv, y + 6.6, { align: 'right' })
+  y += 22
 
   // Notas, forma de pago, pie
   const bloques: [string, string][] = []
   if (rectificativa) {
     const causa = CAUSAS_RECTIFICACION.find((c) => c.id === inv.causa_rectificacion)
     bloques.push([
-      'Factura rectificativa',
-      `Rectifica la factura nº ${inv.rectifica_numero ?? ''}${inv.rectifica_fecha ? ` de fecha ${fecha(inv.rectifica_fecha)}` : ''}.` +
-        (causa ? ` Causa: ${causa.id} · ${causa.nombre}.` : '') +
-        (inv.motivo_rectificacion ? ` Motivo: ${inv.motivo_rectificacion}` : ''),
+      T.bloqueRectificativa,
+      T.rectifica(inv.rectifica_numero ?? '', inv.rectifica_fecha ? fecha(inv.rectifica_fecha) : null) +
+        (causa ? ` ${T.causa}: ${causa.id} · ${causa.nombre}.` : '') +
+        (inv.motivo_rectificacion ? ` ${T.motivo}: ${inv.motivo_rectificacion}` : ''),
     ])
   }
-  if (d.notas) bloques.push(['Notas', d.notas])
-  if (esFactura && emisor.iban) bloques.push(['Forma de pago', `Transferencia bancaria a ${emisor.iban}`])
+  if (d.notas) bloques.push([T.notas, d.notas])
+  if (esFactura && emisor.iban) bloques.push([T.formaPago, T.transferencia(emisor.iban)])
   if (emisor.pie_factura) bloques.push(['', emisor.pie_factura])
   for (const [titulo, texto] of bloques) {
     if (y > 270) {
@@ -225,20 +233,20 @@ export async function descargarPdf(
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(borrador ? 70 : 34)
       doc.setTextColor(...INK)
-      doc.text(borrador ? 'BORRADOR' : 'DOCUMENTO DE PRUEBAS', W / 2, 190, { align: 'center', angle: 30 })
+      doc.text(borrador ? T.borrador.toUpperCase() : T.marcaPruebas, W / 2, 190, { align: 'center', angle: 30 })
       doc.restoreGraphicsState()
     }
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7.5)
     doc.setTextColor(...MUTED)
-    const pie = [emisor.nombre, emisor.nif ? `NIF ${emisor.nif}` : null].filter(Boolean).join(' · ')
+    const pie = [emisor.nombre, emisor.nif ? `${nifEmisor} ${emisor.nif}` : null].filter(Boolean).join(' · ')
     doc.text(pie, M, 289)
-    doc.text(`Página ${p} de ${paginas}`, W - M, 289, { align: 'right' })
+    doc.text(T.pagina(p, paginas), W - M, 289, { align: 'right' })
     if (pruebas && !borrador) {
-      doc.text('Documento generado en modo pruebas: no válido como factura.', W / 2, 289, { align: 'center' })
+      doc.text(T.avisoPruebas, W / 2, 284, { align: 'center' })
     }
   }
 
-  const nombre = `${esFactura ? 'Factura' : 'Presupuesto'}-${d.numero || 'borrador'}.pdf`
+  const nombre = `${esFactura ? T.archivoFactura : T.archivoPresupuesto}-${d.numero || T.borrador.toLowerCase()}.pdf`
   doc.save(nombre)
 }
