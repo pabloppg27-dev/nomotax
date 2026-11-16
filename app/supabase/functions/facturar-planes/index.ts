@@ -193,6 +193,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE PRUEBAS",
 		avisoPruebas: "Documento generado en modo pruebas: no válido como factura.",
+		hechoCon: "Creado con NomoTax · nomotax.io",
 		archivoFactura: "Factura",
 		archivoPresupuesto: "Presupuesto"
 	},
@@ -230,6 +231,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Page ${p} of ${n}`,
 		marcaPruebas: "TEST DOCUMENT",
 		avisoPruebas: "Generated in test mode: not valid as an invoice.",
+		hechoCon: "Made with NomoTax · nomotax.io",
 		archivoFactura: "Invoice",
 		archivoPresupuesto: "Quote"
 	},
@@ -267,6 +269,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Pagina ${p} di ${n}`,
 		marcaPruebas: "DOCUMENTO DI PROVA",
 		avisoPruebas: "Generato in modalità di prova: non valido come fattura.",
+		hechoCon: "Creato con NomoTax · nomotax.io",
 		archivoFactura: "Fattura",
 		archivoPresupuesto: "Preventivo"
 	},
@@ -304,6 +307,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Page ${p} sur ${n}`,
 		marcaPruebas: "DOCUMENT DE TEST",
 		avisoPruebas: "Généré en mode test : non valable comme facture.",
+		hechoCon: "Créé avec NomoTax · nomotax.io",
 		archivoFactura: "Facture",
 		archivoPresupuesto: "Devis"
 	},
@@ -341,6 +345,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Seite ${p} von ${n}`,
 		marcaPruebas: "TESTDOKUMENT",
 		avisoPruebas: "Im Testmodus erstellt: keine gültige Rechnung.",
+		hechoCon: "Erstellt mit NomoTax · nomotax.io",
 		archivoFactura: "Rechnung",
 		archivoPresupuesto: "Angebot"
 	},
@@ -378,6 +383,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE TESTE",
 		avisoPruebas: "Gerado em modo de teste: não válido como fatura.",
+		hechoCon: "Criado com NomoTax · nomotax.io",
 		archivoFactura: "Fatura",
 		archivoPresupuesto: "Orcamento"
 	}
@@ -836,6 +842,9 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		doc.text(pie, M, 286.5);
 		doc.text(T.pagina(p, paginas), 192, 286.5, { align: "right" });
 		if (pruebas && !borrador) doc.text(T.avisoPruebas, W / 2, 279, { align: "center" });
+		doc.setFontSize(6.3);
+		doc.setTextColor(170, 170, 164);
+		doc.textWithLink(T.hechoCon, W / 2 - doc.getTextWidth(T.hechoCon) / 2, 291, { url: "https://nomotax.io" });
 	}
 	return {
 		doc,

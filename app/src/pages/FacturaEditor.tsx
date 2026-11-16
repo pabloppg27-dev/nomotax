@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CheckCircle2, Copy, Download, FileMinus, Save, Send, Trash2, Undo2 } from 'lucide-react'
+import { CheckCircle2, Copy, Download, FileMinus, Mail, Save, Send, Trash2, Undo2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { fecha as fmtFecha, fechaLarga, hoyISO, sumarDias } from '../lib/format'
@@ -9,6 +9,7 @@ import { CAUSAS_RECTIFICACION, analizarFacturas } from '../lib/estados'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
 import type { CausaRectificacion, ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
 import ContactPicker from '../components/ContactPicker'
+import EnviarFactura from '../components/EnviarFactura'
 import { NOMBRE_IDIOMA, idiomaDePais } from '../lib/idiomaFactura'
 import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
@@ -39,6 +40,7 @@ export default function FacturaEditor() {
   const [original, setOriginal] = useState<Min | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [fechaCobro, setFechaCobro] = useState<string | null>(null)
+  const [enviar, setEnviar] = useState(false)
 
   const aplicar = (f: Invoice) => {
     setFactura(f)
@@ -187,7 +189,11 @@ export default function FacturaEditor() {
     })
     if (!ok) return
     const f = await guardar({ estado: 'emitida' })
-    if (f) notify(`${esRectificativa ? 'Rectificativa' : 'Factura'} ${f.numero} emitida`)
+    if (f) {
+      notify(`${esRectificativa ? 'Rectificativa' : 'Factura'} ${f.numero} emitida`)
+      // Siguiente paso natural: mandársela al cliente
+      setEnviar(true)
+    }
   }
 
   /** Un clic: borrador de rectificativa que anula la factura entera (importes en negativo) */
@@ -463,11 +469,21 @@ export default function FacturaEditor() {
       acciones={
         bloqueada && factura ? (
           <>
+            {!soloBorradores && (
+              <Button variant={factura.enviada_at ? 'secondary' : 'accent'} icon={<Mail className="size-4" />} onClick={() => setEnviar(true)}>
+                {factura.enviada_at ? 'Enviar otra vez' : 'Enviar por email'}
+              </Button>
+            )}
+            {factura.enviada_at && (
+              <p className="-mt-1 px-1 text-xs text-muted">
+                Enviada el {fmtFecha(factura.enviada_at)} a {factura.enviada_a}
+              </p>
+            )}
             <Button icon={<Download className="size-4" />} onClick={pdf}>
               Descargar PDF
             </Button>
             {sinMovimiento || soloBorradores ? null : factura.estado === 'emitida' ? (
-              <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => setFechaCobro(hoyISO())}>
+              <Button variant="secondary" icon={<CheckCircle2 className="size-4" />} onClick={() => setFechaCobro(hoyISO())}>
                 {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
               </Button>
             ) : (
@@ -522,6 +538,13 @@ export default function FacturaEditor() {
         )
       }
     />
+    {enviar && factura && factura.estado !== 'borrador' && (
+      <EnviarFactura
+        factura={factura}
+        onClose={() => setEnviar(false)}
+        onEnviada={(r) => setFactura((f) => (f ? { ...f, ...r } : f))}
+      />
+    )}
     {fechaCobro !== null && (
       <Modal
         open

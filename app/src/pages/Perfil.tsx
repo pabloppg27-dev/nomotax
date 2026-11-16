@@ -124,9 +124,14 @@ function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
   const subirLogo = async (file: File) => {
     if (!file.type.startsWith('image/')) return notify('El logo tiene que ser una imagen (PNG o JPG)', 'error')
     setSubiendoLogo(true)
-    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
-    const path = `${owner.id}/logo/logo-${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type })
+    // Siempre PNG de 600 px como máximo: los logos enormes hacían lentos los PDF (y agotaban la CPU del servidor)
+    const png = await normalizarLogo(file)
+    if (!png) {
+      setSubiendoLogo(false)
+      return notify('No se ha podido leer la imagen. Prueba con un PNG o JPG.', 'error')
+    }
+    const path = `${owner.id}/logo/logo-${Date.now()}.png`
+    const { error } = await supabase.storage.from(BUCKET).upload(path, png, { contentType: 'image/png' })
     if (error) {
       setSubiendoLogo(false)
       return notify(await errorMessage(error), 'error')
@@ -445,4 +450,30 @@ function TuUsuario() {
       </form>
     </Card>
   )
+}
+
+/** Logo listo para guardar: PNG (con su transparencia) de 600 px como máximo por el lado largo */
+async function normalizarLogo(file: File): Promise<Blob | null> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img: HTMLImageElement = await new Promise((res, rej) => {
+      const i = new Image()
+      i.onload = () => res(i)
+      i.onerror = rej
+      i.src = url
+    })
+    const lado = Math.max(img.naturalWidth, img.naturalHeight) || 600
+    const escala = Math.min(1, 600 / lado)
+    const w = Math.max(1, Math.round((img.naturalWidth || 600) * escala))
+    const h = Math.max(1, Math.round((img.naturalHeight || 600) * escala))
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    canvas.getContext('2d')?.drawImage(img, 0, 0, w, h)
+    return await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'))
+  } catch {
+    return null
+  } finally {
+    URL.revokeObjectURL(url)
+  }
 }

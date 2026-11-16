@@ -57,6 +57,8 @@ type Textos = {
   pagina: (p: number, n: number) => string
   marcaPruebas: string
   avisoPruebas: string
+  /** Marca de NomoTax al pie del PDF */
+  hechoCon: string
   archivoFactura: string
   archivoPresupuesto: string
 }
@@ -73,7 +75,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notas', formaPago: 'Forma de pago', transferencia: (i) => `Transferencia bancaria a ${i}`,
     transferenciaCorta: 'Transferencia', refPago: (n) => `Indica ${n} en el concepto de la transferencia.`,
     pagina: (p, n) => `Página ${p} de ${n}`,
-    marcaPruebas: 'DOCUMENTO DE PRUEBAS', avisoPruebas: 'Documento generado en modo pruebas: no válido como factura.',
+    marcaPruebas: 'DOCUMENTO DE PRUEBAS', avisoPruebas: 'Documento generado en modo pruebas: no válido como factura.', hechoCon: 'Creado con NomoTax · nomotax.io',
     archivoFactura: 'Factura', archivoPresupuesto: 'Presupuesto',
   },
   en: {
@@ -87,7 +89,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notes', formaPago: 'Payment', transferencia: (i) => `Bank transfer to ${i}`,
     transferenciaCorta: 'Bank transfer', refPago: (n) => `Please quote ${n} as the payment reference.`,
     pagina: (p, n) => `Page ${p} of ${n}`,
-    marcaPruebas: 'TEST DOCUMENT', avisoPruebas: 'Generated in test mode: not valid as an invoice.',
+    marcaPruebas: 'TEST DOCUMENT', avisoPruebas: 'Generated in test mode: not valid as an invoice.', hechoCon: 'Made with NomoTax · nomotax.io',
     archivoFactura: 'Invoice', archivoPresupuesto: 'Quote',
   },
   it: {
@@ -101,7 +103,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Note', formaPago: 'Pagamento', transferencia: (i) => `Bonifico bancario a ${i}`,
     transferenciaCorta: 'Bonifico bancario', refPago: (n) => `Indicare ${n} nella causale del bonifico.`,
     pagina: (p, n) => `Pagina ${p} di ${n}`,
-    marcaPruebas: 'DOCUMENTO DI PROVA', avisoPruebas: 'Generato in modalità di prova: non valido come fattura.',
+    marcaPruebas: 'DOCUMENTO DI PROVA', avisoPruebas: 'Generato in modalità di prova: non valido come fattura.', hechoCon: 'Creato con NomoTax · nomotax.io',
     archivoFactura: 'Fattura', archivoPresupuesto: 'Preventivo',
   },
   fr: {
@@ -115,7 +117,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notes', formaPago: 'Paiement', transferencia: (i) => `Virement bancaire sur ${i}`,
     transferenciaCorta: 'Virement bancaire', refPago: (n) => `Merci d’indiquer ${n} en référence du virement.`,
     pagina: (p, n) => `Page ${p} sur ${n}`,
-    marcaPruebas: 'DOCUMENT DE TEST', avisoPruebas: 'Généré en mode test : non valable comme facture.',
+    marcaPruebas: 'DOCUMENT DE TEST', avisoPruebas: 'Généré en mode test : non valable comme facture.', hechoCon: 'Créé avec NomoTax · nomotax.io',
     archivoFactura: 'Facture', archivoPresupuesto: 'Devis',
   },
   de: {
@@ -129,7 +131,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Hinweise', formaPago: 'Zahlung', transferencia: (i) => `Banküberweisung an ${i}`,
     transferenciaCorta: 'Banküberweisung', refPago: (n) => `Bitte geben Sie ${n} als Verwendungszweck an.`,
     pagina: (p, n) => `Seite ${p} von ${n}`,
-    marcaPruebas: 'TESTDOKUMENT', avisoPruebas: 'Im Testmodus erstellt: keine gültige Rechnung.',
+    marcaPruebas: 'TESTDOKUMENT', avisoPruebas: 'Im Testmodus erstellt: keine gültige Rechnung.', hechoCon: 'Erstellt mit NomoTax · nomotax.io',
     archivoFactura: 'Rechnung', archivoPresupuesto: 'Angebot',
   },
   pt: {
@@ -143,7 +145,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notas', formaPago: 'Pagamento', transferencia: (i) => `Transferência bancária para ${i}`,
     transferenciaCorta: 'Transferência bancária', refPago: (n) => `Indique ${n} na referência da transferência.`,
     pagina: (p, n) => `Página ${p} de ${n}`,
-    marcaPruebas: 'DOCUMENTO DE TESTE', avisoPruebas: 'Gerado em modo de teste: não válido como fatura.',
+    marcaPruebas: 'DOCUMENTO DE TESTE', avisoPruebas: 'Gerado em modo de teste: não válido como fatura.', hechoCon: 'Criado com NomoTax · nomotax.io',
     archivoFactura: 'Fatura', archivoPresupuesto: 'Orcamento',
   },
 }

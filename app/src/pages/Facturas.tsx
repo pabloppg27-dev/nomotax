@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { FileText, FileUp, Loader2, Plus } from 'lucide-react'
+import { FileText, FileUp, Loader2, MailCheck, Plus } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
@@ -219,6 +219,11 @@ export default function Facturas() {
                       {f.numero || <span className="text-muted">Borrador</span>}
                       {f.origen === 'externa' && <span className="ml-2 text-xs font-normal text-muted">subida</span>}
                       {f.tipo === 'rectificativa' && <span className="ml-2 text-xs font-normal text-muted">rectificativa</span>}
+                      {f.enviada_at && (
+                        <span title={`Enviada el ${fecha(f.enviada_at)} a ${f.enviada_a ?? ''}`} className="ml-2 inline-flex align-[-2px] text-muted">
+                          <MailCheck className="size-4" aria-label="Enviada por email" />
+                        </span>
+                      )}
                     </td>
                     <td className="order-4 text-sm text-muted sm:order-none sm:px-4 sm:py-3 sm:text-[15px] sm:text-ink">{fecha(f.fecha)}</td>
                     <td className="order-3 col-span-2 truncate text-sm text-ink/80 sm:order-none sm:max-w-64 sm:px-4 sm:py-3 sm:text-[15px] sm:text-ink">

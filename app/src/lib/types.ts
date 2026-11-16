@@ -62,6 +62,13 @@ export interface Profile {
   plan_nomina_precio?: number | null
   /** Email al que enviamos las facturas de NomoTax (supabase/facturacion-automatica.sql); vacío = el de la cuenta */
   email_facturacion?: string | null
+  /** Envío de facturas (supabase/envio-facturas.sql): a dónde van las respuestas; vacío = email de la cuenta */
+  email_respuesta?: string | null
+  /** Plantilla del correo; vacío = la de por defecto (src/lib/correoFactura.ts) */
+  correo_asunto?: string | null
+  correo_mensaje?: string | null
+  /** Copia oculta de cada envío al email de respuestas */
+  correo_copia?: boolean | null
   created_at: string
 }
 
@@ -159,6 +166,9 @@ export interface Invoice extends DocBase {
   rectifica_fecha: string | null
   causa_rectificacion: CausaRectificacion | null
   motivo_rectificacion: string | null
+  /** Último envío por email al cliente (supabase/envio-facturas.sql) */
+  enviada_at?: string | null
+  enviada_a?: string | null
 }
 
 export type CausaRectificacion = 'R1' | 'R2' | 'R3' | 'R4'

@@ -4,7 +4,7 @@ App web para clientes de NomoTax: gastos con lectura automática (OCR con Claude
 
 - **Frontend:** React + Vite + Tailwind (carpeta `src/`)
 - **Backend:** Supabase (login, base de datos, archivos) — `supabase/schema.sql`
-- **Funciones:** `ocr-factura` (lee facturas), `leer-nomina` (lee nóminas, solo asesor), `invitar-cliente` (alta de clientes), `invitar-miembro` (usuarios de la empresa) y `vista-socio` (cifras para socios), en `supabase/functions/`
+- **Funciones:** `ocr-factura` (lee facturas), `leer-nomina` (lee nóminas, solo asesor), `invitar-cliente` (alta de clientes), `invitar-miembro` (usuarios de la empresa), `vista-socio` (cifras para socios) y `enviar-factura` (envía facturas a los clientes de cada empresa), en `supabase/functions/`
 
 ## Puesta en marcha (una sola vez)
 
@@ -47,6 +47,18 @@ Puesta en marcha:
 3. `node scripts/empaquetar-facturar.mjs vista-socio` y pega `supabase/functions/vista-socio/index.ts` como función `vista-socio`.
 
 Pruebas de las reglas de acceso, sin tocar Supabase: `test-data/probar-usuarios-sql.mjs` (Postgres en memoria con PGlite).
+
+## Envío de facturas a los clientes de cada empresa
+
+Desde una factura emitida, **Enviar por email** (`src/components/EnviarFactura.tsx`): sale desde **invoice@nomotax.io** con el nombre de la empresa («Empresa vía NomoTax»), con el PDF adjunto, su logo y su color, y **Responder a** = el email de respuestas de la empresa, así las respuestas le llegan a ella y no a NomoTax. La plantilla (asunto y mensaje con `{cliente}`, `{numero}`, `{total}`, `{fecha}`, `{vencimiento}`, `{empresa}`) se edita en **Configuración → Envío de facturas** (`src/components/EnvioFacturas.tsx`). Diseño del correo: `src/lib/correoFactura.ts`. A clientes de fuera de España se les envía en inglés. El PDF lleva al pie «Creado con NomoTax · nomotax.io».
+
+Puesta en marcha:
+1. Hostinger: invoice@nomotax.io es un **alias** de info@nomotax.io. La función entra con info@ (secretos `SMTP_USER` / `SMTP_PASSWORD`, los de siempre) y envía como invoice@. Si Hostinger no lo deja, sale desde info@ (también con «Responder a» de la empresa). Con un buzón propio: `SMTP_FACTURAS_USER` + `SMTP_FACTURAS_PASSWORD`.
+2. SQL Editor → pega `supabase/envio-facturas.sql` → Run (después de `usuarios.sql`). La función envía aunque falte, pero sin registro de envíos ni «Enviada el…».
+3. (Opcional) Secret `FACTURAS_FROM` si el remitente no es invoice@nomotax.io.
+4. `node scripts/empaquetar-facturar.mjs enviar-factura` y pega `supabase/functions/enviar-factura/index.ts` como función `enviar-factura`.
+
+Puede enviar quien puede emitir (titular, asesor, administración con «ventas»; el comercial no). Máximo 5 destinatarios por envío y 100 envíos al día por empresa (`FACTURAS_LIMITE_DIA`). Cada envío queda en `envios_factura`.
 
 ## Contabilidad
 

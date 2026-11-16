@@ -9,6 +9,7 @@ import { useAuth } from '../lib/auth'
 import { seccionesVisibles, type IdSeccion } from '../lib/configuracion'
 import { cuotaCliente } from '../lib/planes'
 import Perfil from '../pages/Perfil'
+import EnvioFacturas from './EnvioFacturas'
 import Usuarios from '../pages/Usuarios'
 import VistaSocio from '../pages/VistaSocio'
 import { HistorialFacturacion, PlanTarjeta, TablaPlanes } from './Planes'
@@ -158,6 +159,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                   </div>
                 </div>
                 {actual.id === 'perfil' && <Perfil />}
+                {actual.id === 'envio' && <EnvioFacturas />}
                 {actual.id === 'plan' && <SeccionPlan />}
                 {actual.id === 'facturacion' && <SeccionFacturacion />}
                 {actual.id === 'usuarios' && <Usuarios embebido />}

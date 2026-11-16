@@ -15,10 +15,21 @@ export const BUCKET = 'documentos'
 export async function errorMessage(err: unknown): Promise<string> {
   if (!err) return 'Error desconocido'
   const anyErr = err as { message?: string; context?: Response }
-  if (anyErr.context && typeof anyErr.context.json === 'function') {
+  if (anyErr.context && typeof anyErr.context.text === 'function') {
+    const status = anyErr.context.status
     try {
-      const body = await anyErr.context.json()
+      const texto = (await anyErr.context.text()).trim()
+      let body: { error?: string; message?: string; msg?: string; code?: string } | null = null
+      try {
+        body = JSON.parse(texto)
+      } catch {
+        /* no es JSON */
+      }
       if (body?.error) return body.error
+      // Errores del propio Supabase (la función se cae, se queda sin tiempo…): se enseña el detalle
+      const detalle = body?.message || body?.msg || body?.code || texto.slice(0, 200)
+      if (detalle) return `Error del servidor (${status}): ${detalle}`
+      if (status) return `Error del servidor (${status})`
     } catch {
       /* sin cuerpo */
     }

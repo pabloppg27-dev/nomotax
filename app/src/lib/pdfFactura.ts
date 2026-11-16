@@ -394,6 +394,10 @@ export async function construirPdf(
     if (pruebas && !borrador) {
       doc.text(T.avisoPruebas, W / 2, H - 18, { align: 'center' })
     }
+    // Marca de NomoTax, discreta, debajo del pie
+    doc.setFontSize(6.3)
+    doc.setTextColor(170, 170, 164)
+    doc.textWithLink(T.hechoCon, W / 2 - doc.getTextWidth(T.hechoCon) / 2, H - 6, { url: 'https://nomotax.io' })
   }
 
   const nombre = `${esFactura ? T.archivoFactura : T.archivoPresupuesto}-${d.numero || T.borrador.toLowerCase()}.pdf`

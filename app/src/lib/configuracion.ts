@@ -1,8 +1,8 @@
 /** Secciones de la ventana de Configuración (menú a la izquierda, contenido a la derecha). Se irán añadiendo más. */
-import { CreditCard, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
+import { CreditCard, Mail, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
 import type { Permiso, RolEnCuenta } from './types'
 
-export type IdSeccion = 'perfil' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
+export type IdSeccion = 'perfil' | 'envio' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
 
 export interface SeccionConfig {
   id: IdSeccion
@@ -30,6 +30,15 @@ export const SECCIONES_CONFIG: SeccionConfig[] = [
     label: ({ viewingOther, rol, puede }) => (viewingOther ? 'Perfil del cliente' : esMiembroSinEmpresa(rol, puede) ? 'Mi perfil' : 'Perfil'),
     detalle: ({ rol, puede }) =>
       esMiembroSinEmpresa(rol, puede) ? 'Tu nombre, tu contraseña y tus accesos' : 'Datos fiscales, logo, facturación y contraseña',
+  },
+  {
+    id: 'envio',
+    to: '/configuracion/envio',
+    icon: Mail,
+    grupo: 'Empresa',
+    permiso: 'empresa',
+    label: () => 'Envío de facturas',
+    detalle: () => 'El correo con el que mandas tus facturas a tus clientes y a dónde llegan las respuestas',
   },
   {
     id: 'plan',
