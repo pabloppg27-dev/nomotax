@@ -93,19 +93,23 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
         role="dialog"
         aria-modal="true"
         aria-label="Configuración"
-        className="relative flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[min(88dvh,860px)] sm:max-w-6xl sm:rounded-2xl"
+        className="relative flex h-dvh w-full flex-col overflow-hidden shadow-2xl sm:h-[min(88dvh,860px)] sm:max-w-6xl sm:rounded-2xl"
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line py-2 pl-5 pr-2 sm:py-3 sm:pl-6 sm:pr-3">
-          <h2 className="min-w-0 truncate text-lg font-semibold">
-            Configuración
-            {viewingOther && owner?.nombre && <span className="font-normal text-muted"> · {owner.nombre}</span>}
-          </h2>
-          <button onClick={onClose} className="grid size-11 shrink-0 place-items-center rounded-full bg-paper text-ink hover:bg-ink/10" aria-label="Cerrar">
-            <X className="size-5" />
-          </button>
+        {/* Cabecera blanca y una línea lima abajo */}
+        <div className="shrink-0 border-b-2 border-lima bg-white text-ink">
+          <div className="flex items-center justify-between gap-3 py-3 pl-5 pr-3 sm:py-3.5 sm:pl-6 sm:pr-4">
+            <h2 className="text-lg font-semibold tracking-tight">Configuración</h2>
+            <button
+              onClick={onClose}
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-paper text-ink transition-colors hover:bg-ink/10"
+              aria-label="Cerrar"
+            >
+              <X className="size-[18px]" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
+        <div className="flex min-h-0 flex-1 flex-col bg-white sm:flex-row">
           {/* Izquierda: buscador y secciones (en el móvil, una fila arriba) */}
           <aside className="shrink-0 border-b border-line bg-paper/60 sm:w-64 sm:overflow-y-auto sm:border-b-0 sm:border-r">
             <div className="hidden p-3 sm:block">
@@ -117,7 +121,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
             <nav className="flex gap-1 overflow-x-auto px-3 py-2 sm:block sm:space-y-4 sm:px-3 sm:pb-4 sm:pt-0">
               {grupos.map((g) => (
                 <div key={g.titulo} className="contents sm:block">
-                  <p className="hidden truncate px-2 pb-1 pt-2 text-xs font-medium text-muted sm:block">{g.titulo}</p>
+                  <p className="hidden truncate px-2 pb-1.5 pt-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted sm:block">{g.titulo}</p>
                   {g.items.map((s) => {
                     const Icon = s.icon
                     return (
@@ -125,8 +129,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                         key={s.id}
                         onClick={() => setActiva(s.id)}
                         className={cx(
-                          'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-left text-[15px] transition-colors sm:w-full',
-                          s.id === actual?.id ? 'bg-ink/[0.07] font-medium text-ink' : 'text-ink/80 hover:bg-ink/[0.04]',
+                          'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2 text-left text-[15px] transition-colors sm:w-full',
+                          s.id === actual?.id ? 'bg-lima font-medium text-ink' : 'text-ink/75 hover:bg-ink/[0.05] hover:text-ink',
                         )}
                       >
                         <Icon className="size-[18px] shrink-0" />
@@ -144,8 +148,15 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
           <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8 sm:py-6">
             {actual && (
               <>
-                <h3 className="text-xl font-semibold tracking-tight">{actual.label(ctx)}</h3>
-                <p className="mb-5 text-sm text-muted">{actual.detalle(ctx)}</p>
+                <div className="mb-6 flex items-center gap-3 border-b border-line pb-5">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-ink text-lima">
+                    <actual.icon className="size-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-semibold tracking-tight">{actual.label(ctx)}</h3>
+                    <p className="text-sm text-muted">{actual.detalle(ctx)}</p>
+                  </div>
+                </div>
                 {actual.id === 'perfil' && <Perfil />}
                 {actual.id === 'plan' && <SeccionPlan />}
                 {actual.id === 'facturacion' && <SeccionFacturacion />}
