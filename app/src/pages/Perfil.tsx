@@ -35,9 +35,14 @@ export default function Perfil() {
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Lo que había al cargar o al guardar por última vez (para saber si hay cambios sin guardar)
+  const [inicial, setInicial] = useState('')
+
+  // El formulario solo se rellena al abrir la cuenta (o al cambiar de cliente). Antes se rellenaba
+  // cada vez que se refrescaba el perfil, y al subir el logo se borraba lo que aún no estaba guardado.
   useEffect(() => {
     if (!owner) return
-    setForm({
+    const datos: Editable = {
       nombre: owner.nombre,
       // Solo si la columna ya existe en Supabase (supabase/marca.sql); si no, no se envía al guardar
       ...('nombre_comercial' in owner ? { nombre_comercial: owner.nombre_comercial ?? '' } : {}),
@@ -53,10 +58,29 @@ export default function Perfil() {
       serie_presupuesto: owner.serie_presupuesto,
       serie_rectificativa: owner.serie_rectificativa ?? 'R',
       pie_factura: owner.pie_factura,
-    })
-    if (owner.logo_path) signedUrl(owner.logo_path, 3600).then(setLogoUrl)
+    }
+    setForm(datos)
+    setInicial(JSON.stringify(datos))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [owner?.id])
+
+  useEffect(() => {
+    if (owner?.logo_path) signedUrl(owner.logo_path, 3600).then(setLogoUrl)
     else setLogoUrl(null)
-  }, [owner])
+  }, [owner?.logo_path])
+
+  const sinGuardar = form !== null && inicial !== '' && JSON.stringify(form) !== inicial
+
+  // Si cierras o recargas la página con cambios sin guardar, el navegador te avisa
+  useEffect(() => {
+    if (!sinGuardar) return
+    const avisar = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', avisar)
+    return () => window.removeEventListener('beforeunload', avisar)
+  }, [sinGuardar])
 
   if (!owner || !form) return <Loading />
 
@@ -80,6 +104,7 @@ export default function Perfil() {
       .eq('id', owner.id)
     setGuardando(false)
     if (error) return notify(await errorMessage(error), 'error')
+    setInicial(JSON.stringify(form))
     await refresh()
     notify('Datos guardados')
   }
@@ -98,7 +123,7 @@ export default function Perfil() {
     await supabase.from('profiles').update({ logo_path: path }).eq('id', owner.id)
     await refresh()
     setSubiendoLogo(false)
-    notify('Logo actualizado')
+    notify(sinGuardar ? 'Logo actualizado. Recuerda pulsar «Guardar cambios» para los datos que has cambiado.' : 'Logo actualizado')
   }
 
   const quitarLogo = async () => {
@@ -174,7 +199,8 @@ export default function Perfil() {
               </Field>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+              {sinGuardar && <span className="text-sm font-medium text-ambar">Tienes cambios sin guardar</span>}
               <Button type="submit" loading={guardando}>
                 Guardar cambios
               </Button>
