@@ -57,3 +57,15 @@
   background-size: 1rem;
   text-overflow: ellipsis;
 }
+
+/* Fechas en el móvil (iPhone): el campo nativo tenía un ancho mínimo propio y se salía
+   de su columna, montándose sobre el de al lado. Así respeta el ancho y alinea a la izquierda. */
+input[type='date'] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
+input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+}

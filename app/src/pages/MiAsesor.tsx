@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { CalendarClock, CheckCircle2, MessagesSquare, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { ASESOR, cargarHuecos, enlaceEmail, enlaceWhatsapp, enviarAlMotor, mensajeError } from '../lib/asesor'
@@ -28,11 +28,9 @@ export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean
   const mail = enlaceEmail(`Consulta de ${owner?.nombre ?? 'un cliente'}`, `Hola ${ASESOR.corto},\n\n`)
   return (
     <div className={cx('flex items-center gap-4', compacta ? '' : 'flex-col text-center sm:flex-row sm:text-left')}>
-      {/* La foto solo se ve dentro de «Mi asesor»; fuera, un icono */}
+      {/* Foto del asesor: pequeña en el Resumen, grande dentro de «Mi asesor» */}
       {compacta ? (
-        <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-lima">
-          <MessagesSquare className="size-7" />
-        </span>
+        <img src={ASESOR.foto} alt={ASESOR.nombre} className="size-16 shrink-0 self-start rounded-2xl object-cover ring-2 ring-lima" />
       ) : (
         <img src={ASESOR.foto} alt={ASESOR.nombre} className="size-28 shrink-0 rounded-2xl object-cover ring-2 ring-lima sm:size-32" />
       )}

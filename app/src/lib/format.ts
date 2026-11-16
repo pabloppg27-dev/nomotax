@@ -50,7 +50,7 @@ export type Periodo = { anio: number; trimestre: 0 | 1 | 2 | 3 | 4; mes?: number
 
 const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
-/** Texto del periodo para frases: en = «en el 3T de 2026» / «en octubre de 2026» / «del 01/02/2026 al 15/05/2026»; del = «del 3T de 2026»… */
+/** Texto del periodo para frases: en = «en el 3.er trimestre de 2026» / «en octubre de 2026» / «del 01/02/2026 al 15/05/2026»; del = «del 3T de 2026»… */
 export function textoPeriodo(p: Periodo): { en: string; del: string; archivo: string } {
   if (p.desde && p.hasta)
     return { en: `del ${fecha(p.desde)} al ${fecha(p.hasta)}`, del: `del ${fecha(p.desde)} al ${fecha(p.hasta)}`, archivo: `${p.desde} a ${p.hasta}` }
@@ -58,7 +58,10 @@ export function textoPeriodo(p: Periodo): { en: string; del: string; archivo: st
     const m = `${MESES_LARGOS[p.mes - 1]} de ${p.anio}`
     return { en: `en ${m}`, del: `de ${m}`, archivo: `${p.anio}-${String(p.mes).padStart(2, '0')}` }
   }
-  if (p.trimestre) return { en: `en el ${p.trimestre}T de ${p.anio}`, del: `del ${p.trimestre}T de ${p.anio}`, archivo: `${p.anio}-${p.trimestre}T` }
+  if (p.trimestre) {
+    const t = `${['1.er', '2.º', '3.er', '4.º'][p.trimestre - 1]} trimestre de ${p.anio}`
+    return { en: `en el ${t}`, del: `del ${t}`, archivo: `${p.anio}-${p.trimestre}T` }
+  }
   return { en: `en el año ${p.anio}`, del: `del año ${p.anio}`, archivo: `${p.anio}` }
 }
 
