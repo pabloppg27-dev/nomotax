@@ -1,7 +1,7 @@
 /**
  * Configuración → Envío de facturas: plantilla del correo (asunto y mensaje con {variables}),
  * a dónde llegan las respuestas y vista previa con el logo y el color de marca.
- * Las facturas salen desde invoice@nomotax.io con el nombre de la empresa (función enviar-factura).
+ * Las facturas salen desde info@nomotax.io con el nombre de la empresa (función enviar-factura).
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, Save } from 'lucide-react'
@@ -12,8 +12,8 @@ import { VARIABLES_CORREO, correoDeFactura, htmlCorreoFactura, plantillaPorDefec
 import type { Profile } from '../lib/types'
 import { Button, Card, Field, Input, Textarea, notify } from './ui'
 
-/** Remitente de las facturas (debe coincidir con FACTURAS_FROM de la función enviar-factura) */
-export const REMITENTE_FACTURAS = 'invoice@nomotax.io'
+/** Remitente de las facturas (el secreto FACTURAS_FROM de la función enviar-factura; Hostinger no deja enviar como el alias invoice@) */
+export const REMITENTE_FACTURAS = 'info@nomotax.io'
 
 export const nombreEmpresa = (p: Pick<Profile, 'nombre' | 'nombre_comercial' | 'email'> | null | undefined) =>
   p?.nombre_comercial?.trim() || p?.nombre?.trim() || p?.email || 'Tu empresa'
