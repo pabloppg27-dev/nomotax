@@ -1,6 +1,6 @@
 /**
- * Mientras no esté integrado Verifactu, las facturas creadas en la app se
- * marcan como documento de pruebas (en el PDF y al emitir).
- * Cambiar a false solo cuando la emisión cumpla el Reglamento Verifactu.
+ * Con true, las facturas creadas en la app se marcan como documento de
+ * pruebas (en el PDF y al emitir). Desactivado el 16/11/2026: los clientes ya
+ * emiten facturas reales (Verifactu obligatorio desde oct. 2028).
  */
-export const MODO_PRUEBAS_FACTURAS = true
+export const MODO_PRUEBAS_FACTURAS = false
