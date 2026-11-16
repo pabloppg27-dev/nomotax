@@ -305,6 +305,173 @@ a.contact-card:hover {
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Tres tarjetas en fila en escritorio */
+.contact-cards {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+/* Formulario de contacto (→ enviar-contacto.php → info@nomotax.io) */
+.contact-form {
+  margin-bottom: 36px;
+  padding: 32px 28px;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  background: #fff;
+  color: #111110;
+  scroll-margin-top: 100px;
+}
+
+.contact-form-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.contact-form-sub {
+  font-size: 0.92rem;
+  color: #777;
+  margin-bottom: 22px;
+}
+
+.contact-form-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 18px;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.contact-field-full {
+  grid-column: 1 / -1;
+}
+
+.contact-field > span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #173404;
+  opacity: 0.7;
+}
+
+.contact-field input,
+.contact-field select,
+.contact-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(17, 17, 16, 0.16);
+  border-radius: 10px;
+  background: #f7f7f5;
+  color: #111110;
+  font: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.contact-field textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.contact-field input:focus,
+.contact-field select:focus,
+.contact-field textarea:focus {
+  outline: none;
+  border-color: #111110;
+  background: #fff;
+}
+
+.contact-field.is-invalid input,
+.contact-field.is-invalid textarea,
+.contact-check.is-invalid input {
+  border-color: #c0392b;
+  outline-color: #c0392b;
+}
+
+.contact-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.contact-check input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  accent-color: #111110;
+  flex-shrink: 0;
+}
+
+.contact-check.is-invalid span {
+  color: #c0392b;
+}
+
+.contact-check a {
+  text-decoration: underline;
+}
+
+.contact-form-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  margin-top: 22px;
+}
+
+.contact-submit {
+  padding: 14px 26px;
+  border: 0;
+  border-radius: 10px;
+  background: #111110;
+  color: #CDF564;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.contact-submit:hover {
+  transform: translateY(-1px);
+}
+
+.contact-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+.contact-form-status {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.contact-form-status.is-ok {
+  color: #2e6b00;
+  font-weight: 600;
+}
+
+.contact-form-status.is-error {
+  color: #c0392b;
+}
+
 
 /* ═══════════════════════════════════════════════
    RESPONSIVE
@@ -337,6 +504,18 @@ a.contact-card:hover {
 
   .contact-cards {
     grid-template-columns: 1fr;
+  }
+
+  .contact-form {
+    padding: 24px 18px;
+  }
+
+  .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-submit {
+    width: 100%;
   }
 
   .legal-hero {

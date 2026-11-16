@@ -27,7 +27,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <!-- /seo -->
   <link rel="stylesheet" href="../css/style.css?v=20261112a" />
-  <link rel="stylesheet" href="../css/legal.css?v=20260927" />
+  <link rel="stylesheet" href="../css/legal.css?v=20261116" />
 </head>
 <body class="page-legal">
 
@@ -109,12 +109,56 @@
           <span class="contact-card-value">info@nomotax.io</span>
           <span class="contact-card-text">Ideal if you want to send us documents.</span>
         </a>
-        <div class="contact-card">
-          <span class="contact-card-label">Address</span>
-          <span class="contact-card-value">Pablo Pérez del Pulgar Gil</span>
-          <span class="contact-card-text">Ronda Maiols 1, 08192 Sant Quirze del Vallès, Barcelona, Spain</span>
-        </div>
       </div>
+
+      <form class="contact-form" id="formulario" action="/enviar-contacto.php" method="post" novalidate>
+        <h2 class="contact-form-title">Write to us</h2>
+        <p class="contact-form-sub">Tell us about your case and we'll reply by email within 48 working hours.</p>
+        <input type="hidden" name="lang" value="en" />
+        <input type="hidden" name="t" value="" />
+        <div class="contact-form-trap" aria-hidden="true">
+          <label>Do not fill <input type="text" name="web" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <div class="contact-form-grid">
+          <label class="contact-field">
+            <span>Name *</span>
+            <input type="text" name="nombre" required maxlength="120" autocomplete="name" />
+          </label>
+          <label class="contact-field">
+            <span>Email *</span>
+            <input type="email" name="email" required maxlength="160" autocomplete="email" />
+          </label>
+          <label class="contact-field">
+            <span>Phone</span>
+            <input type="tel" name="telefono" maxlength="40" autocomplete="tel" />
+          </label>
+          <label class="contact-field">
+            <span>Topic</span>
+            <select name="motivo">
+              <option value="">Select…</option>
+              <option>Accounting &amp; tax compliance in Spain</option>
+              <option>International tax</option>
+              <option>US LLC</option>
+              <option>Change of tax residence</option>
+              <option>Beckham Law</option>
+              <option>Tax deductions</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label class="contact-field contact-field-full">
+            <span>Message *</span>
+            <textarea name="mensaje" required rows="6" maxlength="5000"></textarea>
+          </label>
+        </div>
+        <label class="contact-check">
+          <input type="checkbox" name="privacidad" value="1" required />
+          <span>I have read and accept the <a href="privacidad" target="_blank">privacy policy</a>. *</span>
+        </label>
+        <div class="contact-form-actions">
+          <button type="submit" class="contact-submit">Send message</button>
+          <p class="contact-form-status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
 
       <div class="legal-content">
         <p>Already know what you need? See our services for <a href="nacional">tax in Spain</a> and for <a href="internacional">international tax</a>.</p>
@@ -170,5 +214,6 @@
   </footer>
 
   <script src="../js/main.js?v=20260927l"></script>
+  <script src="../js/contacto.js?v=20261116"></script>
 </body>
 </html>
