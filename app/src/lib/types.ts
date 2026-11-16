@@ -31,6 +31,10 @@ export interface Profile {
   plan_proximo_cobro?: string | null
   /** Precio personalizado sin IVA, en €/mes o €/año según plan_periodo; null = tarifa */
   plan_precio?: number | null
+  /** Nóminas que gestionamos al mes (supabase/planes-laboral.sql) */
+  plan_nominas?: number | null
+  /** Precio personalizado por nómina y mes sin IVA; null = tarifa (25/18/12€) */
+  plan_nomina_precio?: number | null
   created_at: string
 }
 

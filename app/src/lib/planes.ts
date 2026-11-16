@@ -62,6 +62,32 @@ interface DatosPlan {
   plan_periodo?: Periodo | null
   plan_proximo_cobro?: string | null
   plan_precio?: number | string | null
+  plan_nominas?: number | null
+  plan_nomina_precio?: number | string | null
+}
+
+/** Tarifa laboral de la web, por nómina y mes: 1 → 25€, 2–9 → 18€, 10 o más → 12€ */
+export function tarifaNomina(n: number): number {
+  if (n >= 10) return 12
+  if (n >= 2) return 18
+  return n === 1 ? 25 : 0
+}
+
+const vacio = (v: unknown) => v === null || v === undefined || v === ''
+
+/** Parte laboral (siempre mensual): nóminas × precio por nómina */
+export function cuotaLaboral(d: DatosPlan) {
+  const nominas = Math.max(0, Math.floor(Number(d.plan_nominas ?? 0)))
+  if (!nominas) return null
+  const personalizado = !vacio(d.plan_nomina_precio)
+  const precio = personalizado ? Number(d.plan_nomina_precio) : tarifaNomina(nominas)
+  return {
+    nominas,
+    precio,
+    personalizado,
+    total: nominas * precio,
+    texto: `${nominas} ${nominas === 1 ? 'nómina' : 'nóminas'} × ${importe(precio)}`,
+  }
 }
 
 /** 149 → "149€" · 1788.5 → "1.788,50€" */
@@ -83,6 +109,9 @@ export function cuotaCliente(d: DatosPlan) {
     personalizado,
     cantidad,
     texto: `${!personalizado && plan.desde ? 'Desde ' : ''}${importe(cantidad)}/${periodo === 'anual' ? 'año' : 'mes'}`,
+    laboral: cuotaLaboral(d),
+    /** Plan + laboral al mes (solo si paga mensual; en anual van por separado) */
+    totalMes: periodo === 'mensual' ? cantidad + (cuotaLaboral(d)?.total ?? 0) : null,
   }
 }
 

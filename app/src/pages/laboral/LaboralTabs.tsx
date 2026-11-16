@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { cx } from '../../components/ui'
+import { useAuth } from '../../lib/auth'
+import { cuotaLaboral, importe } from '../../lib/planes'
 
 const TABS = [
   { to: '/laboral', label: 'Trabajadores', end: true },
@@ -9,12 +11,19 @@ const TABS = [
 ]
 
 export default function LaboralTabs({ actions, subtitle }: { actions?: ReactNode; subtitle?: ReactNode }) {
+  const { owner } = useAuth()
+  const tarifa = owner ? cuotaLaboral(owner) : null
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">Laboral</h1>
           {subtitle && <p className="mt-1 text-[15px] text-muted">{subtitle}</p>}
+          {tarifa && (
+            <p className="num mt-2 inline-block rounded-xl bg-lima/40 px-3 py-1 text-sm leading-snug">
+              Tu tarifa laboral: {tarifa.texto} = <strong className="whitespace-nowrap">{importe(tarifa.total)}/mes + IVA</strong>
+            </p>
+          )}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>

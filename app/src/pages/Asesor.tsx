@@ -7,7 +7,7 @@ import { eur, fecha } from '../lib/format'
 import { ESTADOS_TRABAJADOR, diasHabilesHasta } from '../lib/laboral'
 import type { EstadoTrabajador, Profile } from '../lib/types'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, notify } from '../components/ui'
-import { cuotaCliente, proximoCobro } from '../lib/planes'
+import { cuotaCliente, importe, proximoCobro } from '../lib/planes'
 import { EditorPlan, OpcionesPlan } from '../components/Planes'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
@@ -277,6 +277,8 @@ export default function Asesor() {
                           <span className="num text-muted">
                             {cuotaCliente(c)!.texto}
                             {cuotaCliente(c)!.personalizado ? ' (personalizado)' : ''}
+                            {cuotaCliente(c)!.laboral ? ` + ${cuotaCliente(c)!.laboral!.texto}` : ''}
+                            {cuotaCliente(c)!.laboral && cuotaCliente(c)!.totalMes !== null ? ` = ${importe(cuotaCliente(c)!.totalMes!)}/mes` : ''}
                             {proximoCobro(c) ? ` · cobro ${fecha(proximoCobro(c))}` : ''}
                           </span>
                         )}

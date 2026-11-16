@@ -13,13 +13,14 @@ import {
   type Periodo,
   type Plan,
   type PlanId,
+  tarifaNomina,
 } from '../lib/planes'
 import { errorMessage, supabase } from '../lib/supabase'
 import type { Profile } from '../lib/types'
 import NumInput from './NumInput'
 import { Button, Field, Input, Modal, Select, cx, notify } from './ui'
 
-type PerfilPlan = Pick<Profile, 'id' | 'nombre' | 'email' | 'plan' | 'plan_periodo' | 'plan_proximo_cobro' | 'plan_precio'>
+type PerfilPlan = Pick<Profile, 'id' | 'nombre' | 'email' | 'plan' | 'plan_periodo' | 'plan_proximo_cobro' | 'plan_precio' | 'plan_nominas' | 'plan_nomina_precio'>
 
 const fechaCorta = (iso: string) =>
   new Date(iso + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '')
@@ -85,6 +86,24 @@ export function PlanTarjeta({
           )}
         </div>
       </div>
+      {cuota?.laboral && (
+        <div className="mt-4 space-y-1.5 rounded-xl border border-line p-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <span className="text-muted">Plan {cuota.plan.nombre}</span>
+            <span className="num">{cuota.texto}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span className="text-muted">Laboral · {cuota.laboral.texto}</span>
+            <span className="num">{importe(cuota.laboral.total)}/mes</span>
+          </div>
+          {cuota.totalMes !== null && (
+            <div className="flex justify-between gap-3 border-t border-line pt-1.5 font-semibold">
+              <span>Total</span>
+              <span className="num">{importe(cuota.totalMes)}/mes + IVA</span>
+            </div>
+          )}
+        </div>
+      )}
       {cuota && (
         <dl className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-paper p-3 text-sm">
           <div>
@@ -133,6 +152,9 @@ export function EditorPlan({
   const [cobro, setCobro] = useState('')
   const [personalizado, setPersonalizado] = useState(false)
   const [precio, setPrecio] = useState(0)
+  const [nominas, setNominas] = useState(0)
+  const [nominaPers, setNominaPers] = useState(false)
+  const [nominaPrecio, setNominaPrecio] = useState(0)
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
@@ -143,11 +165,20 @@ export function EditorPlan({
     const p = perfil.plan_precio
     setPersonalizado(p !== null && p !== undefined)
     setPrecio(p !== null && p !== undefined ? Number(p) : 0)
+    setNominas(Number(perfil.plan_nominas ?? 0))
+    const np = perfil.plan_nomina_precio
+    setNominaPers(np !== null && np !== undefined)
+    setNominaPrecio(np !== null && np !== undefined ? Number(np) : 0)
   }, [perfil])
+
 
   const elegido = planPorId(plan)
   const tarifa = elegido ? (periodo === 'anual' ? elegido.precio * 12 : elegido.precio) : null
   const unidad = periodo === 'anual' ? '€/año' : '€/mes'
+  const n = Math.max(0, Math.floor(nominas))
+  const precioNomina = nominaPers ? nominaPrecio : tarifaNomina(n)
+  const totalLaboral = n * precioNomina
+  const base = personalizado ? precio : (tarifa ?? 0)
 
   const guardar = async () => {
     if (!perfil) return
@@ -159,6 +190,8 @@ export function EditorPlan({
         plan_periodo: periodo,
         plan_proximo_cobro: plan && cobro ? cobro : null,
         plan_precio: plan && personalizado ? precio : null,
+        plan_nominas: plan ? n : 0,
+        plan_nomina_precio: plan && n && nominaPers ? nominaPrecio : null,
       })
       .eq('id', perfil.id)
     setGuardando(false)
@@ -238,6 +271,51 @@ export function EditorPlan({
                   Precio de tarifa: {tarifa !== null ? `${elegido?.desde ? 'desde ' : ''}${importe(tarifa)}${unidad.replace('€', '')}` : '—'} sin IVA
                 </p>
               )}
+            </div>
+
+            <div className="rounded-xl border border-line p-3">
+              <p className="text-[15px] font-medium">Laboral</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <NumInput value={nominas} onValue={(v) => setNominas(Math.max(0, Math.floor(v)))} inputMode="numeric" className="w-20" />
+                <span className="text-sm text-muted">nóminas al mes</span>
+              </div>
+              {n > 0 && (
+                <>
+                  <label className="mt-3 flex items-center gap-2.5 text-[15px]">
+                    <input
+                      type="checkbox"
+                      className="size-4 accent-ink"
+                      checked={nominaPers}
+                      onChange={(e) => {
+                        setNominaPers(e.target.checked)
+                        if (e.target.checked && !nominaPrecio) setNominaPrecio(tarifaNomina(n))
+                      }}
+                    />
+                    Precio personalizado por nómina
+                  </label>
+                  {nominaPers ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <NumInput value={nominaPrecio} onValue={setNominaPrecio} className="w-24" />
+                      <span className="text-sm text-muted">€ por nómina y mes sin IVA</span>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted">Tarifa: {importe(tarifaNomina(n))} por nómina (1 → 25€ · 2–9 → 18€ · 10+ → 12€)</p>
+                  )}
+                  <p className="num mt-2 text-sm">
+                    Laboral: {n} × {importe(precioNomina)} = <strong>{importe(totalLaboral)}/mes</strong>
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-paper px-3 py-2.5 text-[15px]">
+              <span>Total que paga</span>
+              <span className="num font-semibold">
+                {periodo === 'mensual'
+                  ? `${importe(base + totalLaboral)}/mes`
+                  : `${importe(base)}/año${totalLaboral ? ` + ${importe(totalLaboral)}/mes` : ''}`}{' '}
+                <span className="font-normal text-muted">+ IVA</span>
+              </span>
             </div>
           </>
         )}
