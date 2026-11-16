@@ -5,6 +5,8 @@ export interface Profile {
   email: string | null
   role: Role
   nombre: string | null
+  /** Marca con la que factura un autónomo; en el PDF va encima del nombre legal */
+  nombre_comercial?: string | null
   nif: string | null
   direccion: string | null
   cp: string | null

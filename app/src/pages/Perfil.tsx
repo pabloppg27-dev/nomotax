@@ -10,6 +10,7 @@ import { Button, Card, Field, Input, Loading, PageHeader, Textarea, notify } fro
 type Editable = Pick<
   Profile,
   | 'nombre'
+  | 'nombre_comercial'
   | 'nif'
   | 'direccion'
   | 'cp'
@@ -37,6 +38,8 @@ export default function Perfil() {
     if (!owner) return
     setForm({
       nombre: owner.nombre,
+      // Solo si la columna ya existe en Supabase (supabase/marca.sql); si no, no se envía al guardar
+      ...('nombre_comercial' in owner ? { nombre_comercial: owner.nombre_comercial ?? '' } : {}),
       nif: owner.nif,
       direccion: owner.direccion,
       cp: owner.cp,
@@ -61,10 +64,12 @@ export default function Perfil() {
   const guardar = async (e: FormEvent) => {
     e.preventDefault()
     setGuardando(true)
+    const { nombre_comercial, ...resto } = form
     const { error } = await supabase
       .from('profiles')
       .update({
-        ...form,
+        ...resto,
+        ...(nombre_comercial !== undefined ? { nombre_comercial: nombre_comercial?.trim() || null } : {}),
         nif: limpiarNif(form.nif),
         iban: form.iban ? form.iban.toUpperCase().replace(/\s+/g, ' ').trim() : null,
         serie_factura: (form.serie_factura || 'F').toUpperCase().trim(),
@@ -117,6 +122,15 @@ export default function Perfil() {
               <Field label="Nombre o razón social" className="sm:col-span-2">
                 <Input value={form.nombre ?? ''} onChange={set('nombre')} required />
               </Field>
+              {form.nombre_comercial !== undefined && (
+                <Field
+                  label="Nombre comercial (opcional)"
+                  className="sm:col-span-2"
+                  hint="Para autónomos que facturan con una marca: sale arriba en la factura y tu nombre y apellidos debajo."
+                >
+                  <Input value={form.nombre_comercial ?? ''} onChange={set('nombre_comercial')} placeholder="NomoTax" />
+                </Field>
+              )}
               <Field label="NIF / CIF">
                 <Input value={form.nif ?? ''} onChange={set('nif')} />
               </Field>

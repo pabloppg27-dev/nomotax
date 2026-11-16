@@ -259,7 +259,10 @@ export default function FacturaEditor() {
     const f = bloqueada ? factura : await guardar()
     if (!f) return
     const { descargarPdf } = await import('../lib/pdf')
-    await descargarPdf('factura', f, (f.emisor as Emisor) ?? (owner as Emisor), owner?.color_marca)
+    await descargarPdf('factura', f, (f.emisor as Emisor) ?? (owner as Emisor), {
+      color: owner?.color_marca,
+      nombreComercial: owner?.nombre_comercial,
+    })
   }
 
   const duplicar = async () => {

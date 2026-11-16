@@ -52,6 +52,8 @@ type Textos = {
   notas: string
   formaPago: string
   transferencia: (iban: string) => string
+  transferenciaCorta: string
+  refPago: (numero: string) => string
   pagina: (p: number, n: number) => string
   marcaPruebas: string
   avisoPruebas: string
@@ -69,6 +71,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Factura rectificativa',
     rectifica: (n, f) => `Rectifica la factura nº ${n}${f ? ` de fecha ${f}` : ''}.`, causa: 'Causa', motivo: 'Motivo',
     notas: 'Notas', formaPago: 'Forma de pago', transferencia: (i) => `Transferencia bancaria a ${i}`,
+    transferenciaCorta: 'Transferencia', refPago: (n) => `Indica ${n} en el concepto de la transferencia.`,
     pagina: (p, n) => `Página ${p} de ${n}`,
     marcaPruebas: 'DOCUMENTO DE PRUEBAS', avisoPruebas: 'Documento generado en modo pruebas: no válido como factura.',
     archivoFactura: 'Factura', archivoPresupuesto: 'Presupuesto',
@@ -82,6 +85,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Corrective invoice',
     rectifica: (n, f) => `Corrects invoice no. ${n}${f ? ` dated ${f}` : ''}.`, causa: 'Reason', motivo: 'Details',
     notas: 'Notes', formaPago: 'Payment', transferencia: (i) => `Bank transfer to ${i}`,
+    transferenciaCorta: 'Bank transfer', refPago: (n) => `Please quote ${n} as the payment reference.`,
     pagina: (p, n) => `Page ${p} of ${n}`,
     marcaPruebas: 'TEST DOCUMENT', avisoPruebas: 'Generated in test mode: not valid as an invoice.',
     archivoFactura: 'Invoice', archivoPresupuesto: 'Quote',
@@ -95,6 +99,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Fattura rettificativa',
     rectifica: (n, f) => `Rettifica la fattura n. ${n}${f ? ` del ${f}` : ''}.`, causa: 'Causa', motivo: 'Motivo',
     notas: 'Note', formaPago: 'Pagamento', transferencia: (i) => `Bonifico bancario a ${i}`,
+    transferenciaCorta: 'Bonifico bancario', refPago: (n) => `Indicare ${n} nella causale del bonifico.`,
     pagina: (p, n) => `Pagina ${p} di ${n}`,
     marcaPruebas: 'DOCUMENTO DI PROVA', avisoPruebas: 'Generato in modalità di prova: non valido come fattura.',
     archivoFactura: 'Fattura', archivoPresupuesto: 'Preventivo',
@@ -108,6 +113,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Facture rectificative',
     rectifica: (n, f) => `Rectifie la facture n° ${n}${f ? ` du ${f}` : ''}.`, causa: 'Motif', motivo: 'Détail',
     notas: 'Notes', formaPago: 'Paiement', transferencia: (i) => `Virement bancaire sur ${i}`,
+    transferenciaCorta: 'Virement bancaire', refPago: (n) => `Merci d’indiquer ${n} en référence du virement.`,
     pagina: (p, n) => `Page ${p} sur ${n}`,
     marcaPruebas: 'DOCUMENT DE TEST', avisoPruebas: 'Généré en mode test : non valable comme facture.',
     archivoFactura: 'Facture', archivoPresupuesto: 'Devis',
@@ -121,6 +127,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Korrekturrechnung',
     rectifica: (n, f) => `Korrigiert Rechnung Nr. ${n}${f ? ` vom ${f}` : ''}.`, causa: 'Grund', motivo: 'Details',
     notas: 'Hinweise', formaPago: 'Zahlung', transferencia: (i) => `Banküberweisung an ${i}`,
+    transferenciaCorta: 'Banküberweisung', refPago: (n) => `Bitte geben Sie ${n} als Verwendungszweck an.`,
     pagina: (p, n) => `Seite ${p} von ${n}`,
     marcaPruebas: 'TESTDOKUMENT', avisoPruebas: 'Im Testmodus erstellt: keine gültige Rechnung.',
     archivoFactura: 'Rechnung', archivoPresupuesto: 'Angebot',
@@ -134,6 +141,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     bloqueRectificativa: 'Fatura retificativa',
     rectifica: (n, f) => `Retifica a fatura n.º ${n}${f ? ` de ${f}` : ''}.`, causa: 'Causa', motivo: 'Motivo',
     notas: 'Notas', formaPago: 'Pagamento', transferencia: (i) => `Transferência bancária para ${i}`,
+    transferenciaCorta: 'Transferência bancária', refPago: (n) => `Indique ${n} na referência da transferência.`,
     pagina: (p, n) => `Página ${p} de ${n}`,
     marcaPruebas: 'DOCUMENTO DE TESTE', avisoPruebas: 'Gerado em modo de teste: não válido como fatura.',
     archivoFactura: 'Fatura', archivoPresupuesto: 'Orcamento',

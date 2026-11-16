@@ -123,7 +123,10 @@ export default function PresupuestoEditor() {
     const q = bloqueado ? quote : await guardar()
     if (!q) return
     const { descargarPdf } = await import('../lib/pdf')
-    await descargarPdf('presupuesto', q, owner as Emisor, owner?.color_marca)
+    await descargarPdf('presupuesto', q, owner as Emisor, {
+      color: owner?.color_marca,
+      nombreComercial: owner?.nombre_comercial,
+    })
   }
 
   const facturar = async () => {

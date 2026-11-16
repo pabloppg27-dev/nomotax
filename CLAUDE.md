@@ -20,7 +20,7 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 - Formato de importes: `1.234,56€` (punto de miles siempre, € pegado). Usar `eur()` / `num()` de `src/lib/format.ts`.
 - La factura sale en el idioma del país del cliente (`src/lib/idiomaFactura.ts`).
 - Móvil primero: probar a 390 px; nada que desborde en horizontal.
-- Marca: negro `#111110`, lima `#CDF564`, fondo `#f7f7f5`. Cada cliente puede poner su «Color de marca» (profiles.color_marca) para la franja y el total del PDF.
+- Marca: negro `#111110`, lima `#CDF564`, fondo `#f7f7f5`. Cada cliente puede poner su «Color de marca» (profiles.color_marca) y su «Nombre comercial» (profiles.nombre_comercial, autónomos): se leen del perfil actual, no del snapshot del emisor. Plantilla PDF en `src/lib/pdf.ts` (concepto: 1.ª línea negrita, resto detalle en gris; QR SEPA EPC en «Forma de pago»).
 - `MODO_PRUEBAS_FACTURAS` (src/lib/config.ts) sigue en true; Verifactu obligatorio desde oct. 2028 según Pablo.
 
 ## Pendiente

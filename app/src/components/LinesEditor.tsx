@@ -1,9 +1,10 @@
+import { useLayoutEffect, useRef } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { eur } from '../lib/format'
 import { TIPOS_IVA, importeLinea, lineaVacia } from '../lib/totals'
 import type { Linea } from '../lib/types'
 import NumInput from './NumInput'
-import { Button, Input, Select } from './ui'
+import { Button, Select, Textarea } from './ui'
 
 export default function LinesEditor({
   lineas,
@@ -34,12 +35,10 @@ export default function LinesEditor({
             key={i}
             className="grid grid-cols-[1fr_1fr_1fr] gap-2 rounded-xl border border-line p-3 md:grid-cols-[1fr_80px_120px_96px_110px_36px] md:items-center md:border-0 md:p-0"
           >
-            <Input
-              className="col-span-3 md:col-span-1"
-              placeholder="Descripción del servicio o producto"
+            <Concepto
               value={l.concepto}
               disabled={disabled}
-              onChange={(e) => update(i, { concepto: e.target.value })}
+              onChange={(v) => update(i, { concepto: v })}
             />
             <NumInput
               aria-label="Cantidad"
@@ -97,5 +96,28 @@ export default function LinesEditor({
         </Button>
       )}
     </div>
+  )
+}
+
+/** Concepto de la línea: la primera línea sale en negrita en el PDF; con Intro se añade el detalle, en gris. */
+function Concepto({ value, disabled, onChange }: { value: string; disabled?: boolean; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight + 2}px`
+  }, [value])
+  return (
+    <Textarea
+      ref={ref}
+      rows={1}
+      className="col-span-3 resize-none overflow-hidden leading-snug md:col-span-1"
+      style={{ minHeight: '2.5rem' }}
+      placeholder="Concepto (Intro para añadir detalle)"
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value)}
+    />
   )
 }
