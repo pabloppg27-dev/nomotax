@@ -10,8 +10,9 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 ## Trabajar
 - `cd app && npm install && npm run dev` (http://localhost:5173) · `npx tsc --noEmit -p .` antes de publicar · `npm run build`.
 - Claves en `app/.env.production` (solo la publishable, pública). **Nunca** pegar claves secretas en el chat ni en el repo. `scripts/sincronizar.env` está en .gitignore.
-- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos, marca, bancos, planes, planes-cobro, planes-laboral). Se ejecutan pegándolos en Supabase → SQL Editor.
-- Edge Functions (`app/supabase/functions/`: ocr-factura, leer-nomina, invitar-cliente, solicitar-plan) se publican pegando el código en el editor del dashboard (no hay CLI). Secretos: `ANTHROPIC_API_KEY`, `SMTP_PASSWORD` (buzón info@nomotax.io, Hostinger).
+- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos, marca, bancos, planes, planes-cobro, planes-laboral, facturacion-automatica, facturacion-automatica-cron). Se ejecutan pegándolos en Supabase → SQL Editor.
+- Edge Functions (`app/supabase/functions/`: ocr-factura, leer-nomina, invitar-cliente, solicitar-plan, facturar-planes) se publican pegando el código en el editor del dashboard (no hay CLI). Secretos: `ANTHROPIC_API_KEY`, `SMTP_PASSWORD` (buzón info@nomotax.io, Hostinger), `CRON_SECRET`, `NOMOTAX_EMISOR_EMAIL` (=info@nomotax.io, perfil de cliente de Pablo que emite las facturas de NomoTax).
+- facturar-planes: NO se edita index.ts; se edita `fuente.ts`/`correo.ts` (y src/lib/pdfFactura.ts, facturaPlan.ts, planes.ts) y se regenera con `node scripts/empaquetar-facturar.mjs` (`--muestra` = PDF y correo de ejemplo en test-data/). Copiar al portapapeles SIEMPRE con `LC_ALL=en_US.UTF-8 pbcopy < …` (sin UTF-8 se rompen las tildes). JWT desactivado; se protege con la cabecera x-cron-secret (clave en ~/.nomotax-cron-secret). Modo prueba: `{"prueba":true,"cliente":"<nombre>"}` → serie PRUEBA.
 - Reservas/«Mi asesor»: Google Apps Script en `tools/booking/Code.gs`; Pablo pulsa «Implementar» él mismo.
 
 ## Reglas de negocio

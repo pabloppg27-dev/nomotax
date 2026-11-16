@@ -35,6 +35,8 @@ export interface Profile {
   plan_nominas?: number | null
   /** Precio personalizado por nómina y mes sin IVA; null = tarifa (25/18/12€) */
   plan_nomina_precio?: number | null
+  /** Email al que enviamos las facturas de NomoTax (supabase/facturacion-automatica.sql); vacío = el de la cuenta */
+  email_facturacion?: string | null
   created_at: string
 }
 

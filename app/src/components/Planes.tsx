@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowUpRight, CalendarClock, Check, CheckCircle2, ChevronRight, Minus, Sparkles } from 'lucide-react'
+import { ArrowUpRight, CalendarClock, Check, CheckCircle2, ChevronRight, FileText, Minus, Receipt, Sparkles } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { fechaLarga } from '../lib/format'
+import { eur, fechaLarga } from '../lib/format'
 import {
   COMPARATIVA,
   PLANES,
@@ -15,7 +15,7 @@ import {
   type PlanId,
   tarifaNomina,
 } from '../lib/planes'
-import { errorMessage, supabase } from '../lib/supabase'
+import { abrirDocumento, errorMessage, supabase } from '../lib/supabase'
 import type { Profile } from '../lib/types'
 import NumInput from './NumInput'
 import { Button, Field, Input, Modal, Select, cx, notify } from './ui'
@@ -64,6 +64,7 @@ export function PlanTarjeta({
 }) {
   const [abierto, setAbierto] = useState(false)
   const [editando, setEditando] = useState(false)
+  const [historial, setHistorial] = useState(false)
   const cuota = cuotaCliente(perfil)
   const cobro = proximoCobro(perfil)
   return (
@@ -123,6 +124,11 @@ export function PlanTarjeta({
         <Button variant="secondary" size="sm" onClick={() => setAbierto(true)}>
           Ver y comparar planes
         </Button>
+        {cuota && (
+          <Button variant="secondary" size="sm" icon={<Receipt className="size-4" />} onClick={() => setHistorial(true)}>
+            Facturación
+          </Button>
+        )}
         {editable && (
           <Button size="sm" onClick={() => setEditando(true)}>
             Editar plan y cobro
@@ -130,6 +136,7 @@ export function PlanTarjeta({
         )}
       </div>
       <ComparadorPlanes open={abierto} onClose={() => setAbierto(false)} planId={cuota?.plan.id ?? null} tuPrecio={cuota?.texto} />
+      {historial && <HistorialFacturacion perfil={perfil} onClose={() => setHistorial(false)} />}
       {editable && (
         <EditorPlan perfil={editando ? perfil : null} onClose={() => setEditando(false)} onGuardado={onGuardado ?? (() => {})} />
       )}
@@ -494,5 +501,80 @@ function TarjetaPlan({ plan, actual, tuPrecio, accion }: { plan: Plan; actual: b
       <p className="mt-2 flex-1 text-sm text-muted">{plan.desc}</p>
       {accion && <div className="mt-4">{accion}</div>}
     </div>
+  )
+}
+
+type Cobro = {
+  id: string
+  periodo: string
+  enviada_at: string | null
+  email: string | null
+  expense: { numero: string | null; fecha: string | null; total: number; concepto: string | null; file_path: string | null } | null
+}
+
+/** Facturas que NomoTax ha emitido a este cliente (botón «Facturación» de Mi perfil) */
+function HistorialFacturacion({ perfil, onClose }: { perfil: PerfilPlan; onClose: () => void }) {
+  const [cobros, setCobros] = useState<Cobro[] | null>(null)
+  const cuota = cuotaCliente(perfil)
+  const cobro = proximoCobro(perfil)
+
+  useEffect(() => {
+    supabase
+      .from('facturas_plan')
+      .select('id, periodo, enviada_at, email, expense:expenses(numero, fecha, total, concepto, file_path)')
+      .eq('cliente_id', perfil.id)
+      .order('periodo', { ascending: false })
+      .then(({ data, error }) => setCobros(error ? [] : ((data ?? []) as unknown as Cobro[])))
+  }, [perfil.id])
+
+  const total = (cobros ?? []).reduce((s, c) => s + Number(c.expense?.total ?? 0), 0)
+
+  return (
+    <Modal open onClose={onClose} title="Facturación">
+      {cuota && cobro && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-lima/30 px-3 py-2.5 text-sm">
+          <span className="flex items-center gap-1.5">
+            <CalendarClock className="size-4" /> Próximo cobro: <strong>{fechaLarga(cobro)}</strong>
+          </span>
+          {cuota.totalMes !== null && <span className="num">{importe(cuota.totalMes)} + IVA</span>}
+        </div>
+      )}
+      {cobros === null ? (
+        <p className="py-6 text-center text-sm text-muted">Cargando…</p>
+      ) : cobros.length === 0 ? (
+        <div className="py-8 text-center">
+          <FileText className="mx-auto size-8 text-muted/50" />
+          <p className="mt-2 text-[15px] font-medium">Aún no hay facturas</p>
+          <p className="text-sm text-muted">Cada mes, el día de cobro, te enviaremos la factura por email y aparecerá aquí.</p>
+        </div>
+      ) : (
+        <>
+          <ul className="divide-y divide-line">
+            {cobros.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">
+                    {c.expense?.numero ?? 'Factura'} · {fechaLarga(c.expense?.fecha ?? c.periodo)}
+                  </span>
+                  <span className="block truncate text-sm text-muted">{c.expense?.concepto ?? ''}</span>
+                  <span className={cx('block text-xs', c.enviada_at ? 'text-verde' : 'text-muted')}>
+                    {c.enviada_at ? `Enviada a ${c.email}` : 'Disponible aquí (no se pudo enviar por email)'}
+                  </span>
+                </span>
+                <span className="num font-semibold">{eur(Number(c.expense?.total ?? 0))}</span>
+                {c.expense?.file_path && (
+                  <Button variant="secondary" size="sm" icon={<FileText className="size-4" />} onClick={() => abrirDocumento(c.expense!.file_path!)}>
+                    PDF
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="num mt-3 border-t border-line pt-3 text-right text-sm text-muted">
+            {cobros.length} {cobros.length === 1 ? 'factura' : 'facturas'} · total facturado <strong className="text-ink">{eur(total)}</strong>
+          </p>
+        </>
+      )}
+    </Modal>
   )
 }

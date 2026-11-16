@@ -24,6 +24,7 @@ type Editable = Pick<
   | 'serie_presupuesto'
   | 'serie_rectificativa'
   | 'pie_factura'
+  | 'email_facturacion'
 >
 
 export default function Perfil() {
@@ -58,6 +59,8 @@ export default function Perfil() {
       serie_presupuesto: owner.serie_presupuesto,
       serie_rectificativa: owner.serie_rectificativa ?? 'R',
       pie_factura: owner.pie_factura,
+      // Solo si la columna ya existe (supabase/facturacion-automatica.sql)
+      ...('email_facturacion' in owner ? { email_facturacion: owner.email_facturacion ?? '' } : {}),
     }
     setForm(datos)
     setInicial(JSON.stringify(datos))
@@ -89,12 +92,13 @@ export default function Perfil() {
   const guardar = async (e: FormEvent) => {
     e.preventDefault()
     setGuardando(true)
-    const { nombre_comercial, ...resto } = form
+    const { nombre_comercial, email_facturacion, ...resto } = form
     const { error } = await supabase
       .from('profiles')
       .update({
         ...resto,
         ...(nombre_comercial !== undefined ? { nombre_comercial: nombre_comercial?.trim() || null } : {}),
+        ...(email_facturacion !== undefined ? { email_facturacion: email_facturacion?.trim().toLowerCase() || null } : {}),
         nif: limpiarNif(form.nif),
         iban: form.iban ? form.iban.toUpperCase().replace(/\s+/g, ' ').trim() : null,
         serie_factura: (form.serie_factura || 'F').toUpperCase().trim(),
@@ -163,6 +167,15 @@ export default function Perfil() {
               <Field label="Teléfono">
                 <Input value={form.telefono ?? ''} onChange={set('telefono')} />
               </Field>
+              {form.email_facturacion !== undefined && (
+                <Field
+                  label="Email para recibir las facturas de NomoTax (opcional)"
+                  className="sm:col-span-2"
+                  hint={`Si lo dejas vacío, te las enviamos a ${owner.email ?? 'el email de tu cuenta'}.`}
+                >
+                  <Input type="email" value={form.email_facturacion ?? ''} onChange={set('email_facturacion')} placeholder={owner.email ?? ''} />
+                </Field>
+              )}
               <Field label="Dirección" className="sm:col-span-2">
                 <Input value={form.direccion ?? ''} onChange={set('direccion')} />
               </Field>
