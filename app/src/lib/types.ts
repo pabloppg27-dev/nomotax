@@ -23,6 +23,14 @@ export interface Profile {
   /** #RRGGBB para la franja y el total del PDF; null = lima NomoTax */
   color_marca?: string | null
   bienvenida_enviada_at?: string | null
+  /** Plan contratado (supabase/planes.sql): empresa_base, autonomo_plus… */
+  plan?: string | null
+  /** Modalidad de pago del plan (supabase/planes-cobro.sql) */
+  plan_periodo?: 'mensual' | 'anual' | null
+  /** Fecha del próximo cobro (YYYY-MM-DD) que pone el asesor */
+  plan_proximo_cobro?: string | null
+  /** Precio personalizado sin IVA, en €/mes o €/año según plan_periodo; null = tarifa */
+  plan_precio?: number | null
   created_at: string
 }
 

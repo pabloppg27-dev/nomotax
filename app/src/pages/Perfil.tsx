@@ -6,6 +6,7 @@ import { BUCKET, errorMessage, signedUrl, supabase } from '../lib/supabase'
 import { limpiarNif } from '../lib/format'
 import type { Profile } from '../lib/types'
 import { Button, Card, Field, Input, Loading, PageHeader, Textarea, notify } from '../components/ui'
+import { PlanTarjeta } from '../components/Planes'
 
 type Editable = Pick<
   Profile,
@@ -26,7 +27,7 @@ type Editable = Pick<
 >
 
 export default function Perfil() {
-  const { owner, me, viewingOther, refresh } = useAuth()
+  const { owner, me, viewingOther, isAdvisor, refresh } = useAuth()
   const [params] = useSearchParams()
   const [form, setForm] = useState<Editable | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -182,6 +183,15 @@ export default function Perfil() {
         </form>
 
         <div className="space-y-6">
+          <Card className="p-5">
+            <PlanTarjeta
+              perfil={owner}
+              titulo={viewingOther ? 'Plan del cliente' : 'Tu plan'}
+              editable={isAdvisor && viewingOther}
+              onGuardado={refresh}
+            />
+          </Card>
+
           <Card className="p-5">
             <h2 className="mb-1 font-semibold">Logo</h2>
             <p className="mb-4 text-sm text-muted">Se usa en la cabecera de tus facturas y presupuestos.</p>

@@ -10,8 +10,8 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 ## Trabajar
 - `cd app && npm install && npm run dev` (http://localhost:5173) · `npx tsc --noEmit -p .` antes de publicar · `npm run build`.
 - Claves en `app/.env.production` (solo la publishable, pública). **Nunca** pegar claves secretas en el chat ni en el repo. `scripts/sincronizar.env` está en .gitignore.
-- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos, marca, bancos). Se ejecutan pegándolos en Supabase → SQL Editor.
-- Edge Functions (`app/supabase/functions/`: ocr-factura, leer-nomina, invitar-cliente) se publican pegando el código en el editor del dashboard (no hay CLI). Secretos: `ANTHROPIC_API_KEY`, `SMTP_PASSWORD` (buzón info@nomotax.io, Hostinger).
+- SQL: archivos en `app/supabase/*.sql` (schema, laboral, rectificativas, asesor, contabilidad, divisas, bienvenida, impuestos, marca, bancos, planes, planes-cobro). Se ejecutan pegándolos en Supabase → SQL Editor.
+- Edge Functions (`app/supabase/functions/`: ocr-factura, leer-nomina, invitar-cliente, solicitar-plan) se publican pegando el código en el editor del dashboard (no hay CLI). Secretos: `ANTHROPIC_API_KEY`, `SMTP_PASSWORD` (buzón info@nomotax.io, Hostinger).
 - Reservas/«Mi asesor»: Google Apps Script en `tools/booking/Code.gs`; Pablo pulsa «Implementar» él mismo.
 
 ## Reglas de negocio

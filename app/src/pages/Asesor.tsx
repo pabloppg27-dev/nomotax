@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckCircle2, Copy, Plus, Search, Send, Users } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Copy, Plus, Search, Send, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
 import { ESTADOS_TRABAJADOR, diasHabilesHasta } from '../lib/laboral'
 import type { EstadoTrabajador, Profile } from '../lib/types'
-import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, notify } from '../components/ui'
+import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, notify } from '../components/ui'
+import { cuotaCliente, proximoCobro } from '../lib/planes'
+import { EditorPlan, OpcionesPlan } from '../components/Planes'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
 type LlamadaPend = { id: string; owner_id: string; tipo: 'llamame' | 'cita'; inicio: string | null; modalidad: string | null; telefono: string | null; tema: string | null; franja: string | null; meet_link: string | null; created_at: string }
@@ -20,6 +22,7 @@ export default function Asesor() {
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState(false)
   const [reenviar, setReenviar] = useState<Fila | null>(null)
+  const [editarPlan, setEditarPlan] = useState<Fila | null>(null)
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
   const [amortizables, setAmortizables] = useState<Amortizable[]>([])
@@ -241,7 +244,10 @@ export default function Asesor() {
                     className="grid cursor-pointer grid-cols-[1fr_auto] gap-x-3 border-b border-line px-4 py-3 last:border-0 hover:bg-paper md:table-row md:p-0"
                   >
                     <td className="min-w-0 md:px-4 md:py-3">
-                      <p className="truncate font-medium">{c.nombre || 'Sin nombre'}</p>
+                      <p className="flex min-w-0 items-center gap-2">
+                        <span className="truncate font-medium">{c.nombre || 'Sin nombre'}</span>
+                        {cuotaCliente(c) && <Badge tono="lima">{cuotaCliente(c)!.plan.nombre}</Badge>}
+                      </p>
                       <p className="truncate text-sm text-muted">{[c.nif, c.email].filter(Boolean).join(' · ')}</p>
                       <p className="flex flex-wrap items-center gap-x-2 text-xs">
                         {c.bienvenida_enviada_at && (
@@ -257,6 +263,23 @@ export default function Asesor() {
                         >
                           <Send className="size-3" /> Reenviar acceso
                         </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditarPlan(c)
+                          }}
+                          className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
+                        >
+                          <Sparkles className="size-3" /> {c.plan ? 'Editar plan' : 'Asignar plan'}
+                        </button>
+                        {cuotaCliente(c) && (
+                          <span className="num text-muted">
+                            {cuotaCliente(c)!.texto}
+                            {cuotaCliente(c)!.personalizado ? ' (personalizado)' : ''}
+                            {proximoCobro(c) ? ` · cobro ${fecha(proximoCobro(c))}` : ''}
+                          </span>
+                        )}
                       </p>
                     </td>
                     <td className="num text-right md:px-4 md:py-3">
@@ -283,6 +306,7 @@ export default function Asesor() {
 
       <AltaCliente open={alta} onClose={() => setAlta(false)} onCreated={cargar} />
       <ReenviarAcceso cliente={reenviar} onClose={() => setReenviar(null)} onDone={cargar} />
+      <EditorPlan perfil={editarPlan} onClose={() => setEditarPlan(null)} onGuardado={cargar} />
     </>
   )
 }
@@ -294,11 +318,13 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<Acceso | null>(null)
   const [bienvenida, setBienvenida] = useState(true)
+  const [plan, setPlan] = useState('')
 
   const cerrar = () => {
     setEmail('')
     setNombre('')
     setNif('')
+    setPlan('')
     setResultado(null)
     setBienvenida(true)
     onClose()
@@ -310,6 +336,10 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
     const { data, error } = await supabase.functions.invoke('invitar-cliente', { body: { email, nombre, nif, bienvenida } })
     setEnviando(false)
     if (error) return notify(await errorMessage(error), 'error')
+    if (plan && data?.id) {
+      const { error: ePlan } = await supabase.from('profiles').update({ plan }).eq('id', data.id)
+      if (ePlan) notify(`Cliente creado, pero sin plan: ${await errorMessage(ePlan)}`, 'error')
+    }
     setResultado({ email: data.email, password: data.password, bienvenida: data.bienvenida ?? 'no' })
     onCreated()
   }
@@ -350,6 +380,11 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
           </Field>
           <Field label="NIF / CIF">
             <Input value={nif} onChange={(e) => setNif(e.target.value)} />
+          </Field>
+          <Field label="Plan">
+            <Select value={plan} onChange={(e) => setPlan(e.target.value)}>
+              <OpcionesPlan />
+            </Select>
           </Field>
           <label className="flex items-start gap-2.5 rounded-xl border border-line p-3 text-[15px]">
             <input type="checkbox" className="mt-1 size-4 accent-ink" checked={bienvenida} onChange={(e) => setBienvenida(e.target.checked)} />

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { cx } from './ui'
+import { PlanLateral } from './Planes'
 
 /** En el móvil: 4 fijas abajo y el resto en «Más» */
 const FIJAS = ['/', '/gastos', '/facturas', '/clientes']
@@ -93,6 +94,7 @@ export default function Layout() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
+          <PlanLateral perfil={owner} />
           <NavLink
             to="/mi-asesor"
             className={({ isActive }) =>
