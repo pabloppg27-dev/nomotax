@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileSpreadsheet, Landmark, Plus, Search, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { eur, fecha, rangoPeriodo, trimestreActual, type Periodo } from '../lib/format'
+import { eur, fecha, rangoPeriodo, textoPeriodo, trimestreActual, type Periodo } from '../lib/format'
 import {
   CUENTAS,
   TIPOS_INMOVILIZADO,
@@ -110,7 +110,7 @@ export default function Contabilidad() {
     try {
       const ex = await import('../lib/exportar.ts')
       const cliente = owner.nombre || 'Cliente'
-      const sufijo = periodo.trimestre ? `${periodo.anio}-${periodo.trimestre}T` : `${periodo.anio}`
+      const sufijo = textoPeriodo(periodo).archivo
       if (formato === 'excel') {
         const buf = await ex.libroExcel({ cliente, ejercicio: periodo.anio, desde, hasta, asientos: calc.asientos, nombres: calc.nombres, inmovilizados: datos.inmovilizados })
         descargar(buf, `${cliente} - Contabilidad ${sufijo}.xlsx`, XLSX)
@@ -775,9 +775,9 @@ function EditorAsiento({ inicial, ownerId, onClose, onSaved }: { inicial: Partia
       </datalist>
       <div className="space-y-2">
         <div className="grid grid-cols-[1fr_130px_130px_36px] gap-2 text-xs font-medium uppercase tracking-wide text-muted">
-          <span>Cuenta</span>
-          <span className="text-right">Debe</span>
-          <span className="text-right">Haber</span>
+          <span className="px-3">Cuenta</span>
+          <span className="px-3 text-right">Debe</span>
+          <span className="px-3 text-right">Haber</span>
           <span />
         </div>
         {lineas.map((l, i) => (

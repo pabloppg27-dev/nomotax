@@ -20,11 +20,12 @@ export default function LinesEditor({
 
   return (
     <div>
-      <div className="hidden grid-cols-[1fr_80px_120px_96px_110px_36px] gap-2 px-1 pb-2 text-xs font-medium uppercase tracking-wide text-muted md:grid">
-        <span>Concepto</span>
-        <span className="text-right">Cant.</span>
-        <span className="text-right">Precio</span>
-        <span>IVA</span>
+      {/* Cabeceras con el mismo margen interior que las casillas, para que cada una quede encima de la suya */}
+      <div className="hidden grid-cols-[1fr_80px_120px_96px_110px_36px] gap-2 pb-2 text-xs font-medium uppercase tracking-wide text-muted md:grid">
+        <span className="px-3">Concepto</span>
+        <span className="px-3 text-right">Cant.</span>
+        <span className="px-3 text-right">Precio</span>
+        <span className="px-3">IVA</span>
         <span className="text-right">Importe</span>
         <span />
       </div>

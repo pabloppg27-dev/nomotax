@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AlertCircle, ArrowRight, CalendarClock, ClipboardList, FileText, Plus, Receipt } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
-import { enPeriodo, eur, hoyISO, proximoPlazoTrimestral, trimestreActual, type Periodo } from '../lib/format'
+import { enPeriodo, eur, hoyISO, proximoPlazoTrimestral, rangoPeriodo, textoPeriodo, trimestreActual, type Periodo } from '../lib/format'
 import { nombreCategoria } from '../lib/categorias'
 import { analizarFacturas } from '../lib/estados'
 import type { Expense, Invoice, Quote } from '../lib/types'
@@ -34,11 +34,16 @@ export default function Resumen() {
       .then(({ data }) => setPlazos(conPlazo((data as DocArchivo[]) ?? [])))
   }, [ownerId])
 
+  // Se cargan los gastos de todo el año (para el gráfico) y, si las fechas a medida se salen del año, también esas
+  const rango = rangoPeriodo(periodo)
+  const cargaDesde = [`${periodo.anio}-01-01`, rango.desde].sort()[0]
+  const cargaHasta = [`${periodo.anio}-12-31`, rango.hasta].sort()[1]
+
   useEffect(() => {
     if (!ownerId) return
     setDatos(null)
-    const desde = `${periodo.anio}-01-01`
-    const hasta = `${periodo.anio}-12-31`
+    const desde = cargaDesde
+    const hasta = cargaHasta
     Promise.all([
       supabase.from('invoices').select('*').eq('owner_id', ownerId).neq('estado', 'borrador'),
       supabase.from('expenses').select('*').eq('owner_id', ownerId).or(`and(fecha.gte.${desde},fecha.lte.${hasta}),estado.eq.pendiente`),
@@ -50,7 +55,7 @@ export default function Resumen() {
         presupuestos: (p.data as Quote[]) ?? [],
       }),
     )
-  }, [ownerId, periodo.anio])
+  }, [ownerId, cargaDesde, cargaHasta])
 
   const calc = useMemo(() => {
     if (!datos) return null
@@ -98,8 +103,7 @@ export default function Resumen() {
 
   const plazo = proximoPlazoTrimestral()
   const diasPlazo = Math.ceil((plazo.fecha.getTime() - Date.now()) / 86400000)
-  const nombrePeriodo = periodo.trimestre === 0 ? `el año ${periodo.anio}` : `el ${periodo.trimestre}T de ${periodo.anio}`
-  const delPeriodo = periodo.trimestre === 0 ? `del año ${periodo.anio}` : `del ${periodo.trimestre}T de ${periodo.anio}`
+  const { en: nombrePeriodo, del: delPeriodo } = textoPeriodo(periodo)
   const saludo = owner?.nombre?.split(' ')[0]
 
   return (
@@ -109,7 +113,7 @@ export default function Resumen() {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">
             {viewingOther ? owner?.nombre || 'Resumen' : saludo ? `Hola, ${saludo}` : 'Resumen'}
           </h1>
-          <p className="mt-1 text-[15px] text-muted">Así va tu negocio en {nombrePeriodo}. Importes sin IVA.</p>
+          <p className="mt-1 text-[15px] text-muted">Así va tu negocio {nombrePeriodo}. Importes sin IVA.</p>
         </div>
         <PeriodPicker value={periodo} onChange={setPeriodo} />
       </div>
@@ -184,7 +188,7 @@ export default function Resumen() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="p-5 sm:p-6">
               <h2 className="font-semibold">En qué se va el dinero</h2>
-              <p className="mb-4 text-sm text-muted">Gastos por categoría en {nombrePeriodo}</p>
+              <p className="mb-4 text-sm text-muted">Gastos por categoría {nombrePeriodo}</p>
               {calc.categorias.length === 0 ? (
                 <p className="py-6 text-sm text-muted">Aún no hay gastos en este periodo.</p>
               ) : (

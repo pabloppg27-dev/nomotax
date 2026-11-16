@@ -57,14 +57,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
 /* ---------------------------------------------------------- Campos de form */
 
+/** Ancho completo salvo que el campo traiga su propio ancho (w-24, w-auto…): si no, w-full le ganaba */
+const ancho = (className?: string) => (/(^|\s)!?w-/.test(className ?? '') ? '' : 'w-full')
+
 const fieldBase =
-  'w-full rounded-lg border border-line bg-white px-3 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink focus:ring-2 focus:ring-lima/60 disabled:bg-paper disabled:text-muted'
+  'rounded-lg border border-line bg-white px-3 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink focus:ring-2 focus:ring-lima/60 disabled:bg-paper disabled:text-muted'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...rest },
   ref,
 ) {
-  return <input ref={ref} className={cx(fieldBase, 'h-10', className)} {...rest} />
+  return <input ref={ref} className={cx(fieldBase, ancho(className), 'h-10', className)} {...rest} />
 })
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(
@@ -72,7 +75,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   ref,
 ) {
   return (
-    <select ref={ref} className={cx(fieldBase, 'h-10 pr-8', className)} {...rest}>
+    <select ref={ref} className={cx(fieldBase, ancho(className), 'select-flecha h-10 pr-8', className)} {...rest}>
       {children}
     </select>
   )
@@ -80,7 +83,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
   function Textarea({ className, ...rest }, ref) {
-    return <textarea ref={ref} className={cx(fieldBase, 'py-2 min-h-20', className)} {...rest} />
+    return <textarea ref={ref} className={cx(fieldBase, ancho(className), 'py-2 min-h-20', className)} {...rest} />
   },
 )
 
