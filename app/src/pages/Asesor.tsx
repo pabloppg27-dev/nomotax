@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckCircle2, Copy, Plus, Search, Users } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Copy, Plus, Search, Send, Users } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
@@ -19,6 +19,7 @@ export default function Asesor() {
   const [filas, setFilas] = useState<Fila[] | null>(null)
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState(false)
+  const [reenviar, setReenviar] = useState<Fila | null>(null)
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
   const [amortizables, setAmortizables] = useState<Amortizable[]>([])
@@ -242,9 +243,21 @@ export default function Asesor() {
                     <td className="min-w-0 md:px-4 md:py-3">
                       <p className="truncate font-medium">{c.nombre || 'Sin nombre'}</p>
                       <p className="truncate text-sm text-muted">{[c.nif, c.email].filter(Boolean).join(' · ')}</p>
-                      {c.bienvenida_enviada_at && (
-                        <p className="text-xs text-verde">Bienvenida enviada el {fecha(c.bienvenida_enviada_at.slice(0, 10))}</p>
-                      )}
+                      <p className="flex flex-wrap items-center gap-x-2 text-xs">
+                        {c.bienvenida_enviada_at && (
+                          <span className="text-verde">Bienvenida enviada el {fecha(c.bienvenida_enviada_at.slice(0, 10))}</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setReenviar(c)
+                          }}
+                          className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
+                        >
+                          <Send className="size-3" /> Reenviar acceso
+                        </button>
+                      </p>
                     </td>
                     <td className="num text-right md:px-4 md:py-3">
                       <span className="mr-1 text-xs text-muted md:hidden">Facturado</span>
@@ -269,6 +282,7 @@ export default function Asesor() {
       )}
 
       <AltaCliente open={alta} onClose={() => setAlta(false)} onCreated={cargar} />
+      <ReenviarAcceso cliente={reenviar} onClose={() => setReenviar(null)} onDone={cargar} />
     </>
   )
 }
@@ -278,7 +292,7 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
   const [nombre, setNombre] = useState('')
   const [nif, setNif] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const [resultado, setResultado] = useState<{ email: string; password: string; bienvenida: 'no' | 'enviada' | 'error' } | null>(null)
+  const [resultado, setResultado] = useState<Acceso | null>(null)
   const [bienvenida, setBienvenida] = useState(true)
 
   const cerrar = () => {
@@ -299,12 +313,6 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
     setResultado({ email: data.email, password: data.password, bienvenida: data.bienvenida ?? 'no' })
     onCreated()
   }
-
-  const mensaje = resultado
-    ? `Hola${nombre ? ` ${nombre.split(' ')[0]}` : ''}, ya tienes acceso al área de clientes de NomoTax.\n\n` +
-      `Entra en ${window.location.origin}\nUsuario: ${resultado.email}\nContraseña provisional: ${resultado.password}\n\n` +
-      'Al entrar, cámbiala en «Mi perfil».'
-    : ''
 
   return (
     <Modal
@@ -327,34 +335,11 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
       }
     >
       {resultado ? (
-        <div className="space-y-3">
-          {resultado.bienvenida === 'enviada' ? (
-            <p className="flex gap-2 rounded-xl bg-verde/10 px-3 py-2.5 text-[15px] text-verde">
-              <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
-              Correo de bienvenida enviado a {resultado.email} desde info@nomotax.io (te llega una copia).
-            </p>
-          ) : resultado.bienvenida === 'error' ? (
-            <p className="rounded-xl bg-ambar/10 px-3 py-2.5 text-[15px] text-ambar">
-              El cliente está creado, pero el correo de bienvenida no se ha podido enviar. Mándale este mensaje tú.
-            </p>
-          ) : null}
-          <p className="text-[15px]">
-            {resultado.bienvenida === 'enviada' ? 'Por si quieres mandárselo también por WhatsApp:' : 'Envíale este mensaje a tu cliente.'}{' '}
-            <strong>La contraseña solo se muestra ahora.</strong>
-          </p>
-          <pre className="whitespace-pre-wrap rounded-xl bg-paper p-4 text-sm">{mensaje}</pre>
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Copy className="size-4" />}
-            onClick={async () => {
-              await navigator.clipboard.writeText(mensaje)
-              notify('Mensaje copiado')
-            }}
-          >
-            Copiar mensaje
-          </Button>
-        </div>
+        <MensajeAcceso
+          resultado={resultado}
+          nombre={nombre}
+          aviso="El cliente está creado, pero el correo de bienvenida no se ha podido enviar. Mándale este mensaje tú."
+        />
       ) : (
         <form onSubmit={crear} className="space-y-4">
           <Field label="Email del cliente">
@@ -375,6 +360,105 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
           </label>
           <button type="submit" hidden />
         </form>
+      )}
+    </Modal>
+  )
+}
+
+type Acceso = { email: string; password: string; bienvenida: 'no' | 'enviada' | 'error' }
+
+function MensajeAcceso({ resultado, nombre, aviso }: { resultado: Acceso; nombre: string; aviso: string }) {
+  const mensaje =
+    `Hola${nombre.trim() ? ` ${nombre.trim()}` : ''}, ya tienes acceso al área de clientes de NomoTax.\n\n` +
+    `Entra en ${window.location.origin}\nUsuario: ${resultado.email}\nContraseña provisional: ${resultado.password}\n\n` +
+    'Al entrar, cámbiala en «Mi perfil».'
+
+  return (
+    <div className="space-y-3">
+      {resultado.bienvenida === 'enviada' ? (
+        <p className="flex gap-2 rounded-xl bg-verde/10 px-3 py-2.5 text-[15px] text-verde">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+          Correo de bienvenida enviado a {resultado.email} desde info@nomotax.io (te llega una copia).
+        </p>
+      ) : resultado.bienvenida === 'error' ? (
+        <p className="rounded-xl bg-ambar/10 px-3 py-2.5 text-[15px] text-ambar">{aviso}</p>
+      ) : null}
+      <p className="text-[15px]">
+        {resultado.bienvenida === 'enviada' ? 'Por si quieres mandárselo también por WhatsApp:' : 'Envíale este mensaje a tu cliente.'}{' '}
+        <strong>La contraseña solo se muestra ahora.</strong>
+      </p>
+      <pre className="whitespace-pre-wrap rounded-xl bg-paper p-4 text-sm">{mensaje}</pre>
+      <Button
+        variant="secondary"
+        size="sm"
+        icon={<Copy className="size-4" />}
+        onClick={async () => {
+          await navigator.clipboard.writeText(mensaje)
+          notify('Mensaje copiado')
+        }}
+      >
+        Copiar mensaje
+      </Button>
+    </div>
+  )
+}
+
+function ReenviarAcceso({ cliente, onClose, onDone }: { cliente: Profile | null; onClose: () => void; onDone: () => void }) {
+  const [enviando, setEnviando] = useState(false)
+  const [resultado, setResultado] = useState<Acceso | null>(null)
+
+  const cerrar = () => {
+    setResultado(null)
+    onClose()
+  }
+
+  const reenviar = async () => {
+    if (!cliente) return
+    setEnviando(true)
+    const { data, error } = await supabase.functions.invoke('invitar-cliente', { body: { reenviar: cliente.id } })
+    setEnviando(false)
+    if (error) return notify(await errorMessage(error), 'error')
+    if (!data?.password) return notify('La función de Supabase no está actualizada: falta publicar la versión con «reenviar».', 'error')
+    setResultado({ email: data.email, password: data.password, bienvenida: data.bienvenida ?? 'error' })
+    onDone()
+  }
+
+  const nombre = cliente?.nombre || cliente?.email || 'este cliente'
+
+  return (
+    <Modal
+      open={!!cliente}
+      onClose={cerrar}
+      title={resultado ? 'Acceso reenviado' : 'Reenviar acceso'}
+      footer={
+        resultado ? (
+          <Button onClick={cerrar}>Hecho</Button>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={cerrar}>
+              Cancelar
+            </Button>
+            <Button onClick={reenviar} loading={enviando} icon={<Send className="size-4" />}>
+              Reenviar acceso
+            </Button>
+          </>
+        )
+      }
+    >
+      {resultado ? (
+        <MensajeAcceso
+          resultado={resultado}
+          nombre={cliente?.nombre ?? ''}
+          aviso="La contraseña nueva ya está activa, pero el correo no se ha podido enviar. Mándale este mensaje tú."
+        />
+      ) : (
+        <div className="space-y-3 text-[15px]">
+          <p>
+            Se creará una <strong>contraseña provisional nueva</strong> para <strong>{nombre}</strong> y se le enviará el correo de
+            bienvenida a {cliente?.email} desde info@nomotax.io. Te llega una copia.
+          </p>
+          <p className="text-muted">Su contraseña actual dejará de funcionar.</p>
+        </div>
       )}
     </Modal>
   )

@@ -104,7 +104,7 @@ export default function Resumen() {
   const plazo = proximoPlazoTrimestral()
   const diasPlazo = Math.ceil((plazo.fecha.getTime() - Date.now()) / 86400000)
   const { en: nombrePeriodo, del: delPeriodo } = textoPeriodo(periodo)
-  const saludo = owner?.nombre?.split(' ')[0]
+  const saludo = owner?.nombre?.trim()
 
   return (
     <>
