@@ -3,16 +3,18 @@ import type { ReactNode } from 'react'
 import { cx } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { cuotaLaboral, importe } from '../../lib/planes'
+import type { Permiso } from '../../lib/types'
 
-const TABS = [
-  { to: '/laboral', label: 'Trabajadores', end: true },
-  { to: '/laboral/nominas', label: 'Nóminas' },
-  { to: '/laboral/empresa', label: 'Empresa' },
+const TABS: { to: string; label: string; end?: boolean; permiso: Permiso }[] = [
+  { to: '/laboral', label: 'Trabajadores', end: true, permiso: 'laboral' },
+  { to: '/laboral/nominas', label: 'Nóminas', permiso: 'nominas' },
+  { to: '/laboral/empresa', label: 'Empresa', permiso: 'laboral' },
 ]
 
 export default function LaboralTabs({ actions, subtitle }: { actions?: ReactNode; subtitle?: ReactNode }) {
-  const { owner } = useAuth()
-  const tarifa = owner ? cuotaLaboral(owner) : null
+  const { owner, puede } = useAuth()
+  // La tarifa de NomoTax solo la ve quien lleva el plan de la empresa
+  const tarifa = owner && puede('empresa') ? cuotaLaboral(owner) : null
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -28,7 +30,7 @@ export default function LaboralTabs({ actions, subtitle }: { actions?: ReactNode
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
       <div className="mt-5 flex gap-1 border-b border-line">
-        {TABS.map((t) => (
+        {TABS.filter((t) => puede(t.permiso)).map((t) => (
           <NavLink
             key={t.to}
             to={t.to}

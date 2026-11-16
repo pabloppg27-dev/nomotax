@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
         `Email: ${email || "—"}`,
         `Teléfono: ${perfil.telefono ?? "—"}`,
         "",
-        `Para cambiarlo: ${APP_URL}/asesor → entra en su cuenta → Perfil del cliente → Cambiar plan.`,
+        `Para cambiarlo: ${APP_URL}/asesor → entra en su cuenta → Configuración → Plan → Editar plan y cobro.`,
         "Responde a este correo para escribirle directamente.",
       ].join("\n"),
       html: `<div style="font:15px/1.6 Helvetica,Arial,sans-serif;color:#111110">
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
 <tr><td style="padding:4px 16px 4px 0;color:#6b6b66">Email</td><td>${esc(email || "—")}</td></tr>
 <tr><td style="padding:4px 16px 4px 0;color:#6b6b66">Teléfono</td><td>${esc(perfil.telefono ?? "—")}</td></tr>
 </table>
-<p style="color:#6b6b66">Para cambiarlo: <a href="${APP_URL}/asesor">Panel del asesor</a> → entra en su cuenta → Perfil del cliente → Cambiar plan.<br>Responde a este correo para escribirle directamente.</p>
+<p style="color:#6b6b66">Para cambiarlo: <a href="${APP_URL}/asesor">Panel del asesor</a> → entra en su cuenta → Configuración → Plan → Editar plan y cobro.<br>Responde a este correo para escribirle directamente.</p>
 </div>`,
     });
   } catch (e) {

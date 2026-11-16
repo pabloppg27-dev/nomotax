@@ -24,7 +24,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
 ]
 
 export default function Facturas() {
-  const { ownerId } = useAuth()
+  const { ownerId, rol } = useAuth()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [lista, setLista] = useState<Invoice[] | null>(null)
@@ -142,9 +142,11 @@ export default function Facturas() {
         subtitle="Tus facturas emitidas: créalas aquí o sube las que hagas con otro programa."
         actions={
           <>
-            <Button variant="secondary" icon={<FileUp className="size-4" />} onClick={() => setSubir(true)}>
-              Subir factura
-            </Button>
+            {rol !== 'comercial' && (
+              <Button variant="secondary" icon={<FileUp className="size-4" />} onClick={() => setSubir(true)}>
+                Subir factura
+              </Button>
+            )}
             {nueva}
           </>
         }

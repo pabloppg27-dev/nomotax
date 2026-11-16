@@ -17,14 +17,19 @@ import { Button, Card, Loading, cx } from '../components/ui'
 type Datos = { facturas: Invoice[]; gastos: Expense[]; presupuestos: Quote[] }
 
 export default function Resumen() {
-  const { ownerId, owner, viewingOther } = useAuth()
+  const { ownerId, owner, viewingOther, puede } = useAuth()
+  // Cada uno ve lo de sus módulos: el comercial, por ejemplo, solo las ventas
+  const verGastos = puede('gastos')
+  const verVentas = puede('ventas')
+  const verImpuestos = puede('impuestos')
+  const verAsesor = puede('asesor')
   const navigate = useNavigate()
   const [periodo, setPeriodo] = useState<Periodo>(trimestreActual())
   const [datos, setDatos] = useState<Datos | null>(null)
   const [plazos, setPlazos] = useState<DocArchivo[]>([])
 
   useEffect(() => {
-    if (!ownerId) return
+    if (!ownerId || !verImpuestos) return
     supabase
       .from('archivo')
       .select('*')
@@ -32,7 +37,7 @@ export default function Resumen() {
       .not('fecha_limite', 'is', null)
       .eq('atendida', false)
       .then(({ data }) => setPlazos(conPlazo((data as DocArchivo[]) ?? [])))
-  }, [ownerId])
+  }, [ownerId, verImpuestos])
 
   // Se cargan los gastos de todo el año (para el gráfico) y, si las fechas a medida se salen del año, también esas
   const rango = rangoPeriodo(periodo)
@@ -44,10 +49,13 @@ export default function Resumen() {
     setDatos(null)
     const desde = cargaDesde
     const hasta = cargaHasta
+    const nada = Promise.resolve({ data: [] })
     Promise.all([
-      supabase.from('invoices').select('*').eq('owner_id', ownerId).neq('estado', 'borrador'),
-      supabase.from('expenses').select('*').eq('owner_id', ownerId).or(`and(fecha.gte.${desde},fecha.lte.${hasta}),estado.eq.pendiente`),
-      supabase.from('quotes').select('*').eq('owner_id', ownerId).in('estado', ['enviado', 'aceptado']),
+      verVentas ? supabase.from('invoices').select('*').eq('owner_id', ownerId).neq('estado', 'borrador') : nada,
+      verGastos
+        ? supabase.from('expenses').select('*').eq('owner_id', ownerId).or(`and(fecha.gte.${desde},fecha.lte.${hasta}),estado.eq.pendiente`)
+        : nada,
+      verVentas ? supabase.from('quotes').select('*').eq('owner_id', ownerId).in('estado', ['enviado', 'aceptado']) : nada,
     ]).then(([f, g, p]) =>
       setDatos({
         facturas: (f.data as Invoice[]) ?? [],
@@ -55,7 +63,7 @@ export default function Resumen() {
         presupuestos: (p.data as Quote[]) ?? [],
       }),
     )
-  }, [ownerId, cargaDesde, cargaHasta])
+  }, [ownerId, cargaDesde, cargaHasta, verVentas, verGastos])
 
   const calc = useMemo(() => {
     if (!datos) return null
@@ -113,7 +121,9 @@ export default function Resumen() {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">
             {viewingOther ? owner?.nombre || 'Resumen' : saludo ? `Hola, ${saludo}` : 'Resumen'}
           </h1>
-          <p className="mt-1 text-[15px] text-muted">Así va tu negocio {nombrePeriodo}. Importes sin IVA.</p>
+          <p className="mt-1 text-[15px] text-muted">
+            {verGastos ? 'Así va tu negocio' : 'Así van las ventas'} {nombrePeriodo}. Importes sin IVA.
+          </p>
         </div>
         <PeriodPicker value={periodo} onChange={setPeriodo} />
       </div>
@@ -127,31 +137,45 @@ export default function Resumen() {
           {/* Cifra principal + KPIs */}
           <div className="grid gap-4 lg:grid-cols-[1.2fr_2fr]">
             <div className="relative overflow-hidden rounded-2xl bg-ink p-6 text-white">
-              <p className="text-sm text-white/60">Resultado</p>
-              <p className={cx('num mt-2 text-5xl font-semibold tracking-tight', calc.resultado < 0 && 'text-red-300')}>{eur(calc.resultado)}</p>
-              <p className="mt-3 text-sm text-white/60">Ingresos menos gastos {delPeriodo}.</p>
+              <p className="text-sm text-white/60">{verGastos ? 'Resultado' : 'Ventas'}</p>
+              <p className={cx('num mt-2 text-5xl font-semibold tracking-tight', verGastos && calc.resultado < 0 && 'text-red-300')}>
+                {eur(verGastos ? calc.resultado : calc.ingresos)}
+              </p>
+              <p className="mt-3 text-sm text-white/60">{verGastos ? 'Ingresos menos gastos' : 'Facturado'} {delPeriodo}.</p>
               <div className="pointer-events-none absolute -bottom-16 -right-16 size-48 rounded-full bg-lima/15 blur-2xl" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Kpi label="Ingresos" valor={eur(calc.ingresos)} />
-              <Kpi label="Gastos" valor={eur(calc.gastos)} />
-              <Kpi
-                label={calc.iva >= 0 ? 'IVA a ingresar (estimado)' : 'IVA a compensar (estimado)'}
-                valor={eur(Math.abs(calc.iva))}
-                nota={`Repercutido ${eur(calc.ivaRep)} − soportado ${eur(calc.ivaSop)}`}
-              />
-              <Kpi label="Retenciones que te han practicado" valor={eur(calc.retenciones)} nota="IRPF de tus facturas" />
+              {verGastos ? (
+                <>
+                  <Kpi label="Ingresos" valor={eur(calc.ingresos)} />
+                  <Kpi label="Gastos" valor={eur(calc.gastos)} />
+                  <Kpi
+                    label={calc.iva >= 0 ? 'IVA a ingresar (estimado)' : 'IVA a compensar (estimado)'}
+                    valor={eur(Math.abs(calc.iva))}
+                    nota={`Repercutido ${eur(calc.ivaRep)} − soportado ${eur(calc.ivaSop)}`}
+                  />
+                  <Kpi label="Retenciones que te han practicado" valor={eur(calc.retenciones)} nota="IRPF de tus facturas" />
+                </>
+              ) : (
+                <>
+                  <Kpi label="Pendiente de cobro" valor={eur(calc.pendienteCobro)} nota={`${calc.nPendienteCobro} factura${calc.nPendienteCobro === 1 ? '' : 's'} sin cobrar`} />
+                  <Kpi label="En presupuestos" valor={eur(calc.presupuestosAbiertos)} nota={`${calc.nPresupuestos} enviados o aceptados sin facturar`} />
+                </>
+              )}
             </div>
           </div>
 
           {/* Avisos */}
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {verImpuestos && (
             <Aviso
               icon={<CalendarClock className="size-4" />}
               titulo={`Próximo plazo: ${plazo.fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`}
               texto={`Declaraciones del ${plazo.trimestre} · ${diasPlazo === 1 ? 'queda 1 día' : `quedan ${diasPlazo} días`}`}
               destacado={diasPlazo <= 15}
             />
+            )}
+            {verGastos && (
             <Aviso
               icon={<Receipt className="size-4" />}
               titulo={calc.porRevisar ? `${calc.porRevisar} gasto${calc.porRevisar > 1 ? 's' : ''} por revisar` : 'Gastos al día'}
@@ -159,6 +183,9 @@ export default function Resumen() {
               to="/gastos"
               destacado={calc.porRevisar > 0}
             />
+            )}
+            {verVentas && (
+            <>
             <Aviso
               icon={calc.vencidas ? <AlertCircle className="size-4" /> : <FileText className="size-4" />}
               titulo={`${eur(calc.pendienteCobro)} pendiente de cobro`}
@@ -176,16 +203,23 @@ export default function Resumen() {
               texto={`${calc.nPresupuestos} enviado${calc.nPresupuestos === 1 ? '' : 's'} o aceptado${calc.nPresupuestos === 1 ? '' : 's'} sin facturar`}
               to="/presupuestos"
             />
+            </>
+            )}
           </div>
 
           {/* Gráfico mensual */}
           <Card className="p-5 sm:p-6">
-            <h2 className="font-semibold">Ingresos y gastos por mes</h2>
+            <h2 className="font-semibold">{verGastos ? 'Ingresos y gastos por mes' : 'Ventas por mes'}</h2>
             <p className="mb-4 text-sm text-muted">{periodo.anio} · base imponible</p>
-            <MonthlyChart meses={calc.meses} anio={periodo.anio} />
+            {verGastos ? (
+              <MonthlyChart meses={calc.meses} anio={periodo.anio} />
+            ) : (
+              <MonthlyChart meses={calc.meses} anio={periodo.anio} series={[{ key: 'ingresos', label: 'Ventas', color: '#111110' }]} total={{ label: 'Ventas', modo: 'suma' }} />
+            )}
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-2">
+            {verGastos && (
             <Card className="p-5 sm:p-6">
               <h2 className="font-semibold">En qué se va el dinero</h2>
               <p className="mb-4 text-sm text-muted">Gastos por categoría {nombrePeriodo}</p>
@@ -207,26 +241,35 @@ export default function Resumen() {
                 </div>
               )}
             </Card>
+            )}
 
             <Card className="flex flex-col p-5 sm:p-6">
-              <div className="mb-5 border-b border-line pb-5">
-                <AsesorCard compacta onAgendar={() => navigate('/mi-asesor')} />
-              </div>
+              {verAsesor && (
+                <div className="mb-5 border-b border-line pb-5">
+                  <AsesorCard compacta onAgendar={() => navigate('/mi-asesor')} />
+                </div>
+              )}
               <h2 className="font-semibold">Acciones rápidas</h2>
               <p className="mb-4 text-sm text-muted">Lo que más vas a usar.</p>
               <div className="grid gap-2 sm:grid-cols-2">
-                <Button variant="accent" icon={<Receipt className="size-4" />} onClick={() => navigate('/gastos')}>
-                  Subir un gasto
-                </Button>
-                <Button icon={<Plus className="size-4" />} onClick={() => navigate('/facturas/nueva')}>
-                  Nueva factura
-                </Button>
-                <Button variant="secondary" icon={<ClipboardList className="size-4" />} onClick={() => navigate('/presupuestos/nuevo')}>
-                  Nuevo presupuesto
-                </Button>
-                <Button variant="secondary" icon={<Plus className="size-4" />} onClick={() => navigate('/clientes')}>
-                  Añadir cliente
-                </Button>
+                {verGastos && (
+                  <Button variant="accent" icon={<Receipt className="size-4" />} onClick={() => navigate('/gastos')}>
+                    Subir un gasto
+                  </Button>
+                )}
+                {verVentas && (
+                  <>
+                    <Button icon={<Plus className="size-4" />} onClick={() => navigate('/facturas/nueva')}>
+                      Nueva factura
+                    </Button>
+                    <Button variant="secondary" icon={<ClipboardList className="size-4" />} onClick={() => navigate('/presupuestos/nuevo')}>
+                      Nuevo presupuesto
+                    </Button>
+                    <Button variant="secondary" icon={<Plus className="size-4" />} onClick={() => navigate('/clientes')}>
+                      Añadir cliente
+                    </Button>
+                  </>
+                )}
               </div>
               <p className="mt-auto pt-6 text-xs text-muted">
                 Las cifras son orientativas y se calculan con lo que has registrado aquí. Tu asesor revisa los importes

@@ -12,7 +12,6 @@ import FacturaEditor from './pages/FacturaEditor'
 import Presupuestos from './pages/Presupuestos'
 import PresupuestoEditor from './pages/PresupuestoEditor'
 import Clientes from './pages/Clientes'
-import Perfil from './pages/Perfil'
 import Asesor from './pages/Asesor'
 import Trabajadores from './pages/laboral/Trabajadores'
 import NuevaAlta from './pages/laboral/NuevaAlta'
@@ -22,14 +21,57 @@ import Empresa from './pages/laboral/Empresa'
 import MiAsesor from './pages/MiAsesor'
 import Contabilidad from './pages/Contabilidad'
 import Impuestos from './pages/Impuestos'
+import VistaSocio from './pages/VistaSocio'
+import MiEspacio from './pages/MiEspacio'
+import AbrirConfiguracion from './pages/Configuracion'
+import { ConfigProvider } from './components/Configuracion'
+import type { Permiso } from './lib/types'
 
 function Protegido({ children }: { children: ReactNode }) {
-  const { session, loading, me } = useAuth()
+  const { session, loading, me, sinAcceso } = useAuth()
   const location = useLocation()
   if (loading) return <Loading />
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (!me) return <SinPerfil />
+  if (sinAcceso) return <SinAcceso />
   return <>{children}</>
+}
+
+/** Solo si tienes ese permiso en la empresa que estás viendo; si no, a la portada */
+function Requiere({ permiso, children }: { permiso: Permiso; children: ReactNode }) {
+  const { puede } = useAuth()
+  return puede(permiso) ? <>{children}</> : <Navigate to="/" replace />
+}
+
+/** Portada según lo que eres en la empresa */
+function Inicio() {
+  const { rol } = useAuth()
+  if (rol === 'socio') return <Navigate to="/socio" replace />
+  if (rol === 'empleado') return <Navigate to="/mi-espacio" replace />
+  return <Resumen />
+}
+
+function SoloEmpleado({ children }: { children: ReactNode }) {
+  const { rol } = useAuth()
+  return rol === 'empleado' ? <>{children}</> : <Navigate to="/" replace />
+}
+
+function SinAcceso() {
+  const { signOut, me } = useAuth()
+  return (
+    <div className="grid min-h-dvh place-items-center p-6 text-center">
+      <div className="max-w-sm">
+        <img src="/logo.png" alt="" className="mx-auto mb-5 size-11" />
+        <p className="font-medium">Ya no tienes acceso a ninguna empresa.</p>
+        <p className="mt-1 text-sm text-muted">
+          Si crees que es un error, pide a la empresa que vuelva a darte acceso a {me?.email ?? 'tu email'}.
+        </p>
+        <button onClick={signOut} className="mt-4 text-sm underline">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function SoloAsesor({ children }: { children: ReactNode }) {
@@ -79,29 +121,35 @@ export default function App() {
           <Route
             element={
               <Protegido>
-                <Layout />
+                <ConfigProvider>
+                  <Layout />
+                </ConfigProvider>
               </Protegido>
             }
           >
-            <Route index element={<Resumen />} />
-            <Route path="gastos" element={<Gastos />} />
-            <Route path="facturas" element={<Facturas />} />
-            <Route path="facturas/nueva" element={<FacturaEditor />} />
-            <Route path="facturas/:id" element={<FacturaEditor />} />
-            <Route path="presupuestos" element={<Presupuestos />} />
-            <Route path="presupuestos/nuevo" element={<PresupuestoEditor />} />
-            <Route path="presupuestos/:id" element={<PresupuestoEditor />} />
-            <Route path="clientes" element={<Clientes />} />
-            <Route path="contabilidad" element={<Contabilidad />} />
-            <Route path="impuestos" element={<Impuestos />} />
-            <Route path="laboral" element={<Trabajadores />} />
-            <Route path="laboral/alta" element={<NuevaAlta />} />
-            <Route path="laboral/alta/:id" element={<NuevaAlta />} />
-            <Route path="laboral/trabajadores/:id" element={<FichaTrabajador />} />
-            <Route path="laboral/nominas" element={<Nominas />} />
-            <Route path="laboral/empresa" element={<Empresa />} />
-            <Route path="perfil" element={<Perfil />} />
-            <Route path="mi-asesor" element={<MiAsesor />} />
+            <Route index element={<Inicio />} />
+            <Route path="gastos" element={<Requiere permiso="gastos"><Gastos /></Requiere>} />
+            <Route path="facturas" element={<Requiere permiso="ventas"><Facturas /></Requiere>} />
+            <Route path="facturas/nueva" element={<Requiere permiso="ventas"><FacturaEditor /></Requiere>} />
+            <Route path="facturas/:id" element={<Requiere permiso="ventas"><FacturaEditor /></Requiere>} />
+            <Route path="presupuestos" element={<Requiere permiso="ventas"><Presupuestos /></Requiere>} />
+            <Route path="presupuestos/nuevo" element={<Requiere permiso="ventas"><PresupuestoEditor /></Requiere>} />
+            <Route path="presupuestos/:id" element={<Requiere permiso="ventas"><PresupuestoEditor /></Requiere>} />
+            <Route path="clientes" element={<Requiere permiso="ventas"><Clientes /></Requiere>} />
+            <Route path="contabilidad" element={<Requiere permiso="contabilidad"><Contabilidad /></Requiere>} />
+            <Route path="impuestos" element={<Requiere permiso="impuestos"><Impuestos /></Requiere>} />
+            <Route path="laboral" element={<Requiere permiso="laboral"><Trabajadores /></Requiere>} />
+            <Route path="laboral/alta" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
+            <Route path="laboral/alta/:id" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
+            <Route path="laboral/trabajadores/:id" element={<Requiere permiso="laboral"><FichaTrabajador /></Requiere>} />
+            <Route path="laboral/nominas" element={<Requiere permiso="nominas"><Nominas /></Requiere>} />
+            <Route path="laboral/empresa" element={<Requiere permiso="laboral"><Empresa /></Requiere>} />
+            <Route path="usuarios" element={<AbrirConfiguracion seccion="usuarios" />} />
+            <Route path="configuracion/:seccion?" element={<AbrirConfiguracion />} />
+            <Route path="socio" element={<Requiere permiso="socio"><VistaSocio /></Requiere>} />
+            <Route path="mi-espacio" element={<SoloEmpleado><MiEspacio /></SoloEmpleado>} />
+            <Route path="perfil" element={<AbrirConfiguracion seccion="perfil" />} />
+            <Route path="mi-asesor" element={<Requiere permiso="asesor"><MiAsesor /></Requiere>} />
             <Route
               path="asesor"
               element={

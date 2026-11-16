@@ -1,14 +1,24 @@
 import { supabase } from './supabase'
 import type { AsientoManual, DatosContables, Inmovilizado } from './contabilidad.ts'
 import type { Expense, Invoice, Nomina } from './types'
+import { agregarNominas } from './vistaSocio.ts'
 
-/** Todo lo que necesita el motor contable de una cuenta */
-export async function cargarDatosContables(ownerId: string): Promise<DatosContables> {
+/**
+ * Todo lo que necesita el motor contable de una cuenta.
+ * nominasAgregadas: para quien lleva la contabilidad sin permiso de nóminas (supabase/usuarios.sql):
+ * recibe un total por mes, sin el nombre ni el sueldo de nadie.
+ */
+export async function cargarDatosContables(ownerId: string, nominasAgregadas = false): Promise<DatosContables> {
   const [f, g, n, t, m, i] = await Promise.all([
     supabase.from('invoices').select('*').eq('owner_id', ownerId),
     supabase.from('expenses').select('*').eq('owner_id', ownerId),
-    supabase.from('nominas').select('*').eq('owner_id', ownerId),
-    supabase.from('trabajadores').select('id, nombre').eq('owner_id', ownerId),
+    nominasAgregadas
+      ? supabase.rpc('nominas_agregadas', { cuenta: ownerId }).then((r) => ({
+          ...r,
+          data: agregarNominas(((r.data as Nomina[]) ?? []).map((x) => ({ ...x, estado: 'publicada' as const }))),
+        }))
+      : supabase.from('nominas').select('*').eq('owner_id', ownerId),
+    nominasAgregadas ? Promise.resolve({ data: [] }) : supabase.from('trabajadores').select('id, nombre').eq('owner_id', ownerId),
     supabase.from('asientos_manuales').select('*').eq('owner_id', ownerId),
     supabase.from('inmovilizados').select('*').eq('owner_id', ownerId),
   ])

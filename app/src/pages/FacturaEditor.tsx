@@ -19,7 +19,9 @@ import { Badge, Button, Card, Field, Input, Loading, Modal, Select, Textarea, co
 export default function FacturaEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { ownerId, owner, isAdvisor } = useAuth()
+  const { ownerId, owner, isAdvisor, rol } = useAuth()
+  // El comercial prepara facturas, pero las emite el titular o administración (supabase/usuarios.sql)
+  const soloBorradores = rol === 'comercial'
 
   const [cargando, setCargando] = useState(Boolean(id))
   const [factura, setFactura] = useState<Invoice | null>(null)
@@ -464,7 +466,7 @@ export default function FacturaEditor() {
             <Button icon={<Download className="size-4" />} onClick={pdf}>
               Descargar PDF
             </Button>
-            {sinMovimiento ? null : factura.estado === 'emitida' ? (
+            {sinMovimiento || soloBorradores ? null : factura.estado === 'emitida' ? (
               <Button variant="accent" icon={<CheckCircle2 className="size-4" />} onClick={() => setFechaCobro(hoyISO())}>
                 {esRectificativa ? 'Marcar como abonada' : 'Marcar como cobrada'}
               </Button>
@@ -473,7 +475,7 @@ export default function FacturaEditor() {
                 {esRectificativa ? 'Marcar como pendiente de abono' : 'Marcar como pendiente de cobro'}
               </Button>
             )}
-            {!esRectificativa && !sinMovimiento && (
+            {!esRectificativa && !sinMovimiento && !soloBorradores && (
               <Button variant="secondary" icon={<FileMinus className="size-4" />} onClick={crearRectificativa}>
                 Crear factura rectificativa
               </Button>
@@ -493,12 +495,23 @@ export default function FacturaEditor() {
           </>
         ) : (
           <>
-            <Button variant="accent" icon={<Send className="size-4" />} onClick={emitir} disabled={guardando}>
-              {esRectificativa ? 'Emitir rectificativa' : 'Emitir factura'}
-            </Button>
-            <Button icon={<Save className="size-4" />} loading={guardando} onClick={guardarBorrador}>
-              Guardar borrador
-            </Button>
+            {soloBorradores ? (
+              <>
+                <Button variant="accent" icon={<Save className="size-4" />} loading={guardando} onClick={guardarBorrador}>
+                  Guardar borrador
+                </Button>
+                <p className="px-1 text-xs text-muted">La emite el titular o alguien de administración: le aparecerá en Facturas como borrador.</p>
+              </>
+            ) : (
+              <>
+                <Button variant="accent" icon={<Send className="size-4" />} onClick={emitir} disabled={guardando}>
+                  {esRectificativa ? 'Emitir rectificativa' : 'Emitir factura'}
+                </Button>
+                <Button icon={<Save className="size-4" />} loading={guardando} onClick={guardarBorrador}>
+                  Guardar borrador
+                </Button>
+              </>
+            )}
             <Button variant="secondary" icon={<Download className="size-4" />} onClick={pdf}>
               Vista previa en PDF
             </Button>

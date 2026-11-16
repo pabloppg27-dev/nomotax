@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useConfig } from '../components/Configuracion'
 import { ImageUp, KeyRound, Palette, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, signedUrl, supabase } from '../lib/supabase'
 import { limpiarNif } from '../lib/format'
 import type { Profile } from '../lib/types'
-import { Button, Card, Field, Input, Loading, PageHeader, Textarea, notify } from '../components/ui'
-import { PlanTarjeta } from '../components/Planes'
+import { NOMBRE_ROL } from '../lib/permisos'
+import { Button, Card, Field, Input, Loading, Textarea, notify } from '../components/ui'
 
 type Editable = Pick<
   Profile,
@@ -28,8 +28,16 @@ type Editable = Pick<
 >
 
 export default function Perfil() {
-  const { owner, me, viewingOther, isAdvisor, refresh } = useAuth()
-  const [params] = useSearchParams()
+  const { rol, puede } = useAuth()
+  // Admin sin «empresa», socio, comercial o empleado: solo su usuario (nombre, contraseña, accesos)
+  const esMiembro = rol !== null && rol !== 'titular' && rol !== 'asesor'
+  if (esMiembro && !puede('empresa')) return <MiCuenta />
+  return <PerfilEmpresa esMiembro={esMiembro} />
+}
+
+function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
+  const { owner, me, viewingOther, refresh } = useAuth()
+  const { nuevaClave } = useConfig()
   const [form, setForm] = useState<Editable | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
@@ -139,10 +147,9 @@ export default function Perfil() {
 
   return (
     <>
-      <PageHeader
-        title={viewingOther ? 'Perfil del cliente' : 'Mi perfil'}
-        subtitle="Estos datos aparecen en tus facturas y presupuestos."
-      />
+      <p className="mb-5 text-[15px] text-muted">
+        {viewingOther ? 'Datos del cliente: aparecen' : esMiembro ? 'Datos de la empresa: aparecen' : 'Tus datos aparecen'} en las facturas y presupuestos.
+      </p>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <form onSubmit={guardar}>
@@ -167,15 +174,6 @@ export default function Perfil() {
               <Field label="Teléfono">
                 <Input value={form.telefono ?? ''} onChange={set('telefono')} />
               </Field>
-              {form.email_facturacion !== undefined && (
-                <Field
-                  label="Email para recibir las facturas de NomoTax (opcional)"
-                  className="sm:col-span-2"
-                  hint={`Si lo dejas vacío, te las enviamos a ${owner.email ?? 'el email de tu cuenta'}.`}
-                >
-                  <Input type="email" value={form.email_facturacion ?? ''} onChange={set('email_facturacion')} placeholder={owner.email ?? ''} />
-                </Field>
-              )}
               <Field label="Dirección" className="sm:col-span-2">
                 <Input value={form.direccion ?? ''} onChange={set('direccion')} />
               </Field>
@@ -223,15 +221,6 @@ export default function Perfil() {
 
         <div className="space-y-6">
           <Card className="p-5">
-            <PlanTarjeta
-              perfil={owner}
-              titulo={viewingOther ? 'Plan del cliente' : 'Tu plan'}
-              editable={isAdvisor && viewingOther}
-              onGuardado={refresh}
-            />
-          </Card>
-
-          <Card className="p-5">
             <h2 className="mb-1 font-semibold">Logo</h2>
             <p className="mb-4 text-sm text-muted">Se usa en la cabecera de tus facturas y presupuestos.</p>
             <div className="grid h-32 place-items-center rounded-xl border border-dashed border-line bg-paper">
@@ -272,7 +261,8 @@ export default function Perfil() {
 
           <ColorMarca ownerId={owner.id} actual={owner.color_marca ?? null} onGuardado={refresh} />
 
-          {!viewingOther && <CambiarClave destacar={params.has('nueva-clave')} email={me?.email ?? ''} />}
+          {esMiembro && <TuUsuario />}
+          {!viewingOther && <CambiarClave destacar={nuevaClave} email={me?.email ?? ''} />}
         </div>
       </div>
     </>
@@ -388,6 +378,69 @@ function CambiarClave({ destacar, email }: { destacar: boolean; email: string })
         </Field>
         <Button type="submit" variant="secondary" size="sm" loading={guardando}>
           Cambiar contraseña
+        </Button>
+      </form>
+    </Card>
+  )
+}
+
+/** Perfil de quien entra como miembro de una empresa sin poder tocar sus datos */
+function MiCuenta() {
+  const { me, accesos } = useAuth()
+  const { nuevaClave } = useConfig()
+  return (
+    <>
+      <p className="mb-5 text-[15px] text-muted">Tu usuario y las empresas a las que tienes acceso.</p>
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6">
+          <TuUsuario />
+          <Card className="p-5 sm:p-6">
+            <h2 className="mb-1 font-semibold">Tus accesos</h2>
+            <p className="mb-4 text-sm text-muted">Te los da cada empresa. Para cambiarlos, habla con ella.</p>
+            <div className="divide-y divide-line">
+              {accesos.map((a) => (
+                <div key={a.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <span className="truncate">{a.empresa.nombre_comercial || a.empresa.nombre || a.empresa.email}</span>
+                  <span className="shrink-0 text-sm text-muted">{NOMBRE_ROL[a.rol]}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+        <div>
+          <CambiarClave destacar={nuevaClave} email={me?.email ?? ''} />
+        </div>
+      </div>
+    </>
+  )
+}
+
+/** Nombre de la persona (no de la empresa) */
+function TuUsuario() {
+  const { me, refresh } = useAuth()
+  const [nombre, setNombre] = useState(me?.nombre ?? '')
+  const [guardando, setGuardando] = useState(false)
+  useEffect(() => setNombre(me?.nombre ?? ''), [me?.nombre])
+  if (!me) return null
+  const guardar = async (e: FormEvent) => {
+    e.preventDefault()
+    setGuardando(true)
+    const { error } = await supabase.from('profiles').update({ nombre: nombre.trim() || null }).eq('id', me.id)
+    setGuardando(false)
+    if (error) return notify(await errorMessage(error), 'error')
+    await refresh()
+    notify('Nombre guardado')
+  }
+  return (
+    <Card className="p-5">
+      <form onSubmit={guardar}>
+        <h2 className="mb-1 font-semibold">Tu usuario</h2>
+        <p className="mb-4 text-sm text-muted">{me.email}</p>
+        <Field label="Tu nombre">
+          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre y apellidos" />
+        </Field>
+        <Button type="submit" variant="secondary" className="mt-3" loading={guardando} disabled={nombre === (me.nombre ?? '')}>
+          Guardar
         </Button>
       </form>
     </Card>

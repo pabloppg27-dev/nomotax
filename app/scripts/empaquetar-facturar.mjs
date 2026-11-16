@@ -1,9 +1,10 @@
-// Empaqueta la Edge Function facturar-planes en UN solo archivo para pegarlo en Supabase
+// Empaqueta una Edge Function que usa código de src/lib en UN solo archivo para pegarlo en Supabase
 // (el editor del dashboard no ve los archivos de src/). Así la factura sale con el mismo
-// diseño que la app (src/lib/pdfFactura.ts).
+// diseño que la app (src/lib/pdfFactura.ts) y la vista de socio con el mismo motor contable.
 //
-//   node scripts/empaquetar-facturar.mjs           → supabase/functions/facturar-planes/index.ts
-//   node scripts/empaquetar-facturar.mjs --muestra → además, un PDF de ejemplo en test-data/
+//   node scripts/empaquetar-facturar.mjs             → supabase/functions/facturar-planes/index.ts
+//   node scripts/empaquetar-facturar.mjs --muestra   → además, un PDF de ejemplo en test-data/
+//   node scripts/empaquetar-facturar.mjs vista-socio → supabase/functions/vista-socio/index.ts
 
 import { rolldown } from 'rolldown'
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
@@ -23,6 +24,8 @@ const NPM = {
   qrcode: `npm:qrcode@${pkg.dependencies.qrcode}`,
 }
 
+const FUNCION = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'facturar-planes'
+
 async function empaquetar(entrada, salida, paraDeno) {
   const bundle = await rolldown({
     input: resolve(raiz, entrada),
@@ -41,15 +44,15 @@ async function empaquetar(entrada, salida, paraDeno) {
   const { output } = await bundle.generate({ format: 'esm', codeSplitting: false })
   await bundle.close()
   const cabecera = paraDeno
-    ? '// GENERADO con `node scripts/empaquetar-facturar.mjs` a partir de fuente.ts y src/lib.\n' +
-      '// Pega este archivo entero en Supabase → Edge Functions → facturar-planes. No lo edites a mano.\n\n'
+    ? `// GENERADO con \`node scripts/empaquetar-facturar.mjs${FUNCION === 'facturar-planes' ? '' : ' ' + FUNCION}\` a partir de fuente.ts y src/lib.\n` +
+      `// Pega este archivo entero en Supabase → Edge Functions → ${FUNCION}. No lo edites a mano.\n\n`
     : ''
   mkdirSync(dirname(resolve(raiz, salida)), { recursive: true })
   writeFileSync(resolve(raiz, salida), cabecera + output.map((o) => o.code ?? '').join('\n'))
 }
 
-await empaquetar('supabase/functions/facturar-planes/fuente.ts', 'supabase/functions/facturar-planes/index.ts', true)
-console.log('✓ supabase/functions/facturar-planes/index.ts')
+await empaquetar(`supabase/functions/${FUNCION}/fuente.ts`, `supabase/functions/${FUNCION}/index.ts`, true)
+console.log(`✓ supabase/functions/${FUNCION}/index.ts`)
 
 if (process.argv.includes('--muestra')) {
   await empaquetar('scripts/muestra-factura.ts', 'node_modules/.cache/muestra-factura.mjs', false)

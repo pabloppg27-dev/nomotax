@@ -1,4 +1,29 @@
-export type Role = 'client' | 'advisor'
+export type Role = 'client' | 'advisor' | 'member'
+
+/* ------------------------------------------------ Usuarios de la empresa (supabase/usuarios.sql) */
+
+export type RolMiembro = 'admin' | 'socio' | 'comercial' | 'empleado'
+/** Lo que eres en la empresa que estás viendo */
+export type RolEnCuenta = 'asesor' | 'titular' | RolMiembro
+
+export type Modulo = 'ventas' | 'gastos' | 'bancos' | 'contabilidad' | 'impuestos' | 'laboral' | 'nominas' | 'usuarios' | 'empresa'
+/** Además de los módulos: Mi asesor y la Vista de socio */
+export type Permiso = Modulo | 'asesor' | 'socio'
+
+export interface Miembro {
+  id: string
+  cuenta_id: string
+  user_id: string
+  email: string
+  nombre: string | null
+  rol: RolMiembro
+  permisos: Partial<Record<Modulo, boolean>>
+  trabajador_id: string | null
+  activo: boolean
+  invitado_por: string | null
+  created_at: string
+  updated_at: string
+}
 
 export interface Profile {
   id: string

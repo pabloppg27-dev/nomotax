@@ -42,7 +42,9 @@ const VISTAS: { id: Vista; label: string }[] = [
 ]
 
 export default function Contabilidad() {
-  const { ownerId, owner, isAdvisor, me } = useAuth()
+  const { ownerId, owner, isAdvisor, me, puede } = useAuth()
+  const verNominas = puede('nominas')
+  const verBancos = puede('bancos')
   const navigate = useNavigate()
   const [datos, setDatos] = useState<DatosContables | null>(null)
   const [periodo, setPeriodo] = useState<Periodo>({ anio: trimestreActual().anio, trimestre: 0 })
@@ -54,8 +56,8 @@ export default function Contabilidad() {
 
   const cargar = useCallback(async () => {
     if (!ownerId) return
-    setDatos(await cargarDatosContables(ownerId))
-  }, [ownerId])
+    setDatos(await cargarDatosContables(ownerId, !verNominas))
+  }, [ownerId, verNominas])
 
   const cargarExtractos = useCallback(async () => {
     if (!ownerId) return
@@ -140,9 +142,11 @@ export default function Contabilidad() {
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        <Button icon={<Landmark className="size-4" />} onClick={() => setSubirExtracto(true)}>
-          Subir extracto bancario
-        </Button>
+        {verBancos && (
+          <Button icon={<Landmark className="size-4" />} onClick={() => setSubirExtracto(true)}>
+            Subir extracto bancario
+          </Button>
+        )}
         <Button variant="accent" icon={<FileSpreadsheet className="size-4" />} loading={exportando === 'excel'} onClick={() => exportar('excel')}>
           Descargar Excel
         </Button>
@@ -186,7 +190,7 @@ export default function Contabilidad() {
       </div>
 
       <div className="mb-6 flex gap-1 overflow-x-auto border-b border-line">
-        {VISTAS.map((v) => (
+        {VISTAS.filter((v) => v.id !== 'bancos' || verBancos).map((v) => (
           <button
             key={v.id}
             onClick={() => setVista(v.id)}

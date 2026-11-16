@@ -1,10 +1,10 @@
 # NomoTax · Área de clientes
 
-App web para clientes de NomoTax: gastos con lectura automática (OCR con Claude), facturas, presupuestos, clientes, resumen, **laboral** (altas de trabajadores, fichas con costes y nóminas por meses) y **contabilidad** automática (libro diario, mayor, sumas y saldos, pérdidas y ganancias, balance, inmovilizado y amortizaciones). Panel de asesor para ver todas las cuentas. Publicada en https://clientes.nomotax.io.
+App web para clientes de NomoTax: gastos con lectura automática (OCR con Claude), facturas, presupuestos, clientes, resumen, **laboral** (altas de trabajadores, fichas con costes y nóminas por meses) y **contabilidad** automática (libro diario, mayor, sumas y saldos, pérdidas y ganancias, balance, inmovilizado y amortizaciones). Panel de asesor para ver todas las cuentas. **Usuarios de la empresa** (admin, socio, comercial, empleado) con permisos por módulo y **Vista de socio**. Publicada en https://clientes.nomotax.io.
 
 - **Frontend:** React + Vite + Tailwind (carpeta `src/`)
 - **Backend:** Supabase (login, base de datos, archivos) — `supabase/schema.sql`
-- **Funciones:** `ocr-factura` (lee facturas), `leer-nomina` (lee nóminas, solo asesor) e `invitar-cliente` (alta de clientes), en `supabase/functions/`
+- **Funciones:** `ocr-factura` (lee facturas), `leer-nomina` (lee nóminas, solo asesor), `invitar-cliente` (alta de clientes), `invitar-miembro` (usuarios de la empresa) y `vista-socio` (cifras para socios), en `supabase/functions/`
 
 ## Puesta en marcha (una sola vez)
 
@@ -27,6 +27,26 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # genera dist/ para publicar
 ```
+
+## Usuarios de la empresa
+
+Cada empresa (el titular de la cuenta) da acceso a otras personas desde **Usuarios** (`src/pages/Usuarios.tsx`):
+
+| Rol | Qué ve |
+|---|---|
+| Administración | Los módulos que se le activen: ventas, gastos, bancos, contabilidad, impuestos, laboral, nóminas, usuarios, datos de la empresa. Siempre la Vista de socio y Mi asesor |
+| Socio | Solo la **Vista de socio** (cifras, pérdidas y ganancias, balance, liquidez, plantilla, informe PDF) y Mi asesor |
+| Comercial | Presupuestos, clientes y facturas **en borrador** (las emite el titular o administración) |
+| Empleado | **Mi espacio**: sube sus tickets (quedan pendientes de revisar) y ve sus nóminas, documentos y ficha |
+
+Lo que manda es la base de datos (`supabase/usuarios.sql`: funciones `puede()`, `mi_rol()`, `puede_archivo()` y todas las reglas de acceso); la app solo esconde lo que no toca (`src/lib/permisos.ts`). La Vista de socio de quien no ve todos los documentos se calcula en el servidor (`vista-socio`), que solo devuelve totales.
+
+Puesta en marcha:
+1. SQL Editor → pega `supabase/usuarios.sql` → Run.
+2. Edge Functions → `invitar-miembro`: pega `supabase/functions/invitar-miembro/index.ts`.
+3. `node scripts/empaquetar-facturar.mjs vista-socio` y pega `supabase/functions/vista-socio/index.ts` como función `vista-socio`.
+
+Pruebas de las reglas de acceso, sin tocar Supabase: `test-data/probar-usuarios-sql.mjs` (Postgres en memoria con PGlite).
 
 ## Contabilidad
 

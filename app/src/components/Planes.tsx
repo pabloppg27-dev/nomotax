@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowUpRight, CalendarClock, Check, CheckCircle2, ChevronRight, FileText, Minus, Receipt, Sparkles } from 'lucide-react'
+import { ArrowUpRight, CalendarClock, Check, CheckCircle2, ChevronRight, FileText, Minus, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { eur, fechaLarga } from '../lib/format'
 import {
@@ -25,16 +26,16 @@ type PerfilPlan = Pick<Profile, 'id' | 'nombre' | 'email' | 'plan' | 'plan_perio
 const fechaCorta = (iso: string) =>
   new Date(iso + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '')
 
-/** Tarjeta «Tu plan» de la barra lateral (fondo oscuro). Al pulsar abre el comparador. */
+/** Tarjeta «Tu plan» de la barra lateral (fondo oscuro). Al pulsar lleva a Configuración → Plan. */
 export function PlanLateral({ perfil }: { perfil: PerfilPlan | null }) {
-  const [abierto, setAbierto] = useState(false)
+  const navigate = useNavigate()
   const cuota = perfil ? cuotaCliente(perfil) : null
   if (!perfil || !cuota) return null
   const cobro = proximoCobro(perfil)
   return (
     <>
       <button
-        onClick={() => setAbierto(true)}
+        onClick={() => navigate('/configuracion/plan')}
         className="mb-3 flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-left transition-colors hover:bg-white/10"
       >
         <Sparkles className="size-[18px] shrink-0 text-lima" />
@@ -45,7 +46,6 @@ export function PlanLateral({ perfil }: { perfil: PerfilPlan | null }) {
         </span>
         <ChevronRight className="size-4 shrink-0 text-white/40" />
       </button>
-      <ComparadorPlanes open={abierto} onClose={() => setAbierto(false)} planId={cuota.plan.id} tuPrecio={cuota.texto} />
     </>
   )
 }
@@ -56,15 +56,17 @@ export function PlanTarjeta({
   titulo = 'Tu plan',
   editable = false,
   onGuardado,
+  conComparador = true,
 }: {
   perfil: PerfilPlan
   titulo?: string
   editable?: boolean
   onGuardado?: () => Promise<void> | void
+  /** Botón «Ver y comparar planes» (no hace falta en Configuración → Plan, que ya los muestra) */
+  conComparador?: boolean
 }) {
   const [abierto, setAbierto] = useState(false)
   const [editando, setEditando] = useState(false)
-  const [historial, setHistorial] = useState(false)
   const cuota = cuotaCliente(perfil)
   const cobro = proximoCobro(perfil)
   return (
@@ -121,12 +123,9 @@ export function PlanTarjeta({
       )}
       {cuota && <p className="mt-3 text-sm text-muted">{cuota.plan.desc}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button variant="secondary" size="sm" onClick={() => setAbierto(true)}>
-          Ver y comparar planes
-        </Button>
-        {cuota && (
-          <Button variant="secondary" size="sm" icon={<Receipt className="size-4" />} onClick={() => setHistorial(true)}>
-            Facturación
+        {conComparador && (
+          <Button variant="secondary" size="sm" onClick={() => setAbierto(true)}>
+            Ver y comparar planes
           </Button>
         )}
         {editable && (
@@ -136,7 +135,6 @@ export function PlanTarjeta({
         )}
       </div>
       <ComparadorPlanes open={abierto} onClose={() => setAbierto(false)} planId={cuota?.plan.id ?? null} tuPrecio={cuota?.texto} />
-      {historial && <HistorialFacturacion perfil={perfil} onClose={() => setHistorial(false)} />}
       {editable && (
         <EditorPlan perfil={editando ? perfil : null} onClose={() => setEditando(false)} onGuardado={onGuardado ?? (() => {})} />
       )}
@@ -353,7 +351,7 @@ export function OpcionesPlan() {
   )
 }
 
-/** Comparador de planes con el plan actual resaltado */
+/** Comparador de planes con el plan actual resaltado, en una ventana */
 export function ComparadorPlanes({
   open,
   onClose,
@@ -365,14 +363,24 @@ export function ComparadorPlanes({
   planId: string | null
   tuPrecio?: string
 }) {
-  const { isAdvisor } = useAuth()
+  return (
+    <Modal open={open} onClose={onClose} title="Planes de NomoTax" wide>
+      <TablaPlanes planId={planId} tuPrecio={tuPrecio} />
+    </Modal>
+  )
+}
+
+/** Todos los planes (sociedades y autónomos), la comparativa y el botón de solicitar cambio */
+export function TablaPlanes({ planId, tuPrecio }: { planId: string | null; tuPrecio?: string }) {
+  const { isAdvisor, rol } = useAuth()
   const actual = planPorId(planId)
   const [familia, setFamilia] = useState<Familia>(actual?.familia ?? 'empresa')
   const [enviando, setEnviando] = useState<PlanId | null>(null)
   const [solicitado, setSolicitado] = useState<PlanId | null>(null)
   const planes = PLANES.filter((p) => p.familia === familia)
-  // El asesor ve el comparador del cliente, pero no envía solicitudes en su nombre
-  const puedeSolicitar = !isAdvisor
+  // El asesor ve el comparador del cliente, pero no envía solicitudes en su nombre.
+  // La solicitud sale a nombre de quien la hace: solo el titular de la cuenta
+  const puedeSolicitar = rol === 'titular'
 
   const solicitar = async (p: Plan) => {
     setEnviando(p.id)
@@ -384,37 +392,36 @@ export function ComparadorPlanes({
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title="Planes de NomoTax"
-      wide
-      footer={
-        solicitado ? (
-          <p className="mr-auto flex items-center gap-2 text-sm text-verde">
+    <div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-full bg-paper p-1">
+          {(['empresa', 'autonomo'] as Familia[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFamilia(f)}
+              className={cx(
+                'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+                familia === f ? 'bg-ink text-white' : 'text-ink/70 hover:bg-ink/5',
+              )}
+            >
+              {f === 'empresa' ? 'Sociedades' : 'Autónomos'}
+            </button>
+          ))}
+        </div>
+        {solicitado ? (
+          <p className="flex items-center gap-2 text-sm text-verde">
             <CheckCircle2 className="size-4 shrink-0" />
             Hemos recibido tu solicitud de {planPorId(solicitado)?.nombre}. Tu asesor te confirmará el cambio en breve.
           </p>
         ) : (
-          <p className="mr-auto text-sm text-muted">
-            {puedeSolicitar ? 'Elige un plan y pulsa «Solicitar»: tu asesor te confirmará el cambio.' : 'El cliente puede solicitar el cambio desde aquí.'}
+          <p className="text-sm text-muted">
+            {puedeSolicitar
+              ? 'Elige un plan y pulsa «Solicitar»: tu asesor te confirmará el cambio.'
+              : isAdvisor
+                ? 'El cliente puede solicitar el cambio desde aquí.'
+                : 'El cambio de plan lo solicita el titular de la cuenta.'}
           </p>
-        )
-      }
-    >
-      <div className="mb-5 inline-flex rounded-full bg-paper p-1">
-        {(['empresa', 'autonomo'] as Familia[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFamilia(f)}
-            className={cx(
-              'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
-              familia === f ? 'bg-ink text-white' : 'text-ink/70 hover:bg-ink/5',
-            )}
-          >
-            {f === 'empresa' ? 'Sociedades' : 'Autónomos'}
-          </button>
-        ))}
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -481,7 +488,7 @@ export function ComparadorPlanes({
         </table>
       </div>
       <p className="mt-4 text-xs text-muted">Precios sin IVA.</p>
-    </Modal>
+    </div>
   )
 }
 
@@ -512,8 +519,8 @@ type Cobro = {
   expense: { numero: string | null; fecha: string | null; total: number; concepto: string | null; file_path: string | null } | null
 }
 
-/** Facturas que NomoTax ha emitido a este cliente (botón «Facturación» de Mi perfil) */
-function HistorialFacturacion({ perfil, onClose }: { perfil: PerfilPlan; onClose: () => void }) {
+/** Facturas que NomoTax ha emitido a este cliente (Configuración → Facturación) */
+export function HistorialFacturacion({ perfil }: { perfil: PerfilPlan }) {
   const [cobros, setCobros] = useState<Cobro[] | null>(null)
   const cuota = cuotaCliente(perfil)
   const cobro = proximoCobro(perfil)
@@ -530,7 +537,7 @@ function HistorialFacturacion({ perfil, onClose }: { perfil: PerfilPlan; onClose
   const total = (cobros ?? []).reduce((s, c) => s + Number(c.expense?.total ?? 0), 0)
 
   return (
-    <Modal open onClose={onClose} title="Facturación">
+    <div>
       {cuota && cobro && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl bg-lima/30 px-3 py-2.5 text-sm">
           <span className="flex items-center gap-1.5">
@@ -575,6 +582,6 @@ function HistorialFacturacion({ perfil, onClose }: { perfil: PerfilPlan; onClose
           </p>
         </>
       )}
-    </Modal>
+    </div>
   )
 }
