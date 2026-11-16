@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileSpreadsheet, Plus, Search, Trash2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileSpreadsheet, Landmark, Plus, Search, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha, rangoPeriodo, trimestreActual, type Periodo } from '../lib/format'
@@ -23,12 +23,15 @@ import {
 import { XLSX, cargarDatosContables, descargar } from '../lib/datosContables.ts'
 import NumInput from '../components/NumInput'
 import PeriodPicker from '../components/PeriodPicker'
+import { ExtractosVista, SubirExtracto } from '../components/Bancos'
+import type { ExtractoBancario } from '../lib/bancos'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, Select, confirmar, cx, notify } from '../components/ui'
 
-type Vista = 'resumen' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'balance' | 'inmovilizado' | 'manuales'
+type Vista = 'resumen' | 'bancos' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'balance' | 'inmovilizado' | 'manuales'
 
 const VISTAS: { id: Vista; label: string }[] = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'bancos', label: 'Bancos' },
   { id: 'pyg', label: 'Pérdidas y ganancias' },
   { id: 'balance', label: 'Balance' },
   { id: 'inmovilizado', label: 'Inmovilizado' },
@@ -39,22 +42,31 @@ const VISTAS: { id: Vista; label: string }[] = [
 ]
 
 export default function Contabilidad() {
-  const { ownerId, owner, isAdvisor } = useAuth()
+  const { ownerId, owner, isAdvisor, me } = useAuth()
   const navigate = useNavigate()
   const [datos, setDatos] = useState<DatosContables | null>(null)
   const [periodo, setPeriodo] = useState<Periodo>({ anio: trimestreActual().anio, trimestre: 0 })
   const [vista, setVista] = useState<Vista>('resumen')
   const [exportando, setExportando] = useState<string | null>(null)
   const [otroFormato, setOtroFormato] = useState(false)
+  const [extractos, setExtractos] = useState<ExtractoBancario[] | null>(null)
+  const [subirExtracto, setSubirExtracto] = useState(false)
 
   const cargar = useCallback(async () => {
     if (!ownerId) return
     setDatos(await cargarDatosContables(ownerId))
   }, [ownerId])
 
+  const cargarExtractos = useCallback(async () => {
+    if (!ownerId) return
+    const { data, error } = await supabase.from('extractos_bancarios').select('*').eq('owner_id', ownerId).order('desde', { ascending: false })
+    setExtractos(error ? [] : ((data as ExtractoBancario[]) ?? []))
+  }, [ownerId])
+
   useEffect(() => {
     cargar()
-  }, [cargar])
+    cargarExtractos()
+  }, [cargar, cargarExtractos])
 
   // En directo: cualquier cambio en facturas, gastos, nóminas, asientos o inmovilizado recalcula todo
   useEffect(() => {
@@ -66,12 +78,13 @@ export default function Contabilidad() {
         clearTimeout(t)
         t = setTimeout(cargar, 400)
       })
+    canal.on('postgres_changes', { event: '*', schema: 'public', table: 'extractos_bancarios', filter: `owner_id=eq.${ownerId}` }, () => cargarExtractos())
     canal.subscribe()
     return () => {
       clearTimeout(t)
       supabase.removeChannel(canal)
     }
-  }, [ownerId, cargar])
+  }, [ownerId, cargar, cargarExtractos])
 
   // Al volver a la pestaña, se recalcula (por si hay documentos nuevos)
   useEffect(() => {
@@ -127,6 +140,9 @@ export default function Contabilidad() {
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2">
+        <Button icon={<Landmark className="size-4" />} onClick={() => setSubirExtracto(true)}>
+          Subir extracto bancario
+        </Button>
         <Button variant="accent" icon={<FileSpreadsheet className="size-4" />} loading={exportando === 'excel'} onClick={() => exportar('excel')}>
           Descargar Excel
         </Button>
@@ -199,6 +215,21 @@ export default function Contabilidad() {
             </button>
           )}
           {vista === 'resumen' && <Resumen calc={calc} />}
+          {vista === 'bancos' &&
+            (extractos === null ? (
+              <Loading />
+            ) : (
+              <ExtractosVista
+                lista={extractos}
+                anio={periodo.anio}
+                desde={desde}
+                hasta={hasta}
+                isAdvisor={isAdvisor}
+                meId={me?.id ?? null}
+                onSubir={() => setSubirExtracto(true)}
+                onChanged={cargarExtractos}
+              />
+            ))}
           {vista === 'diario' && <Diario calc={calc} />}
           {vista === 'mayor' && <Mayor calc={calc} />}
           {vista === 'sumas' && <Sumas calc={calc} />}
@@ -207,6 +238,19 @@ export default function Contabilidad() {
           {vista === 'inmovilizado' && <InmovilizadoVista datos={datos} hasta={hasta} />}
           {vista === 'manuales' && <Manuales datos={datos} ownerId={ownerId} editable={isAdvisor} anio={periodo.anio} onChanged={cargar} />}
         </>
+      )}
+      {subirExtracto && (
+        <SubirExtracto
+          ownerId={ownerId}
+          meId={me?.id ?? null}
+          bancosUsados={[...new Set((extractos ?? []).map((e) => e.banco))]}
+          existentes={extractos ?? []}
+          onClose={() => setSubirExtracto(false)}
+          onSaved={() => {
+            cargarExtractos()
+            setVista('bancos')
+          }}
+        />
       )}
     </>
   )

@@ -11,7 +11,7 @@ import {
   Users,
   ArrowLeft,
   IdCard,
-  Headset,
+  MessagesSquare,
   BookOpen,
   Landmark,
   LayoutGrid,
@@ -102,7 +102,7 @@ export default function Layout() {
               )
             }
           >
-            <img src="/pablo-asesor.jpg" alt="" className="size-[22px] rounded-full object-cover ring-1 ring-lima" />
+            <MessagesSquare className="size-[18px]" />
             Mi asesor
           </NavLink>
           {isAdvisor && (
@@ -150,7 +150,7 @@ export default function Layout() {
           </NavLink>
           <div className="flex items-center gap-1">
             <NavLink to="/mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
-              <Headset className="size-5" />
+              <MessagesSquare className="size-5" />
             </NavLink>
             {isAdvisor && (
               <NavLink to="/asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Panel del asesor">
@@ -219,7 +219,7 @@ export default function Layout() {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   ...NAV.filter((n) => !FIJAS.includes(n.to)),
-                  { to: '/mi-asesor', label: 'Mi asesor', icon: Headset },
+                  { to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare },
                   ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
                   { to: '/perfil', label: viewingOther ? 'Perfil cliente' : 'Mi perfil', icon: UserRound },
                 ].map(({ to, label, icon: Icon }) => (

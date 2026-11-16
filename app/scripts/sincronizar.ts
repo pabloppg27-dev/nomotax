@@ -7,6 +7,7 @@
  *       <Cliente> - Asientos A3 / Sage / Holded  (para importar)
  *   02 Contabilidad/<año>/Facturas recibidas/Área de clientes/   (gastos subidos)
  *   02 Contabilidad/<año>/Facturas emitidas/Área de clientes/    (facturas subidas)
+ *   02 Contabilidad/<año>/Bancos/Área de clientes/               (extractos bancarios)
  *   06 Laboral/<año>/Nóminas/Área de clientes/                   (nóminas publicadas)
  *   03 Impuestos/<año>/Área de clientes/                          (impuestos presentados)
  *   07 Notificaciones y requerimientos/Área de clientes/          (archivo)
@@ -30,6 +31,7 @@ import { entre, generarAsientos, type AsientoManual, type DatosContables, type I
 import { asientosA3, asientosHolded, asientosSage, libroExcel } from '../src/lib/exportar.ts'
 import type { Expense, Invoice, Nomina, Profile } from '../src/lib/types.ts'
 import type { DocArchivo, Impuesto } from '../src/lib/impuestos.ts'
+import { nombrePeriodo, type ExtractoBancario } from '../src/lib/bancos.ts'
 
 const URL_SB = process.env.SUPABASE_URL
 const CLAVE = process.env.SUPABASE_SECRET_KEY
@@ -172,10 +174,16 @@ async function sincronizarCliente(p: Profile) {
   }
 
   // Impuestos presentados y archivo (notificaciones, certificados…)
-  const [imp, arc] = await Promise.all([
+  const [imp, arc, ext] = await Promise.all([
     sb.from('impuestos').select('*').eq('owner_id', p.id),
     sb.from('archivo').select('*').eq('owner_id', p.id),
+    sb.from('extractos_bancarios').select('*').eq('owner_id', p.id),
   ])
+  // Extractos bancarios (si la tabla aún no existe, ext.data es null y no hace nada)
+  for (const e of (ext.data as ExtractoBancario[]) ?? []) {
+    const dir = join(base, '02 Contabilidad', e.desde.slice(0, 4), 'Bancos', SUB)
+    doc(dir, `${e.banco}${e.cuenta ? ` ${e.cuenta}` : ''} ${nombrePeriodo(e.desde, e.hasta).replace(/\//g, '-')}`, e.file_path)
+  }
   for (const i of (imp.data as Impuesto[]) ?? []) {
     if (!i.file_path) continue
     doc(join(base, '03 Impuestos', String(i.anio), SUB), `Modelo ${i.modelo} ${i.periodo === '0A' ? 'anual' : i.periodo} ${i.anio}`, i.file_path)
@@ -254,7 +262,7 @@ if (vigilar) {
     )
   }
   const canal = sb.channel('copia-carpetas')
-  for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados', 'trabajadores', 'profiles', 'impuestos', 'archivo'])
+  for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados', 'trabajadores', 'profiles', 'impuestos', 'archivo', 'extractos_bancarios'])
     canal.on('postgres_changes', { event: '*', schema: 'public', table: tabla }, (cambio) => {
       const fila = (cambio.new && Object.keys(cambio.new).length ? cambio.new : cambio.old) as { owner_id?: string; id?: string }
       programar(tabla === 'profiles' ? fila.id : fila.owner_id)

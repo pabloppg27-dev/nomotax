@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { CalendarClock, CheckCircle2, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
+import { CalendarClock, CheckCircle2, MessagesSquare, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { ASESOR, cargarHuecos, enlaceEmail, enlaceWhatsapp, enviarAlMotor, mensajeError } from '../lib/asesor'
@@ -28,15 +28,17 @@ export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean
   const mail = enlaceEmail(`Consulta de ${owner?.nombre ?? 'un cliente'}`, `Hola ${ASESOR.corto},\n\n`)
   return (
     <div className={cx('flex items-center gap-4', compacta ? '' : 'flex-col text-center sm:flex-row sm:text-left')}>
-      <img
-        src={ASESOR.foto}
-        alt={ASESOR.nombre}
-        className={cx('shrink-0 rounded-2xl object-cover ring-2 ring-lima', compacta ? 'size-16' : 'size-28 sm:size-32')}
-      />
+      {/* La foto solo se ve dentro de «Mi asesor»; fuera, un icono */}
+      {compacta ? (
+        <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-lima">
+          <MessagesSquare className="size-7" />
+        </span>
+      ) : (
+        <img src={ASESOR.foto} alt={ASESOR.nombre} className="size-28 shrink-0 rounded-2xl object-cover ring-2 ring-lima sm:size-32" />
+      )}
       <div className="min-w-0 flex-1">
-        <p className={cx('uppercase tracking-[0.12em] text-muted', compacta ? 'text-[11px]' : 'text-xs')}>Tu asesor</p>
+        {compacta && <p className="text-[11px] uppercase tracking-[0.12em] text-muted">Mi asesor</p>}
         <p className={cx('font-semibold tracking-tight', compacta ? 'text-[17px]' : 'text-2xl')}>{ASESOR.nombre}</p>
-        <p className="text-sm text-muted">{ASESOR.cargo}</p>
         <a href={mail} className="mt-0.5 inline-block text-sm font-medium text-ink underline-offset-2 hover:underline">
           {ASESOR.email}
         </a>
@@ -94,16 +96,10 @@ export default function MiAsesor() {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">Mi asesor</h1>
-        <p className="mt-1 text-[15px] text-muted">Habla con tu asesor cuando lo necesites.</p>
-      </div>
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-[28px]">Mi asesor</h1>
 
       <Card className="relative mb-6 overflow-hidden p-6 sm:p-8">
         <AsesorCard onAgendar={() => agendaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-        <p className="mx-auto mt-5 max-w-xl text-center text-[15px] text-ink/75 sm:mx-0 sm:text-left">
-          Escríbeme, llámame o reserva una llamada.
-        </p>
       </Card>
 
       {proximas.length > 0 && (

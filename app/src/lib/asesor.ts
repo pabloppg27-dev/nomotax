@@ -1,9 +1,8 @@
 /** Datos de tu asesor y conexión con el motor de reservas de nomotax.io (Google Apps Script) */
 
 export const ASESOR = {
-  nombre: 'Pablo Pérez del Pulgar Gil',
+  nombre: 'Pablo Pérez del Pulgar',
   corto: 'Pablo',
-  cargo: 'Tu asesor fiscal · NomoTax',
   foto: '/pablo-asesor.jpg',
   whatsapp: '34642757633',
   whatsappVisible: '+34 642 75 76 33',
