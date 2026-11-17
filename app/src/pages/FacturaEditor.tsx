@@ -6,6 +6,7 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { fecha as fmtFecha, fechaLarga, hoyISO } from '../lib/format'
 import { calcularTotales, lineaVacia } from '../lib/totals'
 import { CAUSAS_RECTIFICACION, analizarFacturas } from '../lib/estados'
+import { crearBorradorRectificativa } from '../lib/rectificativa'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
 import type { CausaRectificacion, ClienteSnapshot, Emisor, Invoice, Linea } from '../lib/types'
 import ContactPicker from '../components/ContactPicker'
@@ -196,45 +197,10 @@ export default function FacturaEditor() {
     }
   }
 
-  /** Un clic: borrador de rectificativa que anula la factura entera (importes en negativo) */
   const crearRectificativa = async () => {
     if (!factura) return
-    const ok = await confirmar({
-      titulo: 'Crear factura rectificativa',
-      texto:
-        `Se creará un borrador en la serie ${owner.serie_rectificativa || 'R'} que anula la factura ${factura.numero} (los mismos conceptos en negativo). ` +
-        'Si solo hay que corregir una parte, deja en el borrador únicamente la diferencia antes de emitirla.' +
-        (rectificadaPor.length ? ` Ojo: esta factura ya tiene ${rectificadaPor.length} rectificativa${rectificadaPor.length > 1 ? 's' : ''}.` : ''),
-      accion: 'Crear rectificativa',
-    })
-    if (!ok) return
-    const negativas = (factura.lineas ?? []).map((l) => ({ ...l, precio: -Number(l.precio) }))
-    const t = calcularTotales(negativas, Number(factura.irpf_pct))
-    const { data, error } = await supabase
-      .from('invoices')
-      .insert({
-        owner_id: ownerId,
-        tipo: 'rectificativa',
-        serie: owner.serie_rectificativa || 'R',
-        rectifica_id: factura.id,
-        rectifica_numero: factura.numero,
-        rectifica_fecha: factura.fecha,
-        causa_rectificacion: 'R1',
-        contact_id: factura.contact_id,
-        cliente: factura.cliente,
-        fecha: hoyISO(),
-        lineas: negativas,
-        irpf_pct: factura.irpf_pct,
-        base: t.base,
-        cuota_iva: t.cuota_iva,
-        cuota_irpf: t.cuota_irpf,
-        total: t.total,
-      })
-      .select()
-      .single()
-    if (error) return notify(await errorMessage(error), 'error')
-    notify('Borrador de rectificativa creado: revisa el motivo y emítela')
-    navigate(`/facturas/${data.id}`)
+    const nueva = await crearBorradorRectificativa(factura, owner, rectificadaPor.length)
+    if (nueva) navigate(`/facturas/${nueva}`)
   }
 
   const cambiarEstado = async (estado: 'emitida' | 'cobrada', cobro: string | null = null) => {

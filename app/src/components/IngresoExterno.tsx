@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Check, Sparkles, Trash2 } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Check, FileMinus, Sparkles, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, supabase } from '../lib/supabase'
 import { eur, limpiarNif, round2 } from '../lib/format'
+import { crearBorradorRectificativa } from '../lib/rectificativa'
 import type { Invoice } from '../lib/types'
 import DocPreview from './DocPreview'
 import NumInput from './NumInput'
@@ -18,11 +20,24 @@ export default function IngresoExterno({
   onClose: () => void
   onChanged: () => void
 }) {
-  const { isAdvisor } = useAuth()
+  const { isAdvisor, owner, rol } = useAuth()
+  const navigate = useNavigate()
   const [f, setF] = useState<Invoice | null>(null)
   const [guardando, setGuardando] = useState(false)
+  // Rectificativas que ya corrigen esta factura
+  const [rectificadaPor, setRectificadaPor] = useState<Pick<Invoice, 'id' | 'numero' | 'estado'>[]>([])
 
   useEffect(() => setF(factura ? { ...factura } : null), [factura])
+  useEffect(() => {
+    setRectificadaPor([])
+    if (!factura) return
+    supabase
+      .from('invoices')
+      .select('id, numero, estado')
+      .eq('rectifica_id', factura.id)
+      .order('created_at')
+      .then(({ data }) => setRectificadaPor((data as Pick<Invoice, 'id' | 'numero' | 'estado'>[]) ?? []))
+  }, [factura])
   if (!factura || !f) return null
 
   const set = <K extends keyof Invoice>(k: K, v: Invoice[K]) => setF({ ...f, [k]: v })
@@ -59,6 +74,18 @@ export default function IngresoExterno({
     onClose()
   }
 
+  // El comercial solo prepara borradores de facturas propias; la rectificativa la hace el titular o administración
+  const puedeRectificar = factura.tipo !== 'rectificativa' && rol !== 'comercial' && Boolean(owner)
+  const rectificar = async () => {
+    if (!owner) return
+    // Se rectifica la factura tal como está guardada, no con los cambios sin guardar del formulario
+    const nueva = await crearBorradorRectificativa(factura, owner, rectificadaPor.length)
+    if (!nueva) return
+    onChanged()
+    onClose()
+    navigate(`/facturas/${nueva}`)
+  }
+
   const borrar = async () => {
     const ok = await confirmar({
       titulo: 'Eliminar factura subida',
@@ -83,9 +110,13 @@ export default function IngresoExterno({
       title="Factura emitida (subida)"
       footer={
         <>
-          <Button variant="ghost" className="mr-auto text-rojo" icon={<Trash2 className="size-4" />} onClick={borrar}>
-            Eliminar
-          </Button>
+          {rectificadaPor.length === 0 ? (
+            <Button variant="ghost" className="mr-auto text-rojo" icon={<Trash2 className="size-4" />} onClick={borrar}>
+              Eliminar
+            </Button>
+          ) : (
+            <span className="mr-auto" />
+          )}
           <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
@@ -147,6 +178,28 @@ export default function IngresoExterno({
               <option value="cobrada">Cobrada</option>
             </Select>
           </Field>
+          {rectificadaPor.length > 0 && (
+            <p className="rounded-xl bg-paper px-3 py-2.5 text-sm">
+              Esta factura está rectificada por{' '}
+              {rectificadaPor.map((r, i) => (
+                <span key={r.id}>
+                  {i > 0 && ', '}
+                  <Link to={`/facturas/${r.id}`} className="font-medium underline">
+                    {r.numero ?? 'un borrador'}
+                  </Link>
+                </span>
+              ))}
+              .
+            </p>
+          )}
+          {puedeRectificar && (
+            <div className="rounded-xl border border-line p-4">
+              <p className="text-sm text-muted">¿Hay que corregirla o anularla? Haz una rectificativa, aunque ya esté cobrada.</p>
+              <Button variant="secondary" className="mt-3" icon={<FileMinus className="size-4" />} onClick={rectificar}>
+                Crear factura rectificativa
+              </Button>
+            </div>
+          )}
           {isAdvisor && (
             <label className="flex items-center gap-2 text-sm">
               <input
