@@ -13,6 +13,8 @@
     "sincronizar:quitar": "zsh scripts/instalar-copia.sh --quitar"
   },
   "dependencies": {
+    "@stripe/connect-js": "^3.5.0",
+    "@stripe/react-connect-js": "^3.5.1",
     "@supabase/supabase-js": "^2.119.0",
     "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",

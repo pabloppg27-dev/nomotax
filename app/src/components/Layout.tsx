@@ -20,6 +20,7 @@ import {
   Wallet,
   Building2,
   Settings,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
@@ -28,6 +29,7 @@ import { useConfig } from './Configuracion'
 import type { Permiso, Profile, RolEnCuenta } from '../lib/types'
 import { cx } from './ui'
 import { PlanLateral } from './Planes'
+import { TARJETAS_ACTIVAS, TARJETAS_PARA_CLIENTES } from '../lib/config'
 
 interface ItemNav {
   to: string
@@ -56,6 +58,7 @@ function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[
     { to: '/clientes', label: 'Clientes', icon: Users, si: puede('ventas') },
     { to: '/contabilidad', label: 'Contabilidad', icon: BookOpen, si: puede('contabilidad') },
     { to: '/impuestos', label: 'Impuestos', icon: Landmark, si: puede('impuestos') },
+    { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, si: TARJETAS_ACTIVAS && puede('empresa') && (TARJETAS_PARA_CLIENTES || rol === 'asesor') },
     { to: puede('laboral') ? '/laboral' : '/laboral/nominas', label: 'Laboral', icon: IdCard, si: puede('laboral') || puede('nominas') },
   ]
   return items.filter((i) => i.si)

@@ -22,11 +22,13 @@ import Empresa from './pages/laboral/Empresa'
 import MiAsesor from './pages/MiAsesor'
 import Contabilidad from './pages/Contabilidad'
 import Impuestos from './pages/Impuestos'
+import Tarjetas from './pages/Tarjetas'
 import VistaSocio from './pages/VistaSocio'
 import MiEspacio from './pages/MiEspacio'
 import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
 import type { Permiso } from './lib/types'
+import { TARJETAS_ACTIVAS, TARJETAS_PARA_CLIENTES } from './lib/config'
 
 function Protegido({ children }: { children: ReactNode }) {
   const { session, loading, me, sinAcceso } = useAuth()
@@ -74,6 +76,12 @@ function SinAcceso() {
       </div>
     </div>
   )
+}
+
+/** Tarjetas: con claves de prueba en la web publicada, solo el asesor (ver TARJETAS_PARA_CLIENTES) */
+function SoloTarjetas({ children }: { children: ReactNode }) {
+  const { isAdvisor } = useAuth()
+  return TARJETAS_PARA_CLIENTES || isAdvisor ? <>{children}</> : <Navigate to="/" replace />
 }
 
 function SoloAsesor({ children }: { children: ReactNode }) {
@@ -141,6 +149,7 @@ export default function App() {
             <Route path="clientes" element={<Requiere permiso="ventas"><Clientes /></Requiere>} />
             <Route path="contabilidad" element={<Requiere permiso="contabilidad"><Contabilidad /></Requiere>} />
             <Route path="impuestos" element={<Requiere permiso="impuestos"><Impuestos /></Requiere>} />
+            {TARJETAS_ACTIVAS && <Route path="tarjetas" element={<Requiere permiso="empresa"><SoloTarjetas><Tarjetas /></SoloTarjetas></Requiere>} />}
             <Route path="laboral" element={<Requiere permiso="laboral"><Trabajadores /></Requiere>} />
             <Route path="laboral/alta" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
             <Route path="laboral/alta/:id" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
