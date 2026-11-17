@@ -24,6 +24,7 @@ import Contabilidad from './pages/Contabilidad'
 import Impuestos from './pages/Impuestos'
 import Tarjetas from './pages/Tarjetas'
 import TarjetasProximamente from './pages/TarjetasProximamente'
+import MiTarjeta from './pages/MiTarjeta'
 import VistaSocio from './pages/VistaSocio'
 import MiEspacio from './pages/MiEspacio'
 import AbrirConfiguracion from './pages/Configuracion'
@@ -151,7 +152,8 @@ export default function App() {
             <Route path="clientes" element={<Requiere permiso="ventas"><Clientes /></Requiere>} />
             <Route path="contabilidad" element={<Requiere permiso="contabilidad"><Contabilidad /></Requiere>} />
             <Route path="impuestos" element={<Requiere permiso="impuestos"><Impuestos /></Requiere>} />
-            {TARJETAS_ACTIVAS && <Route path="tarjetas" element={<Requiere permiso="empresa"><SoloTarjetas><Tarjetas /></SoloTarjetas></Requiere>} />}
+            {TARJETAS_ACTIVAS && <Route path="tarjetas" element={<Requiere permiso="tarjetas"><SoloTarjetas><Tarjetas /></SoloTarjetas></Requiere>} />}
+            {TARJETAS_ACTIVAS && <Route path="mi-tarjeta" element={<MiTarjeta />} />}
             <Route path="laboral" element={<Requiere permiso="laboral"><Trabajadores /></Requiere>} />
             <Route path="laboral/alta" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
             <Route path="laboral/alta/:id" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />

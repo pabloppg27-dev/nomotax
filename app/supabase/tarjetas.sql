@@ -62,8 +62,24 @@ create table if not exists public.tarjetas_movimientos (
 create index if not exists tarjetas_mov_owner_idx on public.tarjetas_movimientos(owner_id, fecha desc);
 
 -- ---------------------------------------------------------------------
--- 4. Quién puede verlo: titular, asesor y los administradores con el módulo «empresa»
---    (es dinero: por defecto un admin NO lo ve hasta que se le activa «Datos de la empresa y plan»).
+-- 3b. Tarjeta asignada a un usuario de la empresa (para que la vea en «Mi tarjeta»)
+-- ---------------------------------------------------------------------
+alter table public.tarjetas add column if not exists user_id uuid references public.profiles(id) on delete set null;
+create index if not exists tarjetas_user_idx on public.tarjetas(user_id) where user_id is not null;
+
+-- Nuevo permiso de administración «tarjetas» (crear tarjetas, límites y asignarlas). Si usuarios.sql está
+-- instalado, se añade a la lista de módulos que se pueden activar a un admin.
+create or replace function public.modulos_admin()
+returns text[]
+language sql immutable
+as $$
+  select array['ventas', 'gastos', 'bancos', 'contabilidad', 'impuestos', 'laboral', 'nominas', 'usuarios', 'empresa', 'tarjetas'];
+$$;
+
+-- ---------------------------------------------------------------------
+-- 4. Quién puede verlo:
+--    · gestionar (todas las tarjetas, saldo, cuenta): titular, asesor y admins con el módulo «tarjetas»
+--    · cada persona ve además SUS tarjetas y sus movimientos
 -- ---------------------------------------------------------------------
 alter table public.stripe_cuentas enable row level security;
 alter table public.tarjetas enable row level security;
@@ -77,11 +93,14 @@ do $$
 begin
   if exists (select 1 from pg_proc where proname = 'puede' and pronamespace = 'public'::regnamespace) then
     create policy "stripe_cuentas: ver" on public.stripe_cuentas
-      for select using (public.puede(owner_id, 'empresa'));
+      for select using (public.puede(owner_id, 'tarjetas'));
     create policy "tarjetas: ver" on public.tarjetas
-      for select using (public.puede(owner_id, 'empresa'));
+      for select using (public.puede(owner_id, 'tarjetas') or user_id = auth.uid());
     create policy "tarjetas_mov: ver" on public.tarjetas_movimientos
-      for select using (public.puede(owner_id, 'empresa'));
+      for select using (
+        public.puede(owner_id, 'tarjetas')
+        or exists (select 1 from public.tarjetas t where t.id = tarjeta_id and t.user_id = auth.uid())
+      );
   else
     create policy "stripe_cuentas: ver" on public.stripe_cuentas
       for select using (
@@ -90,12 +109,13 @@ begin
       );
     create policy "tarjetas: ver" on public.tarjetas
       for select using (
-        owner_id = auth.uid()
+        owner_id = auth.uid() or user_id = auth.uid()
         or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'advisor')
       );
     create policy "tarjetas_mov: ver" on public.tarjetas_movimientos
       for select using (
         owner_id = auth.uid()
+        or exists (select 1 from public.tarjetas t where t.id = tarjeta_id and t.user_id = auth.uid())
         or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'advisor')
       );
   end if;

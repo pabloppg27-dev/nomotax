@@ -5,7 +5,7 @@
  *  · demo: lo simula todo en el navegador (localStorage) para probar el flujo sin Stripe ni claves.
  * La pantalla usa solo las funciones de aquí, así que no sabe en qué modo está.
  */
-import { invocar } from './supabase'
+import { invocar, supabase } from './supabase'
 import { TARJETAS_MODO } from './config'
 
 export type EstadoCuenta = 'pendiente' | 'activa' | 'restringida'
@@ -37,12 +37,24 @@ export interface Tarjeta {
   trabajador_id?: string | null
   /** Nombre de quien la usa (el del trabajador u otro); null = la empresa */
   asignada_a?: string | null
+  /** Usuario de la empresa (Usuarios) que la tiene: la ve en «Mi tarjeta» */
+  user_id?: string | null
   created_at: string
+}
+
+/** Alguien a quien se le puede dar una tarjeta: un usuario de la empresa o un trabajador de Laboral */
+export interface Persona {
+  tipo: 'usuario' | 'trabajador'
+  id: string
+  nombre: string
+  /** Para los usuarios: su rol (admin, comercial…) */
+  detalle?: string
 }
 
 /** Lo que se puede configurar de una tarjeta: nombre, persona y límites */
 export interface ConfigTarjeta {
   alias: string
+  user_id: string | null
   trabajador_id: string | null
   asignada_a: string | null
   limite_mensual: number | null
@@ -194,6 +206,7 @@ export async function crearTarjeta(ownerId: string, datos: ConfigTarjeta & { tip
     limite_mensual: datos.limite_mensual,
     limite_compra: datos.limite_compra,
     trabajador_id: datos.trabajador_id,
+    user_id: datos.user_id,
     asignada_a: datos.asignada_a,
     created_at: hoy.toISOString(),
   }
@@ -293,4 +306,50 @@ export function reiniciarDemo(ownerId: string) {
 export function gastadoEsteMes(tarjetaId: string, movimientos: Movimiento[]): number {
   const mes = new Date().toISOString().slice(0, 7)
   return movimientos.filter((m) => m.tarjeta_id === tarjetaId && m.estado === 'aprobada' && m.importe > 0 && m.fecha.slice(0, 7) === mes).reduce((s, m) => s + m.importe, 0)
+}
+
+/* --------------------------------------------------- personas y «Mi tarjeta» */
+
+const ROL: Record<string, string> = { admin: 'Administración', socio: 'Socio', comercial: 'Comercial', empleado: 'Empleado' }
+
+/** Usuarios activos de la empresa y trabajadores de alta (sin repetir a quien es las dos cosas) */
+export async function cargarPersonas(ownerId: string): Promise<Persona[]> {
+  const [m, t] = await Promise.all([
+    supabase.from('miembros').select('user_id, nombre, email, rol, trabajador_id').eq('cuenta_id', ownerId).eq('activo', true),
+    supabase.from('trabajadores').select('id, nombre, estado').eq('owner_id', ownerId).neq('estado', 'baja').order('nombre'),
+  ])
+  const miembros = (m.data as { user_id: string; nombre: string | null; email: string; rol: string; trabajador_id: string | null }[] | null) ?? []
+  const vinculados = new Set(miembros.map((x) => x.trabajador_id).filter(Boolean))
+  const usuarios: Persona[] = miembros
+    .map((x) => ({ tipo: 'usuario' as const, id: x.user_id, nombre: x.nombre || x.email, detalle: ROL[x.rol] ?? x.rol }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre))
+  const trabajadores: Persona[] = ((t.data as { id: string; nombre: string | null }[] | null) ?? [])
+    .filter((x) => x.nombre && !vinculados.has(x.id))
+    .map((x) => ({ tipo: 'trabajador' as const, id: x.id, nombre: x.nombre! }))
+  return [...usuarios, ...trabajadores]
+}
+
+/** Las tarjetas que tiene una persona en esta empresa (para «Mi tarjeta») y sus movimientos */
+export async function misTarjetas(ownerId: string, userId: string): Promise<{ tarjetas: Tarjeta[]; movimientos: Movimiento[] }> {
+  if (esDemo) {
+    const d = leerDemo(ownerId)
+    const tarjetas = d.tarjetas.filter((t) => t.user_id === userId && t.estado !== 'cancelada')
+    const ids = new Set(tarjetas.map((t) => t.id))
+    return { tarjetas, movimientos: d.movimientos.filter((m) => m.tarjeta_id && ids.has(m.tarjeta_id)) }
+  }
+  const { data } = await supabase.from('tarjetas').select('*').eq('owner_id', ownerId).eq('user_id', userId).neq('estado', 'cancelada').order('created_at')
+  const tarjetas = (data as Tarjeta[] | null) ?? []
+  if (!tarjetas.length) return { tarjetas, movimientos: [] }
+  const { data: movs } = await supabase
+    .from('tarjetas_movimientos')
+    .select('*')
+    .in('tarjeta_id', tarjetas.map((t) => t.id))
+    .order('fecha', { ascending: false })
+    .limit(100)
+  return { tarjetas, movimientos: (movs as Movimiento[] | null) ?? [] }
+}
+
+/** Las tarjetas de una persona vistas por quien gestiona (pantalla de Usuarios) */
+export async function tarjetasDeUsuario(ownerId: string, userId: string): Promise<Tarjeta[]> {
+  return (await misTarjetas(ownerId, userId)).tarjetas
 }

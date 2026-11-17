@@ -30,6 +30,7 @@ import type { Permiso, Profile, RolEnCuenta } from '../lib/types'
 import { cx } from './ui'
 import { PlanLateral } from './Planes'
 import { TARJETAS_ACTIVAS } from '../lib/config'
+import { misTarjetas } from '../lib/tarjetas'
 
 interface ItemNav {
   to: string
@@ -58,7 +59,7 @@ function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[
     { to: '/clientes', label: 'Clientes', icon: Users, si: puede('ventas') },
     { to: '/contabilidad', label: 'Contabilidad', icon: BookOpen, si: puede('contabilidad') },
     { to: '/impuestos', label: 'Impuestos', icon: Landmark, si: puede('impuestos') },
-    { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, si: TARJETAS_ACTIVAS && puede('empresa') },
+    { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard, si: TARJETAS_ACTIVAS && puede('tarjetas') },
     { to: puede('laboral') ? '/laboral' : '/laboral/nominas', label: 'Laboral', icon: IdCard, si: puede('laboral') || puede('nominas') },
   ]
   return items.filter((i) => i.si)
@@ -130,7 +131,16 @@ export default function Layout() {
   const location = useLocation()
   const [mas, setMas] = useState(false)
   useEffect(() => setMas(false), [location.pathname])
-  const NAV = menu(rol, puede)
+  // «Mi tarjeta»: solo si la empresa le ha dado alguna tarjeta a esta persona
+  const { ownerId } = useAuth()
+  const [conTarjeta, setConTarjeta] = useState(false)
+  useEffect(() => {
+    if (!TARJETAS_ACTIVAS || !ownerId || !me) return setConTarjeta(false)
+    misTarjetas(ownerId, me.id)
+      .then((r) => setConTarjeta(r.tarjetas.length > 0))
+      .catch(() => setConTarjeta(false))
+  }, [ownerId, me, location.pathname])
+  const NAV = [...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
   // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
   const ESP = rol !== 'empleado' && miembro?.trabajador_id ? ESPACIO : []
   /** En el móvil: 4 fijas abajo y el resto en «Más» */

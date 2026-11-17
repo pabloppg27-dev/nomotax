@@ -52,7 +52,7 @@ create or replace function public.modulos_admin()
 returns text[]
 language sql immutable
 as $$
-  select array['ventas', 'gastos', 'bancos', 'contabilidad', 'impuestos', 'laboral', 'nominas', 'usuarios', 'empresa'];
+  select array['ventas', 'gastos', 'bancos', 'contabilidad', 'impuestos', 'laboral', 'nominas', 'usuarios', 'empresa', 'tarjetas'];
 $$;
 
 -- Ordena los datos del miembro: permisos limpios, la ficha de trabajador de la misma empresa,

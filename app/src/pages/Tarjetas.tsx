@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useSearchParams } from 'react-router-dom'
 import { ArrowDownLeft, Banknote, CreditCard, Eye, EyeOff, FlaskConical, Pause, Play, Plus, RotateCcw, ShieldCheck, ShoppingBag, SlidersHorizontal, UserRound, XCircle } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { errorMessage, supabase } from '../lib/supabase'
+import { errorMessage } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
 import {
   activar,
@@ -10,6 +10,7 @@ import {
   cambiarEstadoTarjeta,
   configurarTarjeta,
   cargarEstado,
+  cargarPersonas,
   comprarDemo,
   completarAltaDemo,
   crearTarjeta,
@@ -21,7 +22,7 @@ import {
   ingresarDemo,
   reiniciarDemo,
   STRIPE_PK,
-  type ConfigTarjeta,
+  type Persona,
   type DatosIngreso,
   type EstadoTarjetas,
   type Movimiento,
@@ -29,15 +30,14 @@ import {
 } from '../lib/tarjetas'
 import NumInput from '../components/NumInput'
 import TarjetaVisual from '../components/TarjetaVisual'
-import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, confirmar, cx, notify } from '../components/ui'
+import { ConfigurarTarjeta, NuevaTarjeta } from '../components/FormTarjeta'
+import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, confirmar, cx, notify } from '../components/ui'
 
 const AltaIntegrada = lazy(() => import('../components/AltaIntegrada'))
 
 /** El alta va dentro de la app si hay clave publicable de Stripe; si no, en una página de Stripe */
 const ALTA_INTEGRADA = Boolean(STRIPE_PK)
 
-/** Trabajador de la empresa (ficha de Laboral) al que se le puede dar una tarjeta */
-type Persona = { id: string; nombre: string }
 
 export default function Tarjetas() {
   const { ownerId, owner } = useAuth()
@@ -48,7 +48,7 @@ export default function Tarjetas() {
   const [nueva, setNueva] = useState(false)
   const [ingreso, setIngreso] = useState(false)
   const [configDe, setConfigDe] = useState<Tarjeta | null>(null)
-  const [trabajadores, setTrabajadores] = useState<Persona[]>([])
+  const [personas, setPersonas] = useState<Persona[]>([])
   const [compraDe, setCompraDe] = useState<Tarjeta | null>(null)
 
   const nombreEmpresa = owner?.nombre_comercial || owner?.nombre || owner?.email || 'Empresa'
@@ -67,16 +67,9 @@ export default function Tarjetas() {
     cargar()
   }, [cargar])
 
-  // Trabajadores de alta, para poder asignarles una tarjeta
+  // Usuarios y trabajadores de la empresa, para poder darles una tarjeta
   useEffect(() => {
-    if (!ownerId) return
-    supabase
-      .from('trabajadores')
-      .select('id, nombre, estado')
-      .eq('owner_id', ownerId)
-      .neq('estado', 'baja')
-      .order('nombre')
-      .then(({ data }) => setTrabajadores(((data as Persona[] | null) ?? []).filter((t) => t.nombre)))
+    if (ownerId) cargarPersonas(ownerId).then(setPersonas).catch(() => setPersonas([]))
   }, [ownerId])
 
   // Al volver de Stripe después del alta
@@ -224,7 +217,7 @@ export default function Tarjetas() {
       {nueva && (
         <NuevaTarjeta
           titular={nombreEmpresa}
-          trabajadores={trabajadores}
+          personas={personas}
           onClose={() => setNueva(false)}
           onCrear={async (d) => {
             await crearTarjeta(ownerId, { ...d, titular: nombreEmpresa })
@@ -239,7 +232,7 @@ export default function Tarjetas() {
         <ConfigurarTarjeta
           t={configDe}
           titular={nombreEmpresa}
-          trabajadores={trabajadores}
+          personas={personas}
           onClose={() => setConfigDe(null)}
           onGuardar={async (c) => {
             await configurarTarjeta(ownerId, configDe.id, c, nombreEmpresa)
@@ -533,188 +526,6 @@ function Movimientos({ movimientos, tarjetas }: { movimientos: Movimiento[]; tar
 }
 
 /* ----------------------------------------------------------- Modales */
-
-/** Para quién es la tarjeta y sus límites: lo comparten «Nueva tarjeta» y «Configurar» */
-function CamposTarjeta({ c, setC, trabajadores }: { c: ConfigTarjeta; setC: (c: ConfigTarjeta) => void; trabajadores: Persona[] }) {
-  // «otra» = una persona que no tiene ficha de trabajador (se escribe el nombre)
-  const [otra, setOtra] = useState(Boolean(c.asignada_a && !c.trabajador_id))
-  const valor = c.trabajador_id ?? (otra ? '__otra' : '')
-  return (
-    <>
-      <Field label="Nombre de la tarjeta" hint="Para distinguirla: «Publicidad», «Viajes», «Software»…">
-        <Input value={c.alias} maxLength={60} onChange={(e) => setC({ ...c, alias: e.target.value })} placeholder="Publicidad" />
-      </Field>
-      <Field label="¿Quién la usa?" hint={trabajadores.length ? 'Su nombre sale en la tarjeta y sus compras quedan a su nombre.' : 'Cuando des de alta trabajadores en Laboral, podrás elegirlos aquí.'}>
-        <Select
-          value={valor}
-          onChange={(e) => {
-            const v = e.target.value
-            if (v === '') {
-              setOtra(false)
-              setC({ ...c, trabajador_id: null, asignada_a: null })
-            } else if (v === '__otra') {
-              setOtra(true)
-              setC({ ...c, trabajador_id: null, asignada_a: '' })
-            } else {
-              setOtra(false)
-              setC({ ...c, trabajador_id: v, asignada_a: trabajadores.find((t) => t.id === v)?.nombre ?? null })
-            }
-          }}
-        >
-          <option value="">La empresa (sin asignar)</option>
-          {trabajadores.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.nombre}
-            </option>
-          ))}
-          <option value="__otra">Otra persona…</option>
-        </Select>
-      </Field>
-      {otra && (
-        <Field label="Nombre de la persona">
-          <Input value={c.asignada_a ?? ''} maxLength={26} onChange={(e) => setC({ ...c, asignada_a: e.target.value })} placeholder="Nombre y apellido" />
-        </Field>
-      )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Límite al mes (€)" hint="Vacío = sin límite.">
-          <NumInput value={c.limite_mensual ?? 0} onValue={(n) => setC({ ...c, limite_mensual: n > 0 ? n : null })} />
-        </Field>
-        <Field label="Máximo por compra (€)" hint="Vacío = sin máximo.">
-          <NumInput value={c.limite_compra ?? 0} onValue={(n) => setC({ ...c, limite_compra: n > 0 ? n : null })} />
-        </Field>
-      </div>
-    </>
-  )
-}
-
-/** Comprueba lo básico antes de mandar la tarjeta (nombre y, si es «otra persona», su nombre) */
-function validar(c: ConfigTarjeta): string | null {
-  if (!c.alias.trim()) return 'Ponle un nombre a la tarjeta'
-  if (c.asignada_a !== null && !c.trabajador_id && !c.asignada_a.trim()) return 'Escribe el nombre de la persona'
-  return null
-}
-
-const limpia = (c: ConfigTarjeta): ConfigTarjeta => ({ ...c, alias: c.alias.trim(), asignada_a: c.asignada_a?.trim() || null })
-
-function NuevaTarjeta({
-  titular,
-  trabajadores,
-  onClose,
-  onCrear,
-}: {
-  titular: string
-  trabajadores: Persona[]
-  onClose: () => void
-  onCrear: (d: ConfigTarjeta & { tipo: 'virtual' | 'fisica' }) => Promise<void>
-}) {
-  const [c, setC] = useState<ConfigTarjeta>({ alias: '', trabajador_id: null, asignada_a: null, limite_mensual: null, limite_compra: null })
-  const [tipo, setTipo] = useState<'virtual' | 'fisica'>('virtual')
-  const [trabajando, setTrabajando] = useState(false)
-
-  async function crear() {
-    const fallo = validar(c)
-    if (fallo) return notify(fallo, 'error')
-    setTrabajando(true)
-    try {
-      await onCrear({ ...limpia(c), tipo })
-    } catch (e) {
-      notify(await errorMessage(e), 'error')
-      setTrabajando(false)
-    }
-  }
-
-  return (
-    <Modal
-      open
-      onClose={onClose}
-      title="Nueva tarjeta"
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button loading={trabajando} onClick={crear}>
-            Crear tarjeta
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <div className="grid place-items-center">
-          <TarjetaVisual titular={c.asignada_a || titular} alias={c.alias} ultimos4="0000" exp_mes={null} exp_anio={null} tipo={tipo} />
-        </div>
-        <CamposTarjeta c={c} setC={setC} trabajadores={trabajadores} />
-        <Field label="Tipo" hint={tipo === 'fisica' ? 'La física llega por correo en unos días a la dirección de tu empresa.' : 'La virtual la tienes al instante.'}>
-          <Select value={tipo} onChange={(e) => setTipo(e.target.value as 'virtual' | 'fisica')}>
-            <option value="virtual">Virtual</option>
-            <option value="fisica">Física</option>
-          </Select>
-        </Field>
-      </div>
-    </Modal>
-  )
-}
-
-function ConfigurarTarjeta({
-  t,
-  titular,
-  trabajadores,
-  onClose,
-  onGuardar,
-}: {
-  t: Tarjeta
-  titular: string
-  trabajadores: Persona[]
-  onClose: () => void
-  onGuardar: (c: ConfigTarjeta) => Promise<void>
-}) {
-  const [c, setC] = useState<ConfigTarjeta>({
-    alias: t.alias,
-    trabajador_id: t.trabajador_id ?? null,
-    asignada_a: t.asignada_a ?? null,
-    limite_mensual: t.limite_mensual,
-    limite_compra: t.limite_compra ?? null,
-  })
-  const [trabajando, setTrabajando] = useState(false)
-  return (
-    <Modal
-      open
-      onClose={onClose}
-      title={`Configurar «${t.alias}»`}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            loading={trabajando}
-            onClick={async () => {
-              const fallo = validar(c)
-              if (fallo) return notify(fallo, 'error')
-              setTrabajando(true)
-              try {
-                await onGuardar(limpia(c))
-              } catch (e) {
-                notify(await errorMessage(e), 'error')
-                setTrabajando(false)
-              }
-            }}
-          >
-            Guardar
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <div className="grid place-items-center">
-          <TarjetaVisual titular={c.asignada_a || titular} alias={c.alias} ultimos4={t.ultimos4} exp_mes={t.exp_mes} exp_anio={t.exp_anio} tipo={t.tipo} estado={t.estado} />
-        </div>
-        <CamposTarjeta c={c} setC={setC} trabajadores={trabajadores} />
-        {t.tipo === 'fisica' && <p className="text-xs text-muted">En una tarjeta física ya impresa, cambiar la persona no cambia el nombre grabado: para eso, cancélala y crea una nueva.</p>}
-      </div>
-    </Modal>
-  )
-}
 
 function Ingreso({ ownerId, nombreEmpresa, onClose, onIngresado }: { ownerId: string; nombreEmpresa: string; onClose: () => void; onIngresado: () => Promise<void> }) {
   const [datos, setDatos] = useState<DatosIngreso | null>(null)

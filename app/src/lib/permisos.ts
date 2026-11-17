@@ -15,6 +15,7 @@ export const MODULOS: { id: Modulo; nombre: string; detalle: string }[] = [
   { id: 'nominas', nombre: 'Nóminas', detalle: 'Las nóminas de cada trabajador' },
   { id: 'usuarios', nombre: 'Usuarios', detalle: 'Dar acceso a otras personas y cambiar sus permisos' },
   { id: 'empresa', nombre: 'Datos de la empresa y plan', detalle: 'Datos fiscales, logo, series de facturación y plan de NomoTax' },
+  { id: 'tarjetas', nombre: 'Tarjetas', detalle: 'Crear tarjetas de empresa, ponerles límites y dárselas a las personas' },
 ]
 
 export const PERMISOS_ADMIN_DEFECTO: Record<Modulo, boolean> = {
@@ -27,6 +28,7 @@ export const PERMISOS_ADMIN_DEFECTO: Record<Modulo, boolean> = {
   nominas: true,
   usuarios: false,
   empresa: false,
+  tarjetas: false,
 }
 
 export const ROLES: { id: RolMiembro; nombre: string; detalle: string }[] = [

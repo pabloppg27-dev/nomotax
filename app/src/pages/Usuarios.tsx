@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Copy, KeyRound, Pencil, Trash2, UserPlus, UsersRound } from 'lucide-react'
+import { Copy, CreditCard, KeyRound, Pencil, Trash2, UserPlus, UsersRound } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, invocar, supabase } from '../lib/supabase'
 import { MODULOS, NOMBRE_ROL, PERMISOS_ADMIN_DEFECTO, ROLES, ajustarPermisos } from '../lib/permisos'
 import type { Miembro, Modulo, RolMiembro } from '../lib/types'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, confirmar, cx, notify } from '../components/ui'
+import TarjetasUsuario from '../components/TarjetasUsuario'
+import { useTarjetasDisponibles } from '../lib/tarjetasAcceso'
 
 type Trabajador = { id: string; nombre: string; estado: string }
 
@@ -32,7 +34,10 @@ const nuevo = (): Borrador => ({
 
 /** embebido: dentro de Configuración (sin el título grande de página) */
 export default function Usuarios({ embebido = false }: { embebido?: boolean }) {
-  const { owner, ownerId, me, isAdvisor } = useAuth()
+  const { owner, ownerId, me, isAdvisor, puede } = useAuth()
+  // Botón «Tarjeta» en cada persona: cuando las tarjetas están disponibles y quien mira puede gestionarlas
+  const conTarjetas = useTarjetasDisponibles() && puede('tarjetas')
+  const [tarjetaDe, setTarjetaDe] = useState<Miembro | null>(null)
   const [miembros, setMiembros] = useState<Miembro[] | null>(null)
   const [faltaSql, setFaltaSql] = useState(false)
   const [trabajadores, setTrabajadores] = useState<Trabajador[]>([])
@@ -167,6 +172,11 @@ export default function Usuarios({ embebido = false }: { embebido?: boolean }) {
                     <Button size="sm" variant="ghost" icon={<KeyRound className="size-4" />} onClick={() => reenviar(m)}>
                       Reenviar acceso
                     </Button>
+                    {conTarjetas && (
+                      <Button size="sm" variant="ghost" icon={<CreditCard className="size-4" />} onClick={() => setTarjetaDe(m)}>
+                        Tarjeta
+                      </Button>
+                    )}
                   </>
                 }
               />
@@ -237,6 +247,15 @@ export default function Usuarios({ embebido = false }: { embebido?: boolean }) {
             cargar()
             if (r?.password) setClave(r)
           }}
+        />
+      )}
+
+      {tarjetaDe && ownerId && (
+        <TarjetasUsuario
+          ownerId={ownerId}
+          nombreEmpresa={owner.nombre_comercial || owner.nombre || owner.email || 'Empresa'}
+          usuario={{ user_id: tarjetaDe.user_id, nombre: tarjetaDe.nombre || tarjetaDe.email }}
+          onClose={() => setTarjetaDe(null)}
         />
       )}
 

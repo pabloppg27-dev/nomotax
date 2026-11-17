@@ -1,14 +1,15 @@
 // Tarjetas de empresa con Stripe (Connect + Issuing). Una sola función para todo el apartado «Tarjetas».
-// Entrada (POST JSON): { accion, owner_id, ... }. Quien llama tiene que poder gestionar los «Datos de la empresa»
-// de esa cuenta (titular, asesor o admin con ese módulo; ver puede() en supabase/usuarios.sql).
+// Entrada (POST JSON): { accion, owner_id, ... }. Quien llama tiene que poder gestionar las tarjetas
+// de esa cuenta: titular, asesor o admin con el módulo «tarjetas» (ver puede() en supabase/usuarios.sql).
 //
 // Acciones:
 //   estado          → { cuenta, saldo, tarjetas, movimientos }   (refresca el estado de la cuenta en Stripe)
 //   activar         → crea la cuenta conectada de la empresa (si no existe) y devuelve el enlace del alta { url }
 //   enlace          → enlace nuevo para completar el alta { url }
 //   sesion          → { client_secret } para el alta integrada dentro de la app (Connect embedded components)
-//   crear_tarjeta   → { alias, tipo: 'virtual'|'fisica', limite_mensual?, limite_compra?, trabajador_id?, asignada_a? }
-//   configurar      → { tarjeta_id, alias, limite_mensual, limite_compra, trabajador_id, asignada_a }
+//   crear_tarjeta   → { alias, tipo: 'virtual'|'fisica', limite_mensual?, limite_compra?, user_id?, trabajador_id?, asignada_a? }
+//   configurar      → { tarjeta_id, alias, limite_mensual, limite_compra, user_id, trabajador_id, asignada_a }
+// Quien no gestiona tarjetas solo puede «estado_tarjeta» → congelada en una tarjeta suya (user_id = su usuario).
 //   estado_tarjeta  → { tarjeta_id, estado: 'activa'|'congelada'|'cancelada' }
 //   limite          → { tarjeta_id, limite_mensual: number|null }
 //   fondos          → instrucciones para ingresar saldo { instrucciones }
@@ -107,15 +108,30 @@ function limitesStripe(mensual: number | null, compra: number | null) {
   return l;
 }
 
-/** Persona a la que se asigna la tarjeta: un trabajador de la empresa o un nombre escrito */
-async function persona(admin: any, owner: string, body: Record<string, any>): Promise<{ trabajador_id: string | null; asignada_a: string | null }> {
+/** Persona a la que se asigna la tarjeta: un usuario de la empresa (la verá en «Mi tarjeta»), un trabajador o un nombre escrito */
+async function persona(
+  admin: any,
+  owner: string,
+  body: Record<string, any>,
+): Promise<{ user_id: string | null; trabajador_id: string | null; asignada_a: string | null }> {
+  if (body.user_id) {
+    const { data: m } = await admin
+      .from("miembros")
+      .select("user_id, nombre, email, trabajador_id")
+      .eq("cuenta_id", owner)
+      .eq("user_id", String(body.user_id))
+      .eq("activo", true)
+      .maybeSingle();
+    if (!m) throw new ErrorApp("Esa persona no tiene acceso a esta empresa");
+    return { user_id: m.user_id, trabajador_id: m.trabajador_id ?? null, asignada_a: String(m.nombre || m.email).slice(0, 26) };
+  }
   if (body.trabajador_id) {
     const { data: t } = await admin.from("trabajadores").select("id, nombre").eq("id", String(body.trabajador_id)).eq("owner_id", owner).maybeSingle();
     if (!t) throw new ErrorApp("Ese trabajador no es de esta empresa");
-    return { trabajador_id: t.id, asignada_a: String(t.nombre ?? "").slice(0, 26) || null };
+    return { user_id: null, trabajador_id: t.id, asignada_a: String(t.nombre ?? "").slice(0, 26) || null };
   }
   const nombre = String(body.asignada_a ?? "").trim().slice(0, 26);
-  return { trabajador_id: null, asignada_a: nombre.length >= 2 ? nombre : null };
+  return { user_id: null, trabajador_id: null, asignada_a: nombre.length >= 2 ? nombre : null };
 }
 
 // ---------------------------------------------------------------- Datos
@@ -163,15 +179,19 @@ Deno.serve(async (req) => {
     const owner = String(body.owner_id ?? "");
     if (!/^[0-9a-f-]{36}$/i.test(owner)) throw new ErrorApp("Falta la empresa");
 
-    // ¿Puede esta persona gestionar las tarjetas de esa empresa?
+    // ¿Puede esta persona gestionar las tarjetas de esa empresa? (titular, asesor o admin con el módulo «tarjetas»)
     let permitido = owner === user.id;
-    const { data: ok, error: errPuede } = await asUser.rpc("puede", { cuenta: owner, modulo: "empresa" });
+    const { data: ok, error: errPuede } = await asUser.rpc("puede", { cuenta: owner, modulo: "tarjetas" });
     if (!errPuede) permitido = Boolean(ok);
     else if (!permitido) {
       const { data: yo } = await asUser.from("profiles").select("role").eq("id", user.id).single();
       permitido = yo?.role === "advisor";
     }
-    if (!permitido) throw new ErrorApp("No tienes permiso para gestionar las tarjetas de esta empresa", 403);
+    // Quien no gestiona solo puede congelar SU propia tarjeta (desde «Mi tarjeta»)
+    const soloSuTarjeta = !permitido;
+    if (soloSuTarjeta && !(body.accion === "estado_tarjeta" && body.estado === "congelada")) {
+      throw new ErrorApp("No tienes permiso para gestionar las tarjetas de esta empresa", 403);
+    }
 
     const { data: perfil } = await admin
       .from("profiles")
@@ -351,6 +371,7 @@ Deno.serve(async (req) => {
           limite_mensual: limite,
           limite_compra: limiteCompra,
           trabajador_id: quien.trabajador_id,
+          user_id: quien.user_id,
           asignada_a: quien.asignada_a,
         })
         .select()
@@ -363,6 +384,7 @@ Deno.serve(async (req) => {
     if (accion === "estado_tarjeta" || accion === "limite" || accion === "configurar") {
       const { data: t } = await admin.from("tarjetas").select("*").eq("id", String(body.tarjeta_id ?? "")).eq("owner_id", owner).maybeSingle();
       if (!t) throw new ErrorApp("Tarjeta no encontrada", 404);
+      if (soloSuTarjeta && t.user_id !== user.id) throw new ErrorApp("No tienes permiso para cambiar esta tarjeta", 403);
       if (t.estado === "cancelada") throw new ErrorApp("La tarjeta ya está cancelada");
 
       if (accion === "estado_tarjeta") {
