@@ -207,7 +207,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
       const cantidad = Number(l.cantidad || 0)
       const extra = [
         cantidad !== 1 ? `${cantidad.toLocaleString('es-ES')} × ${eur(Number(l.precio))}` : '',
-        Number(l.descuento) ? `−${Number(l.descuento)} %` : '',
+        Number(l.descuento) ? `−${Number(l.descuento)}%` : '',
       ]
         .filter(Boolean)
         .join(' · ')

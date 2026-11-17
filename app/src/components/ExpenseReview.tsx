@@ -333,7 +333,7 @@ export default function ExpenseReview({
               <div className="mt-3 space-y-0.5 text-xs text-muted">
                 {ocr.desglose_iva.map((d, i) => (
                   <p key={i} className="num">
-                    IVA {num(d.tipo)} %: base {eur(d.base)} · cuota {eur(d.cuota)}
+                    IVA {num(d.tipo)}%: base {eur(d.base)} · cuota {eur(d.cuota)}
                   </p>
                 ))}
               </div>

@@ -615,7 +615,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			l.concepto,
 			num(l.cantidad),
 			eur(l.precio),
-			`${num(l.iva)} %`,
+			`${num(l.iva)}%`,
 			eur(importeLinea(l))
 		]),
 		theme: "plain",
@@ -731,8 +731,8 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	};
 	y += 3;
 	fila(T.base, eur(t.base));
-	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)} %${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ""}`, eur(r.cuota));
-	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf));
+	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ""}`, eur(r.cuota));
+	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, eur(-t.cuota_irpf));
 	y -= 1.5;
 	doc.setFillColor(...MARCA);
 	doc.roundedRect(114, y, 78, 12, 2.2, 2.2, "F");
@@ -851,6 +851,21 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		nombre: `${esFactura ? T.archivoFactura : T.archivoPresupuesto}-${d.numero || T.borrador.toLowerCase()}.pdf`
 	};
 }
+import.meta.env.DEV || import.meta.env.VITE_TARJETAS;
+import.meta.env.DEV || import.meta.env.VITE_TARJETAS_CLIENTES;
+demoForzada() || import.meta.env.VITE_TARJETAS_MODO === "real" || import.meta.env.VITE_TARJETAS_MODO === "demo" || import.meta.env.DEV;
+/** Solo en local: abrir /tarjetas?demo=1 fuerza la demostración (y ?demo=0 la quita) durante esa sesión del navegador */
+function demoForzada() {
+	if (!import.meta.env.DEV || typeof window === "undefined") return false;
+	try {
+		const q = new URLSearchParams(window.location.search).get("demo");
+		if (q === "1") sessionStorage.setItem("nt-tarjetas-demo", "1");
+		if (q === "0") sessionStorage.removeItem("nt-tarjetas-demo");
+		return sessionStorage.getItem("nt-tarjetas-demo") === "1";
+	} catch {
+		return false;
+	}
+}
 // src/lib/correoFactura.ts
 /**
 * Correo con el que una empresa envía su factura a su cliente (función enviar-factura).
@@ -958,7 +973,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 		const [titulo, ...resto] = String(l.concepto ?? "").split("\n");
 		const detalle = resto.join(" ").trim();
 		const cantidad = Number(l.cantidad || 0);
-		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${eur(Number(l.precio))}` : "", Number(l.descuento) ? `−${Number(l.descuento)} %` : ""].filter(Boolean).join(" · ");
+		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${eur(Number(l.precio))}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" · ");
 		return `
       <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ""}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ""}

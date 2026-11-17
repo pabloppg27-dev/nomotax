@@ -598,7 +598,7 @@ function InmovilizadoVista({ datos, hasta }: { datos: DatosContables; hasta: str
                   <td className="px-3 py-2.5 font-medium">{i.nombre}</td>
                   <td className="px-3 py-2.5 text-muted">{TIPOS_INMOVILIZADO.find((t) => t.id === i.tipo)?.nombre ?? i.tipo}</td>
                   <td className="px-3 py-2.5">{fecha(i.fecha_inicio)}</td>
-                  <td className="px-3 py-2.5 text-right">{Number(i.coeficiente)} %</td>
+                  <td className="px-3 py-2.5 text-right">{Number(i.coeficiente)}%</td>
                   <td className="px-3 py-2.5 text-right">{eur(i.valor)}</td>
                   <td className="px-3 py-2.5 text-right">{eur(acum)}</td>
                   <td className="px-3 py-2.5 text-right font-medium">{eur(Number(i.valor) - acum)}</td>

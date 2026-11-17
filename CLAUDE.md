@@ -21,7 +21,7 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 ## Reglas de negocio
 - Las facturas emitidas **nunca se borran** (lo bloquea la BD): se corrigen con rectificativa.
 - Contabilidad PGC PYMES calculada al vuelo desde facturas, gastos, nóminas, apertura e inmovilizado (`src/lib/contabilidad.ts`). Todo en euros: facturas en otra moneda se convierten al cambio BCE del día.
-- Formato de importes: `1.234,56€` (punto de miles siempre, € pegado). Usar `eur()` / `num()` de `src/lib/format.ts`.
+- Formato de importes: `1.234,56€` (punto de miles siempre, € pegado). Porcentajes también pegados: `21%`, nunca `21 %`. Usar `eur()` / `num()` de `src/lib/format.ts`.
 - La factura sale en el idioma del país del cliente (`src/lib/idiomaFactura.ts`).
 - Móvil primero: probar a 390 px; nada que desborde en horizontal.
 - Marca: negro `#111110`, lima `#CDF564`, fondo `#f7f7f5`. Cada cliente puede poner su «Color de marca» (profiles.color_marca) y su «Nombre comercial» (profiles.nombre_comercial, autónomos): se leen del perfil actual, no del snapshot del emisor. Plantilla PDF en `src/lib/pdf.ts` (concepto: 1.ª línea negrita, resto detalle en gris; QR SEPA EPC en «Forma de pago»).

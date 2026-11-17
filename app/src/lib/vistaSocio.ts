@@ -95,11 +95,11 @@ export function agregarNominas(nominas: Pick<Nomina, 'anio' | 'mes' | 'estado' |
   return [...porMes.values()]
 }
 
-/** Variación en % frente al año anterior: «+12,5 %» (o «—» si antes era cero) */
+/** Variación en % frente al año anterior: «+12,5%» (o «—» si antes era cero) */
 export function variacion(act: number, ant: number): string {
   if (!ant) return '—'
   const v = ((act - ant) / Math.abs(ant)) * 100
-  return `${v > 0 ? '+' : ''}${v.toLocaleString('es-ES', { maximumFractionDigits: 1, minimumFractionDigits: 1 })} %`
+  return `${v > 0 ? '+' : ''}${v.toLocaleString('es-ES', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%`
 }
 
 /** La misma fecha un año antes (YYYY-MM-DD) */

@@ -615,7 +615,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			l.concepto,
 			num(l.cantidad),
 			eur$1(l.precio),
-			`${num(l.iva)} %`,
+			`${num(l.iva)}%`,
 			eur$1(importeLinea(l))
 		]),
 		theme: "plain",
@@ -731,8 +731,8 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	};
 	y += 3;
 	fila(T.base, eur$1(t.base));
-	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)} %${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur$1(r.base)})` : ""}`, eur$1(r.cuota));
-	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))} %`, eur$1(-t.cuota_irpf));
+	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur$1(r.base)})` : ""}`, eur$1(r.cuota));
+	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, eur$1(-t.cuota_irpf));
 	y -= 1.5;
 	doc.setFillColor(...MARCA);
 	doc.roundedRect(114, y, 78, 12, 2.2, 2.2, "F");

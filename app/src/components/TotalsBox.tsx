@@ -17,7 +17,7 @@ export default function TotalsBox({
     <div className="space-y-2 text-[15px]">
       <Row label="Base imponible" value={eur(totales.base)} />
       {totales.desglose.map((d) => (
-        <Row key={d.tipo} label={`IVA ${num(d.tipo)} %`} hint={totales.desglose.length > 1 ? `sobre ${eur(d.base)}` : undefined} value={eur(d.cuota)} />
+        <Row key={d.tipo} label={`IVA ${num(d.tipo)}%`} hint={totales.desglose.length > 1 ? `sobre ${eur(d.base)}` : undefined} value={eur(d.cuota)} />
       ))}
       <div className="flex items-center justify-between gap-3">
         <span className="flex items-center gap-2 text-ink/75">
@@ -31,7 +31,7 @@ export default function TotalsBox({
           >
             {TIPOS_IRPF.map((t) => (
               <option key={t} value={t}>
-                {t} %
+                {t}%
               </option>
             ))}
           </Select>

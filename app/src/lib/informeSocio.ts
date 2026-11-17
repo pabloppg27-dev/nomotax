@@ -66,7 +66,7 @@ export function informeSocio(v: VistaSocio, empresa: string): Blob {
       ['Ventas', eur(c.ventas), eur(c.ventasAnt), variacion(c.ventas, c.ventasAnt)],
       ['Gastos', eur(c.gastos), eur(c.gastosAnt), variacion(c.gastos, c.gastosAnt)],
       ['Resultado', eur(c.resultado), eur(c.resultadoAnt), variacion(c.resultado, c.resultadoAnt)],
-      ['Margen', c.margen === null ? '—' : `${(c.margen * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`, '', ''],
+      ['Margen', c.margen === null ? '—' : `${(c.margen * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })}%`, '', ''],
       ['Coste de personal', eur(v.plantilla.costePersonal), eur(v.plantilla.costePersonalAnt), variacion(v.plantilla.costePersonal, v.plantilla.costePersonalAnt)],
     ],
     [1, 2, 3],

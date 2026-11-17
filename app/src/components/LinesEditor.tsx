@@ -63,7 +63,7 @@ export default function LinesEditor({
             >
               {TIPOS_IVA.map((t) => (
                 <option key={t} value={t}>
-                  {t} %
+                  {t}%
                 </option>
               ))}
             </Select>

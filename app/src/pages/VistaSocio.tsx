@@ -117,7 +117,7 @@ export default function VistaSocio({ embebido = false }: { embebido?: boolean })
               <p className="text-sm text-white/60">Resultado</p>
               <p className={cx('num mt-2 text-5xl font-semibold tracking-tight', c.resultado < 0 && 'text-red-300')}>{eur(c.resultado)}</p>
               <p className="mt-3 text-sm text-white/60">
-                {c.margen === null ? 'Sin ventas en el periodo' : `Margen ${(c.margen * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })} % sobre ventas`}
+                {c.margen === null ? 'Sin ventas en el periodo' : `Margen ${(c.margen * 100).toLocaleString('es-ES', { maximumFractionDigits: 1 })}% sobre ventas`}
                 {' · '}
                 {anioAnt}: {eur(c.resultadoAnt)}
               </p>

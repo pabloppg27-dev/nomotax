@@ -210,7 +210,7 @@ export async function construirPdf(
     startY: y,
     margin: { left: M, right: M, top: 18, bottom: 24 },
     head: [[T.concepto, T.cant, T.precio, T.impuesto, T.importe].map((h) => h.toUpperCase())],
-    body: d.lineas.map((l) => [l.concepto, num(l.cantidad), eur(l.precio), `${num(l.iva)} %`, eur(importeLinea(l))]),
+    body: d.lineas.map((l) => [l.concepto, num(l.cantidad), eur(l.precio), `${num(l.iva)}%`, eur(importeLinea(l))]),
     theme: 'plain',
     styles: { font: 'helvetica', fontSize: 9.3, cellPadding: { top: pad, bottom: pad, left: 0, right: 0 }, textColor: INK },
     headStyles: { textColor: MUTED, fontStyle: 'bold', fontSize: 7, cellPadding: { top: 1.5, bottom: 2.4, left: 0, right: 0 } },
@@ -280,8 +280,8 @@ export async function construirPdf(
   }
   y += 3
   fila(T.base, eur(t.base))
-  for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)} %${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ''}`, eur(r.cuota))
-  if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))} %`, eur(-t.cuota_irpf))
+  for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ''}`, eur(r.cuota))
+  if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, eur(-t.cuota_irpf))
   y -= 1.5
   doc.setFillColor(...MARCA)
   doc.roundedRect(xl - 4, y, W - M - xl + 4, 12, 2.2, 2.2, 'F')
