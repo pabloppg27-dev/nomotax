@@ -23,6 +23,7 @@ import MiAsesor from './pages/MiAsesor'
 import Contabilidad from './pages/Contabilidad'
 import Impuestos from './pages/Impuestos'
 import Tarjetas from './pages/Tarjetas'
+import TarjetasProximamente from './pages/TarjetasProximamente'
 import VistaSocio from './pages/VistaSocio'
 import MiEspacio from './pages/MiEspacio'
 import AbrirConfiguracion from './pages/Configuracion'
@@ -78,10 +79,10 @@ function SinAcceso() {
   )
 }
 
-/** Tarjetas: con claves de prueba en la web publicada, solo el asesor (ver TARJETAS_PARA_CLIENTES) */
+/** Tarjetas: con claves de prueba en la web publicada, el asesor lo ve entero y los clientes ven «Próximamente» */
 function SoloTarjetas({ children }: { children: ReactNode }) {
   const { isAdvisor } = useAuth()
-  return TARJETAS_PARA_CLIENTES || isAdvisor ? <>{children}</> : <Navigate to="/" replace />
+  return TARJETAS_PARA_CLIENTES || isAdvisor ? <>{children}</> : <TarjetasProximamente />
 }
 
 function SoloAsesor({ children }: { children: ReactNode }) {
