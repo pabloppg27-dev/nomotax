@@ -29,6 +29,8 @@ import VistaSocio from './pages/VistaSocio'
 import MiEspacio from './pages/MiEspacio'
 import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
+import { SubidasProvider } from './lib/subidas'
+import PanelSubidas from './components/PanelSubidas'
 import type { Permiso } from './lib/types'
 import { TARJETAS_ACTIVAS, TARJETAS_PARA_CLIENTES } from './lib/config'
 
@@ -135,9 +137,12 @@ export default function App() {
           <Route
             element={
               <Protegido>
-                <ConfigProvider>
-                  <Layout />
-                </ConfigProvider>
+                <SubidasProvider>
+                  <ConfigProvider>
+                    <Layout />
+                  </ConfigProvider>
+                  <PanelSubidas />
+                </SubidasProvider>
               </Protegido>
             }
           >

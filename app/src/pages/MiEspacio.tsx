@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { AlertCircle, ChevronDown, FileText, Download, FolderOpen, IdCard, Loader2, Receipt, Trash2, Wallet } from 'lucide-react'
+import { AlertCircle, ChevronDown, FileText, Download, FolderOpen, IdCard, Receipt, Trash2, Wallet } from 'lucide-react'
 import { useAuth, verComoDev } from '../lib/auth'
 import { DOCS_DEMO, FICHA_DEMO, NOMINAS_DEMO } from '../lib/demoEmpleado'
 import { BUCKET, abrirDocumento, errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
-import { necesitaRevision } from '../lib/contabilidad.ts'
-import { columnasDivisa } from '../lib/divisas'
-import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
 import { nombreDoc } from '../lib/laboral'
+import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
 import type { Expense, Nomina, Trabajador } from '../lib/types'
 import UploadZone from '../components/UploadZone'
 import MisNominas from '../components/MisNominas'
@@ -26,7 +24,7 @@ export default function MiEspacio() {
   const [nominas, setNominas] = useState<Nomina[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
   const [ficha, setFicha] = useState<Trabajador | null>(null)
-  const [subiendo, setSubiendo] = useState<string | null>(null)
+  const { encolar } = useSubidas()
   const [certAbierto, setCertAbierto] = useState(false)
 
   const idFicha = miembro?.trabajador_id ?? null
@@ -56,49 +54,19 @@ export default function MiEspacio() {
     cargar()
   }, [cargar])
 
+  useAlCambiarSubidas(() => {
+    cargar()
+  })
+
   if (!ownerId || !owner || !tickets) return <Loading />
   const nominasVer = ejemplo ? NOMINAS_DEMO : nominas
   const fichaVer = ejemplo ? FICHA_DEMO : ficha
   const docsVer = ejemplo ? DOCS_DEMO : docs
 
-  const subir = async (files: File[]) => {
-    for (const file of files) {
-      setSubiendo(file.name)
-      try {
-        const archivo = await prepararArchivo(file)
-        const path = await subirDocumento(ownerId, 'gastos', archivo)
-        const { data: fila, error } = await supabase.from('expenses').insert({ owner_id: ownerId, file_path: path, estado: 'pendiente' }).select().single()
-        if (error) throw new Error(await errorMessage(error))
-        await cargar()
-        try {
-          const ocr = await leerFactura(path, 'gasto', ownerId)
-          const imp = importesDe(ocr)
-          await supabase
-            .from('expenses')
-            .update({
-              fecha: ocr.fecha,
-              proveedor: ocr.emisor.nombre,
-              proveedor_nif: ocr.emisor.nif,
-              numero: ocr.numero,
-              concepto: ocr.concepto,
-              categoria: ocr.categoria,
-              ...imp,
-              naturaleza: ocr.naturaleza === 'inversion' ? 'inversion' : 'gasto',
-              revision: necesitaRevision(ocr.naturaleza, imp.base) ? 'pendiente' : null,
-              ...columnasDivisa(ocr),
-              ocr,
-            })
-            .eq('id', fila.id)
-        } catch {
-          /* Se queda subido; administración lo completa al revisarlo */
-        }
-      } catch (e) {
-        notify(`${file.name}: ${(e as Error).message}`, 'error')
-      }
-    }
-    setSubiendo(null)
-    await cargar()
-    notify(files.length === 1 ? 'Ticket enviado. Administración lo revisará.' : `${files.length} tickets enviados`)
+  // Se encolan y se procesan en segundo plano (panel flotante)
+  const subir = (files: File[]) => {
+    if (!ownerId) return
+    encolar('ticket', ownerId, files)
   }
 
   const borrar = async (g: Expense) => {
@@ -144,12 +112,7 @@ export default function MiEspacio() {
             <h2 className="mb-4 flex items-center gap-2 font-semibold">
               <Receipt className="size-4" /> Subir un ticket
             </h2>
-            <UploadZone onFiles={subir} titulo="Subir tickets" texto="Foto o PDF · puedes subir varios" disabled={subiendo !== null} compacto fotoPrimero />
-            {subiendo && (
-              <p className="mt-3 flex items-center gap-2 text-sm text-muted">
-                <Loader2 className="size-4 animate-spin" /> Subiendo y leyendo «{subiendo}»…
-              </p>
-            )}
+            <UploadZone onFiles={subir} titulo="Subir tickets" texto="Foto o PDF · puedes subir varios y seguir usando la app mientras se leen" compacto fotoPrimero />
           </Card>
 
           <Card className="divide-y divide-line">

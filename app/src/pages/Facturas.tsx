@@ -1,20 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { AlertCircle, CheckCircle2, FileText, FileUp, Loader2, MailCheck, Plus } from 'lucide-react'
-import { nuevoId } from '../lib/id'
+import { FileText, FileUp, MailCheck, Plus } from 'lucide-react'
+import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
 import { useAuth } from '../lib/auth'
-import { errorMessage, supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
 import { analizarFacturas } from '../lib/estados'
-import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
-import { columnasDivisa } from '../lib/divisas'
 import type { Invoice } from '../lib/types'
 import IngresoExterno from '../components/IngresoExterno'
 import PeriodPicker from '../components/PeriodPicker'
 import UploadZone from '../components/UploadZone'
 import { Badge, Button, Card, Empty, Loading, Modal, PageHeader, cx } from '../components/ui'
 
-type Tarea = { key: string; nombre: string; estado: 'subiendo' | 'leyendo' | 'hecho' | 'error'; error?: string }
 type Filtro = 'todas' | 'borrador' | 'pendientes' | 'cobrada' | 'externa'
 
 const FILTROS: { id: Filtro; label: string }[] = [
@@ -33,9 +30,8 @@ export default function Facturas() {
   const [periodo, setPeriodo] = useState<Periodo>({ anio: new Date().getFullYear(), trimestre: 0 })
   const [filtro, setFiltro] = useState<Filtro>('todas')
   const [subir, setSubir] = useState(false)
-  const [leyendo, setLeyendo] = useState(false)
   const [externa, setExterna] = useState<Invoice | null>(null)
-  const [tareas, setTareas] = useState<Tarea[]>([])
+  const { encolar } = useSubidas()
 
   const cargar = useCallback(async () => {
     if (!ownerId) return [] as Invoice[]
@@ -50,9 +46,10 @@ export default function Facturas() {
     return l
   }, [ownerId])
 
+  // ?ver=<id>: abre la factura subida (desde el panel de subidas o un enlace)
+  const ver = params.get('ver')
   useEffect(() => {
     cargar().then((l) => {
-      const ver = params.get('ver')
       if (ver) {
         const f = l.find((x) => x.id === ver)
         if (f) setExterna(f)
@@ -60,7 +57,11 @@ export default function Facturas() {
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cargar])
+  }, [cargar, ver])
+
+  useAlCambiarSubidas(() => {
+    cargar()
+  })
 
   const info = useMemo(() => analizarFacturas(lista ?? [], hoyISO()), [lista])
 
@@ -86,83 +87,12 @@ export default function Facturas() {
     }
   }, [lista, periodo, info])
 
-  const actualizarTarea = (key: string, patch: Partial<Tarea>) =>
-    setTareas((ts) => ts.map((t) => (t.key === key ? { ...t, ...patch } : t)))
-
-  // Varias a la vez: se suben y leen de 3 en 3; con una sola se abre su ficha como siempre
-  const subirExternas = async (files: File[]) => {
+  // Se encolan y se procesan en segundo plano (panel flotante); la ventana se cierra enseguida
+  const subirExternas = (files: File[]) => {
     if (!ownerId || !files.length) return
-    const nuevas: Tarea[] = files.map((f) => ({ key: nuevoId(), nombre: f.name, estado: 'subiendo' }))
-    setTareas(nuevas)
-    setLeyendo(true)
-    let ultima: Invoice | null = null
-    let siguiente = 0
-    const trabajador = async () => {
-      while (siguiente < files.length) {
-        const i = siguiente++
-        const r = await subirUna(files[i], (patch) => actualizarTarea(nuevas[i].key, patch))
-        if (r) ultima = r
-      }
-    }
-    await Promise.all(Array.from({ length: Math.min(3, files.length) }, trabajador))
-    await cargar()
-    setLeyendo(false)
-    if (files.length === 1 && ultima) {
-      setSubir(false)
-      setTareas([])
-      setExterna(ultima)
-    }
-  }
-
-  const subirUna = async (file: File, avisar: (p: Partial<Tarea>) => void): Promise<Invoice | null> => {
-    if (!ownerId) return null
-    try {
-      const archivo = await prepararArchivo(file)
-      const path = await subirDocumento(ownerId, 'facturas', archivo)
-      avisar({ estado: 'leyendo' })
-      let datos: Record<string, unknown> = {}
-      let fallo: string | undefined
-      try {
-        const ocr = await leerFactura(path, 'emitida', ownerId)
-        const imp = importesDe(ocr)
-        datos = {
-          numero: ocr.numero,
-          fecha: ocr.fecha || hoyISO(),
-          vencimiento: ocr.vencimiento,
-          cliente: { nombre: ocr.receptor.nombre, nif: ocr.receptor.nif, direccion: ocr.receptor.direccion },
-          base: imp.base,
-          cuota_iva: imp.cuota_iva,
-          cuota_irpf: imp.cuota_irpf,
-          irpf_pct: imp.irpf_pct ?? 0,
-          total: imp.total,
-          lineas: [{ concepto: ocr.concepto || 'Según factura', cantidad: 1, precio: imp.base, iva: imp.iva_pct ?? 0 }],
-          ...columnasDivisa(ocr),
-          ocr,
-        }
-      } catch (e) {
-        fallo = `Guardada, pero no se ha podido leer: ${(e as Error).message}`
-      }
-      const { data, error } = await supabase
-        .from('invoices')
-        .insert({ owner_id: ownerId, origen: 'externa', estado: 'emitida', file_path: path, ...datos })
-        .select()
-        .single()
-      if (error) throw new Error(await errorMessage(error))
-      avisar(fallo ? { estado: 'error', error: fallo } : { estado: 'hecho' })
-      return data as Invoice
-    } catch (e) {
-      avisar({ estado: 'error', error: (e as Error).message })
-      return null
-    }
-  }
-
-  const cerrarSubida = () => {
-    if (leyendo) return
+    encolar('factura', ownerId, files)
     setSubir(false)
-    setTareas([])
   }
-  const hechas = tareas.filter((t) => t.estado === 'hecho').length
-  const conError = tareas.filter((t) => t.estado === 'error').length
 
   const abrir = (f: Invoice) => (f.origen === 'externa' ? setExterna(f) : navigate(`/facturas/${f.id}`))
 
@@ -283,57 +213,13 @@ export default function Facturas() {
         )}
       </Card>
 
-      <Modal open={subir} onClose={cerrarSubida} title="Subir facturas emitidas">
-        {tareas.length > 1 || (tareas.length === 1 && !leyendo) ? (
-          <div>
-            <p className="mb-3 text-sm text-muted">
-              {leyendo
-                ? `Leyendo ${tareas.length} facturas… ${hechas + conError} de ${tareas.length}. No cierres esta ventana.`
-                : `${hechas} de ${tareas.length} facturas listas${conError ? ` · ${conError} con aviso` : ''}. Ya están en la lista.`}
-            </p>
-            <div className="max-h-[50dvh] divide-y divide-line overflow-y-auto rounded-xl ring-1 ring-line">
-              {tareas.map((t) => (
-                <div key={t.key} className="flex items-center gap-3 px-3 py-2.5 text-sm">
-                  {t.estado === 'hecho' ? (
-                    <CheckCircle2 className="size-4 shrink-0 text-verde" />
-                  ) : t.estado === 'error' ? (
-                    <AlertCircle className="size-4 shrink-0 text-rojo" />
-                  ) : (
-                    <Loader2 className="size-4 shrink-0 animate-spin text-muted" />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">{t.nombre}</span>
-                  <span className={cx('shrink-0 text-right', t.estado === 'error' ? 'max-w-[55%] text-rojo' : 'text-muted')}>
-                    {t.estado === 'subiendo' && 'Subiendo…'}
-                    {t.estado === 'leyendo' && 'Leyendo…'}
-                    {t.estado === 'hecho' && 'Lista'}
-                    {t.estado === 'error' && t.error}
-                  </span>
-                </div>
-              ))}
-            </div>
-            {!leyendo && (
-              <div className="mt-4 flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => setTareas([])}>
-                  Subir más
-                </Button>
-                <Button onClick={cerrarSubida}>Hecho</Button>
-              </div>
-            )}
-          </div>
-        ) : leyendo ? (
-          <div className="flex flex-col items-center py-10 text-center">
-            <Loader2 className="size-6 animate-spin text-muted" />
-            <p className="mt-3 font-medium">Leyendo la factura…</p>
-            <p className="text-sm text-muted">Tarda unos segundos.</p>
-          </div>
-        ) : (
-          <UploadZone
-            compacto
-            onFiles={subirExternas}
-            titulo="Arrastra aquí las facturas"
-            texto="Para facturas que hayas hecho con otro programa. Puedes subir varias a la vez: leemos el número, el cliente y los importes de cada una."
-          />
-        )}
+      <Modal open={subir} onClose={() => setSubir(false)} title="Subir facturas emitidas">
+        <UploadZone
+          compacto
+          onFiles={subirExternas}
+          titulo="Arrastra aquí las facturas"
+          texto="Para facturas que hayas hecho con otro programa. Puedes subir varias a la vez: se leen en segundo plano y puedes seguir trabajando."
+        />
       </Modal>
 
       <IngresoExterno factura={externa} onClose={() => setExterna(null)} onChanged={cargar} />

@@ -1,21 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { AlertCircle, CheckCircle2, Loader2, Receipt, Search } from 'lucide-react'
+import { Receipt, Search } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { errorMessage, supabase } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, trimestreActual, type Periodo } from '../lib/format'
 import { CATEGORIAS, nombreCategoria } from '../lib/categorias'
-import { necesitaRevision } from '../lib/contabilidad.ts'
-import { columnasDivisa, importeMoneda } from '../lib/divisas'
-import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib/upload'
-import { nuevoId } from '../lib/id'
+import { importeMoneda } from '../lib/divisas'
+import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
 import type { Expense } from '../lib/types'
 import ExpenseReview from '../components/ExpenseReview'
 import PeriodPicker from '../components/PeriodPicker'
 import UploadZone from '../components/UploadZone'
-import { Badge, Card, Empty, Input, Loading, PageHeader, Select, notify } from '../components/ui'
-
-type Tarea = { key: string; nombre: string; estado: 'subiendo' | 'leyendo' | 'hecho' | 'error'; error?: string }
+import { Badge, Card, Empty, Input, Loading, PageHeader, Select } from '../components/ui'
 
 export default function Gastos() {
   const { ownerId, isAdvisor } = useAuth()
@@ -24,7 +20,7 @@ export default function Gastos() {
   const [periodo, setPeriodo] = useState<Periodo>(trimestreActual())
   const [categoria, setCategoria] = useState('')
   const [q, setQ] = useState('')
-  const [tareas, setTareas] = useState<Tarea[]>([])
+  const { encolar } = useSubidas()
   const [abierto, setAbierto] = useState<Expense | null>(null)
 
   const cargar = useCallback(async () => {
@@ -40,79 +36,28 @@ export default function Gastos() {
     return lista
   }, [ownerId])
 
+  // Enlace directo desde el panel del asesor o el de subidas: /gastos?revisar=<id>
+  const revisar = params.get('revisar')
   useEffect(() => {
     cargar().then((lista) => {
-      // Enlace directo desde el panel del asesor: /gastos?revisar=<id>
-      const id = params.get('revisar')
-      const g = id && lista.find((x) => x.id === id)
+      const g = revisar && lista.find((x) => x.id === revisar)
       if (g) {
         setAbierto(g)
         setParams({}, { replace: true })
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cargar])
+  }, [cargar, revisar])
 
-  const actualizarTarea = (key: string, patch: Partial<Tarea>) =>
-    setTareas((ts) => ts.map((t) => (t.key === key ? { ...t, ...patch } : t)))
-
-  const procesar = async (files: File[]) => {
+  // Se encolan y se procesan en segundo plano (panel flotante): puedes cambiar de página mientras tanto
+  const procesar = (files: File[]) => {
     if (!ownerId) return
-    const nuevas = files.map((f) => ({ key: nuevoId(), nombre: f.name, estado: 'subiendo' as const }))
-    setTareas((ts) => [...nuevas, ...ts.filter((t) => t.estado !== 'hecho')])
-    let ultimoId: string | null = null
-
-    for (let i = 0; i < files.length; i++) {
-      const key = nuevas[i].key
-      try {
-        const archivo = await prepararArchivo(files[i])
-        const path = await subirDocumento(ownerId, 'gastos', archivo)
-        const { data: fila, error } = await supabase
-          .from('expenses')
-          .insert({ owner_id: ownerId, file_path: path, estado: 'pendiente' })
-          .select()
-          .single()
-        if (error) throw new Error(await errorMessage(error))
-        ultimoId = fila.id
-        actualizarTarea(key, { estado: 'leyendo' })
-        cargar()
-
-        try {
-          const ocr = await leerFactura(path, 'gasto', ownerId)
-          const imp = importesDe(ocr)
-          await supabase
-            .from('expenses')
-            .update({
-              fecha: ocr.fecha,
-              proveedor: ocr.emisor.nombre,
-              proveedor_nif: ocr.emisor.nif,
-              numero: ocr.numero,
-              concepto: ocr.concepto,
-              categoria: ocr.categoria,
-              ...imp,
-              naturaleza: ocr.naturaleza === 'inversion' ? 'inversion' : 'gasto',
-              revision: necesitaRevision(ocr.naturaleza, imp.base) ? 'pendiente' : null,
-              ...columnasDivisa(ocr),
-              ocr,
-            })
-            .eq('id', fila.id)
-          actualizarTarea(key, { estado: 'hecho' })
-        } catch (e) {
-          actualizarTarea(key, { estado: 'error', error: `Guardado, pero no se ha podido leer: ${(e as Error).message}` })
-        }
-      } catch (e) {
-        actualizarTarea(key, { estado: 'error', error: (e as Error).message })
-      }
-    }
-
-    const lista = await cargar()
-    if (files.length === 1 && ultimoId) {
-      const g = lista.find((x) => x.id === ultimoId)
-      if (g) setAbierto(g)
-    } else {
-      notify(`${files.length} documentos procesados. Revísalos en la lista.`)
-    }
+    encolar('gasto', ownerId, files)
   }
+
+  useAlCambiarSubidas(() => {
+    cargar()
+  })
 
   const visibles = useMemo(() => {
     const t = q.trim().toLowerCase()
@@ -135,7 +80,6 @@ export default function Gastos() {
   }, [visibles, gastos])
 
   if (!ownerId) return <Loading />
-  const ocupado = tareas.some((t) => t.estado === 'subiendo' || t.estado === 'leyendo')
 
   return (
     <>
@@ -146,33 +90,9 @@ export default function Gastos() {
 
       <UploadZone
         onFiles={procesar}
-        disabled={ocupado}
-        titulo={ocupado ? 'Procesando documentos…' : 'Arrastra aquí tus facturas o tickets'}
-        texto="PDF o foto (JPG, PNG, HEIC). Puedes subir varios a la vez."
+        titulo="Arrastra aquí tus facturas o tickets"
+        texto="PDF o foto (JPG, PNG, HEIC). Puedes subir varios a la vez: se leen en segundo plano y puedes seguir trabajando."
       />
-
-      {tareas.length > 0 && (
-        <Card className="mt-4 divide-y divide-line">
-          {tareas.map((t) => (
-            <div key={t.key} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-              {t.estado === 'hecho' ? (
-                <CheckCircle2 className="size-4 shrink-0 text-verde" />
-              ) : t.estado === 'error' ? (
-                <AlertCircle className="size-4 shrink-0 text-rojo" />
-              ) : (
-                <Loader2 className="size-4 shrink-0 animate-spin text-muted" />
-              )}
-              <span className="min-w-0 flex-1 truncate">{t.nombre}</span>
-              <span className={t.estado === 'error' ? 'text-right text-rojo' : 'text-muted'}>
-                {t.estado === 'subiendo' && 'Subiendo…'}
-                {t.estado === 'leyendo' && 'Leyendo la factura…'}
-                {t.estado === 'hecho' && 'Listo para revisar'}
-                {t.estado === 'error' && t.error}
-              </span>
-            </div>
-          ))}
-        </Card>
-      )}
 
       <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <PeriodPicker value={periodo} onChange={setPeriodo} />
