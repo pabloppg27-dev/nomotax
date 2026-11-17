@@ -92,9 +92,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
 
   const filtro = q.trim().toLowerCase()
   const filtradas = secciones.filter((s) => !filtro || `${s.label(ctx)} ${s.detalle(ctx)}`.toLowerCase().includes(filtro))
-  const grupos = viewingOther
-    ? [{ titulo: owner?.nombre || 'Cliente', items: filtradas }]
-    : GRUPOS_CONFIG.map((g) => ({ titulo: g, items: filtradas.filter((s) => s.grupo === g) })).filter((g) => g.items.length)
+  // Siempre por grupos (también cuando el asesor está dentro de la cuenta de un cliente: su nombre va encima)
+  const grupos = GRUPOS_CONFIG.map((g) => ({ titulo: g, items: filtradas.filter((s) => s.grupo === g) })).filter((g) => g.items.length)
   const actual = secciones.find((s) => s.id === activa) ?? secciones[0]
 
   return createPortal(
@@ -155,6 +154,13 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                   {owner.email && <p className="truncate text-sm text-white/60">{owner.email}</p>}
                 </div>
               </div>
+            )}
+
+            {/* Ordenador, dentro de la cuenta de un cliente: de quién es esta configuración (en el móvil lo dice la tarjeta negra) */}
+            {viewingOther && (
+              <p className="hidden truncate px-5 pb-1 pt-1 text-sm font-semibold text-ink sm:block">
+                {owner?.nombre_comercial || owner?.nombre || 'Cliente'}
+              </p>
             )}
 
             <nav className="space-y-5 px-4 pb-6 pt-3 sm:space-y-4 sm:px-3 sm:pb-4 sm:pt-0">
