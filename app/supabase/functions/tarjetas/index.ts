@@ -7,7 +7,8 @@
 //   activar         → crea la cuenta conectada de la empresa (si no existe) y devuelve el enlace del alta { url }
 //   enlace          → enlace nuevo para completar el alta { url }
 //   sesion          → { client_secret } para el alta integrada dentro de la app (Connect embedded components)
-//   crear_tarjeta   → { alias, tipo: 'virtual'|'fisica', limite_mensual? }
+//   crear_tarjeta   → { alias, tipo: 'virtual'|'fisica', limite_mensual?, limite_compra?, trabajador_id?, asignada_a? }
+//   configurar      → { tarjeta_id, alias, limite_mensual, limite_compra, trabajador_id, asignada_a }
 //   estado_tarjeta  → { tarjeta_id, estado: 'activa'|'congelada'|'cancelada' }
 //   limite          → { tarjeta_id, limite_mensual: number|null }
 //   fondos          → instrucciones para ingresar saldo { instrucciones }
@@ -89,6 +90,33 @@ async function stripe<T = Record<string, any>>(metodo: "GET" | "POST", ruta: str
 }
 
 const centimos = (euros: number) => Math.round(euros * 100);
+
+/** Número de euros o null (vacío / no válido = sin límite) */
+function importeONull(v: unknown): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) throw new ErrorApp("El límite no es válido");
+  return n > 0 ? n : null;
+}
+
+/** Límites de Stripe: al mes y por cada compra */
+function limitesStripe(mensual: number | null, compra: number | null) {
+  const l: { amount: number; interval: string }[] = [];
+  if (mensual !== null) l.push({ amount: centimos(mensual), interval: "monthly" });
+  if (compra !== null) l.push({ amount: centimos(compra), interval: "per_authorization" });
+  return l;
+}
+
+/** Persona a la que se asigna la tarjeta: un trabajador de la empresa o un nombre escrito */
+async function persona(admin: any, owner: string, body: Record<string, any>): Promise<{ trabajador_id: string | null; asignada_a: string | null }> {
+  if (body.trabajador_id) {
+    const { data: t } = await admin.from("trabajadores").select("id, nombre").eq("id", String(body.trabajador_id)).eq("owner_id", owner).maybeSingle();
+    if (!t) throw new ErrorApp("Ese trabajador no es de esta empresa");
+    return { trabajador_id: t.id, asignada_a: String(t.nombre ?? "").slice(0, 26) || null };
+  }
+  const nombre = String(body.asignada_a ?? "").trim().slice(0, 26);
+  return { trabajador_id: null, asignada_a: nombre.length >= 2 ? nombre : null };
+}
 
 // ---------------------------------------------------------------- Datos
 
@@ -273,8 +301,9 @@ Deno.serve(async (req) => {
       const alias = String(body.alias ?? "").trim().slice(0, 60);
       if (!alias) throw new ErrorApp("Ponle un nombre a la tarjeta");
       const tipo = body.tipo === "fisica" ? "physical" : "virtual";
-      const limite = body.limite_mensual == null || body.limite_mensual === "" ? null : Number(body.limite_mensual);
-      if (limite !== null && (!Number.isFinite(limite) || limite < 0)) throw new ErrorApp("El límite no es válido");
+      const limite = importeONull(body.limite_mensual);
+      const limiteCompra = importeONull(body.limite_compra);
+      const quien = await persona(admin, owner, body);
 
       // Titular: la propia empresa (se crea la primera vez)
       let titular: string | null = cuenta.titular_id;
@@ -297,11 +326,13 @@ Deno.serve(async (req) => {
         currency: "eur",
         type: tipo,
         status: "active",
-        spending_controls: limite !== null ? { spending_limits: [{ amount: centimos(limite), interval: "monthly" }] } : undefined,
+        spending_controls: limite !== null || limiteCompra !== null ? { spending_limits: limitesStripe(limite, limiteCompra) } : undefined,
         shipping: tipo === "physical"
           ? { name: nombreEmpresa.slice(0, 24), address: { line1: perfil.direccion, city: perfil.ciudad, postal_code: perfil.cp, state: perfil.provincia ?? undefined, country: "ES" } }
           : undefined,
-        metadata: { alias, nomotax_owner: owner },
+        // La tarjeta va a nombre de la empresa; quien la usa queda en metadata. (Para grabar el nombre de la persona en
+        // una tarjeta física habría que crearle su propio titular individual en Stripe: pendiente.)
+        metadata: { alias, nomotax_owner: owner, asignada_a: quien.asignada_a ?? "" },
       }, cuenta.stripe_account_id);
 
       const { data: fila, error } = await admin
@@ -318,6 +349,9 @@ Deno.serve(async (req) => {
           exp_anio: c.exp_year,
           estado: "activa",
           limite_mensual: limite,
+          limite_compra: limiteCompra,
+          trabajador_id: quien.trabajador_id,
+          asignada_a: quien.asignada_a,
         })
         .select()
         .single();
@@ -325,8 +359,8 @@ Deno.serve(async (req) => {
       return json({ tarjeta: fila });
     }
 
-    // ----------------------------------- estado_tarjeta / límite
-    if (accion === "estado_tarjeta" || accion === "limite") {
+    // ----------------------------------- estado_tarjeta / límite / configurar
+    if (accion === "estado_tarjeta" || accion === "limite" || accion === "configurar") {
       const { data: t } = await admin.from("tarjetas").select("*").eq("id", String(body.tarjeta_id ?? "")).eq("owner_id", owner).maybeSingle();
       if (!t) throw new ErrorApp("Tarjeta no encontrada", 404);
       if (t.estado === "cancelada") throw new ErrorApp("La tarjeta ya está cancelada");
@@ -340,8 +374,27 @@ Deno.serve(async (req) => {
         return json({ tarjeta: data });
       }
 
-      const limite = body.limite_mensual == null || body.limite_mensual === "" ? null : Number(body.limite_mensual);
-      if (limite !== null && (!Number.isFinite(limite) || limite < 0)) throw new ErrorApp("El límite no es válido");
+      if (accion === "configurar") {
+        const alias = String(body.alias ?? "").trim().slice(0, 60);
+        if (!alias) throw new ErrorApp("Ponle un nombre a la tarjeta");
+        const limite = importeONull(body.limite_mensual);
+        const limiteCompra = importeONull(body.limite_compra);
+        const quien = await persona(admin, owner, body);
+        const limites = limitesStripe(limite, limiteCompra);
+        await stripe("POST", `/issuing/cards/${t.stripe_card_id}`, {
+          spending_controls: { spending_limits: limites.length ? limites : "" },
+          metadata: { alias, asignada_a: quien.asignada_a ?? "" },
+        }, cuenta.stripe_account_id);
+        const { data } = await admin
+          .from("tarjetas")
+          .update({ alias, limite_mensual: limite, limite_compra: limiteCompra, ...quien, updated_at: new Date().toISOString() })
+          .eq("id", t.id)
+          .select()
+          .single();
+        return json({ tarjeta: data });
+      }
+
+      const limite = importeONull(body.limite_mensual);
       await stripe("POST", `/issuing/cards/${t.stripe_card_id}`, {
         spending_controls: { spending_limits: limite !== null ? [{ amount: centimos(limite), interval: "monthly" }] : "" },
       }, cuenta.stripe_account_id);

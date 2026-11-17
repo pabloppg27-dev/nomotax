@@ -102,3 +102,10 @@ begin
 end $$;
 
 -- Sin políticas de insert/update/delete: solo las funciones (clave secreta) escriben.
+
+-- ---------------------------------------------------------------------
+-- 5. Tarjetas asignadas a una persona y máximo por compra (se puede repetir)
+-- ---------------------------------------------------------------------
+alter table public.tarjetas add column if not exists trabajador_id uuid references public.trabajadores(id) on delete set null;
+alter table public.tarjetas add column if not exists asignada_a text check (asignada_a is null or char_length(asignada_a) between 2 and 26);
+alter table public.tarjetas add column if not exists limite_compra numeric(12, 2) check (limite_compra is null or limite_compra >= 0);

@@ -31,7 +31,22 @@ export interface Tarjeta {
   exp_anio: number | null
   estado: EstadoTarjeta
   limite_mensual: number | null
+  /** Máximo por cada compra (euros); null = sin límite por compra */
+  limite_compra?: number | null
+  /** Trabajador de la empresa que la usa (ficha de Laboral) */
+  trabajador_id?: string | null
+  /** Nombre de quien la usa (el del trabajador u otro); null = la empresa */
+  asignada_a?: string | null
   created_at: string
+}
+
+/** Lo que se puede configurar de una tarjeta: nombre, persona y límites */
+export interface ConfigTarjeta {
+  alias: string
+  trabajador_id: string | null
+  asignada_a: string | null
+  limite_mensual: number | null
+  limite_compra: number | null
 }
 
 export interface Movimiento {
@@ -157,9 +172,9 @@ export async function completarAltaDemo(ownerId: string): Promise<void> {
   guardarDemo(ownerId, d)
 }
 
-export async function crearTarjeta(ownerId: string, datos: { alias: string; tipo: 'virtual' | 'fisica'; limite_mensual: number | null; titular: string }): Promise<Tarjeta> {
+export async function crearTarjeta(ownerId: string, datos: ConfigTarjeta & { tipo: 'virtual' | 'fisica'; titular: string }): Promise<Tarjeta> {
   if (!esDemo) {
-    const r = await llamar<{ tarjeta: Tarjeta }>('crear_tarjeta', ownerId, datos)
+    const r = await llamar<{ tarjeta: Tarjeta }>('crear_tarjeta', ownerId, { ...datos })
     return r.tarjeta
   }
   await espera()
@@ -169,7 +184,7 @@ export async function crearTarjeta(ownerId: string, datos: { alias: string; tipo
   const t: Tarjeta = {
     id: idDemo(),
     alias: datos.alias,
-    titular_nombre: datos.titular.slice(0, 26),
+    titular_nombre: (datos.asignada_a || datos.titular).slice(0, 26),
     tipo: datos.tipo,
     ultimos4: aleatorio(4),
     marca: 'Visa',
@@ -177,6 +192,9 @@ export async function crearTarjeta(ownerId: string, datos: { alias: string; tipo
     exp_anio: hoy.getFullYear() + 3,
     estado: 'activa',
     limite_mensual: datos.limite_mensual,
+    limite_compra: datos.limite_compra,
+    trabajador_id: datos.trabajador_id,
+    asignada_a: datos.asignada_a,
     created_at: hoy.toISOString(),
   }
   d.tarjetas = [t, ...d.tarjetas]
@@ -192,6 +210,18 @@ export async function cambiarEstadoTarjeta(ownerId: string, tarjetaId: string, e
   await espera(200)
   const d = leerDemo(ownerId)
   d.tarjetas = d.tarjetas.map((t) => (t.id === tarjetaId ? { ...t, estado } : t))
+  guardarDemo(ownerId, d)
+}
+
+/** Cambia el nombre, la persona asignada y los límites de una tarjeta */
+export async function configurarTarjeta(ownerId: string, tarjetaId: string, c: ConfigTarjeta, nombreEmpresa: string): Promise<void> {
+  if (!esDemo) {
+    await llamar('configurar', ownerId, { tarjeta_id: tarjetaId, ...c })
+    return
+  }
+  await espera(200)
+  const d = leerDemo(ownerId)
+  d.tarjetas = d.tarjetas.map((t) => (t.id === tarjetaId ? { ...t, ...c, titular_nombre: (c.asignada_a || nombreEmpresa).slice(0, 26) } : t))
   guardarDemo(ownerId, d)
 }
 
@@ -241,6 +271,7 @@ export async function comprarDemo(ownerId: string, tarjetaId: string, importe: n
   if (t.estado === 'congelada') [estado, motivo] = ['rechazada', 'Tarjeta congelada']
   else if (t.estado === 'cancelada') [estado, motivo] = ['rechazada', 'Tarjeta cancelada']
   else if ((d.saldo ?? 0) < importe) [estado, motivo] = ['rechazada', 'Saldo insuficiente']
+  else if (t.limite_compra != null && importe > t.limite_compra) [estado, motivo] = ['rechazada', 'Supera el límite por compra']
   else if (t.limite_mensual !== null && gastadoMes + importe > t.limite_mensual) [estado, motivo] = ['rechazada', 'Supera el límite mensual']
   const mov: Movimiento = { id: idDemo(), tarjeta_id: t.id, importe, moneda: 'EUR', comercio, categoria: null, estado, motivo, fecha: new Date().toISOString() }
   if (estado === 'aprobada') d.saldo = Math.round(((d.saldo ?? 0) - importe) * 100) / 100

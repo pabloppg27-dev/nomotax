@@ -22,5 +22,19 @@ export const TARJETAS_PARA_CLIENTES = import.meta.env.DEV || import.meta.env.VIT
  * 'real' = usa la función «tarjetas» de Supabase y Stripe. Por defecto, demo en local y real si no.
  * Se puede forzar con VITE_TARJETAS_MODO=demo|real.
  */
-export const TARJETAS_MODO: 'demo' | 'real' =
-  import.meta.env.VITE_TARJETAS_MODO === 'real' ? 'real' : import.meta.env.VITE_TARJETAS_MODO === 'demo' || import.meta.env.DEV ? 'demo' : 'real'
+export const TARJETAS_MODO: 'demo' | 'real' = demoForzada()
+  ? 'demo'
+  : import.meta.env.VITE_TARJETAS_MODO === 'real' ? 'real' : import.meta.env.VITE_TARJETAS_MODO === 'demo' || import.meta.env.DEV ? 'demo' : 'real'
+
+/** Solo en local: abrir /tarjetas?demo=1 fuerza la demostración (y ?demo=0 la quita) durante esa sesión del navegador */
+function demoForzada(): boolean {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return false
+  try {
+    const q = new URLSearchParams(window.location.search).get('demo')
+    if (q === '1') sessionStorage.setItem('nt-tarjetas-demo', '1')
+    if (q === '0') sessionStorage.removeItem('nt-tarjetas-demo')
+    return sessionStorage.getItem('nt-tarjetas-demo') === '1'
+  } catch {
+    return false
+  }
+}
