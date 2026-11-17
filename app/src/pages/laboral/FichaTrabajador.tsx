@@ -400,6 +400,7 @@ function Documentos({
   onChanged: () => void
 }) {
   const [tipo, setTipo] = useState<TipoDocTrabajador>(isAdvisor ? 'contrato' : 'dni')
+  const [anioCert, setAnioCert] = useState(new Date().getFullYear() - 1)
   const [subiendo, setSubiendo] = useState(false)
   const ref = useRef<HTMLInputElement>(null)
 
@@ -418,6 +419,7 @@ function Documentos({
           tipo,
           nombre: f.name,
           path,
+          ...(tipo === 'certificado_retenciones' ? { anio: anioCert } : {}),
         })
         if (error) throw new Error(await errorMessage(error))
       } catch (e) {
@@ -430,7 +432,7 @@ function Documentos({
   }
 
   const borrar = async (d: DocTrabajador) => {
-    const ok = await confirmar({ titulo: 'Eliminar documento', texto: `¿Eliminar «${d.nombre ?? nombreDoc(d.tipo)}»?`, accion: 'Eliminar', peligro: true })
+    const ok = await confirmar({ titulo: 'Eliminar documento', texto: `¿Eliminar «${d.nombre ?? nombreDoc(d.tipo, d.anio)}»?`, accion: 'Eliminar', peligro: true })
     if (!ok) return
     await supabase.storage.from(BUCKET).remove([d.path])
     const { error } = await supabase.from('trabajador_documentos').delete().eq('id', d.id)
@@ -451,7 +453,7 @@ function Documentos({
             <li key={d.id} className="flex items-center gap-3 py-2.5">
               <Paperclip className="size-4 shrink-0 text-muted" />
               <button onClick={() => abrirDocumento(d.path)} className="min-w-0 flex-1 text-left hover:underline">
-                <span className="block truncate">{nombreDoc(d.tipo)}</span>
+                <span className="block truncate">{nombreDoc(d.tipo, d.anio)}</span>
                 <span className="block truncate text-xs text-muted">
                   {d.nombre} · {fecha(d.created_at)}
                 </span>
@@ -473,6 +475,15 @@ function Documentos({
             </option>
           ))}
         </Select>
+        {tipo === 'certificado_retenciones' && (
+          <Select className="!h-9 w-auto !text-sm" value={anioCert} onChange={(e) => setAnioCert(Number(e.target.value))} aria-label="Año del certificado">
+            {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </Select>
+        )}
         <Button size="sm" variant="secondary" icon={<Upload className="size-4" />} loading={subiendo} onClick={() => ref.current?.click()}>
           Subir
         </Button>

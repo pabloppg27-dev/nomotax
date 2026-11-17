@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AlertCircle, FileText, Loader2, Receipt, Trash2, Wallet } from 'lucide-react'
-import { useAuth } from '../lib/auth'
+import { Navigate, useParams } from 'react-router-dom'
+import { AlertCircle, ChevronDown, FileText, Download, FolderOpen, IdCard, Loader2, Receipt, Trash2, Wallet } from 'lucide-react'
+import { useAuth, verComoDev } from '../lib/auth'
+import { DOCS_DEMO, FICHA_DEMO, NOMINAS_DEMO } from '../lib/demoEmpleado'
 import { BUCKET, abrirDocumento, errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
 import { necesitaRevision } from '../lib/contabilidad.ts'
@@ -9,22 +11,27 @@ import { importesDe, leerFactura, prepararArchivo, subirDocumento } from '../lib
 import { nombreDoc } from '../lib/laboral'
 import type { Expense, Nomina, Trabajador } from '../lib/types'
 import UploadZone from '../components/UploadZone'
-import { Badge, Card, Empty, Loading, confirmar, notify } from '../components/ui'
+import MisNominas from '../components/MisNominas'
+import { Badge, Card, Empty, Loading, confirmar, cx, notify } from '../components/ui'
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+export const SECCIONES = ['tickets', 'nominas', 'documentos', 'ficha']
 
-type Doc = { id: string; tipo: string; nombre: string | null; path: string; created_at: string }
+type Doc = { id: string; tipo: string; nombre: string | null; path: string; created_at: string; anio?: number | null }
 
 /** Portal del empleado: sus tickets de gasto, sus nóminas y sus documentos */
 export default function MiEspacio() {
+  const { seccion } = useParams()
   const { ownerId, owner, me, miembro } = useAuth()
   const [tickets, setTickets] = useState<Expense[] | null>(null)
   const [nominas, setNominas] = useState<Nomina[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
   const [ficha, setFicha] = useState<Trabajador | null>(null)
   const [subiendo, setSubiendo] = useState<string | null>(null)
+  const [certAbierto, setCertAbierto] = useState(false)
 
   const trabajadorId = miembro?.trabajador_id ?? null
+  // Solo en local con ?verComo=empleado y sin trabajador vinculado: una nómina de ejemplo para ver la pantalla
+  const ejemplo = import.meta.env.DEV && verComoDev() === 'empleado' && !trabajadorId
 
   const cargar = useCallback(async () => {
     if (!ownerId || !me) return
@@ -34,7 +41,7 @@ export default function MiEspacio() {
         ? supabase.from('nominas').select('*').eq('owner_id', ownerId).eq('trabajador_id', trabajadorId).eq('estado', 'publicada').order('anio', { ascending: false }).order('mes', { ascending: false })
         : Promise.resolve({ data: [] }),
       trabajadorId
-        ? supabase.from('trabajador_documentos').select('id, tipo, nombre, path, created_at').eq('trabajador_id', trabajadorId).order('created_at', { ascending: false })
+        ? supabase.from('trabajador_documentos').select('*').eq('trabajador_id', trabajadorId).order('created_at', { ascending: false })
         : Promise.resolve({ data: [] }),
       trabajadorId ? supabase.from('trabajadores').select('*').eq('id', trabajadorId).maybeSingle() : Promise.resolve({ data: null }),
     ])
@@ -49,6 +56,9 @@ export default function MiEspacio() {
   }, [cargar])
 
   if (!ownerId || !owner || !tickets) return <Loading />
+  const nominasVer = ejemplo ? NOMINAS_DEMO : nominas
+  const fichaVer = ejemplo ? FICHA_DEMO : ficha
+  const docsVer = ejemplo ? DOCS_DEMO : docs
 
   const subir = async (files: File[]) => {
     for (const file of files) {
@@ -99,23 +109,41 @@ export default function MiEspacio() {
     cargar()
   }
 
-  const nombre = me?.nombre?.split(' ')[0]
+  const verDoc = (path: string) => (path ? abrirDocumento(path) : notify('Es un documento de ejemplo: no tiene archivo.'))
+
+  if (!SECCIONES.includes(seccion ?? '')) return <Navigate to="/mi-espacio/tickets" replace />
+
+  const titulo = { tickets: 'Mis tickets de gasto', nominas: 'Mis nóminas', documentos: 'Mis documentos', ficha: 'Mi ficha' }[seccion as string]
+  const sub = {
+    tickets: 'Haz una foto al ticket o sube el PDF: lo leemos solo y administración lo revisa.',
+    nominas: `Tus nóminas en ${owner.nombre_comercial || owner.nombre}: elige el mes para ver el desglose.`,
+    documentos: 'Contrato, alta en la Seguridad Social, certificado de retenciones para la renta y el resto de papeles que tiene la empresa de ti.',
+    ficha: 'Los datos de tu contrato.',
+  }[seccion as string]
+
+  const sinVincular = (
+    <Card className="p-5 sm:p-6">
+      <p className="flex items-start gap-2 text-sm text-muted">
+        <AlertCircle className="mt-0.5 size-4 shrink-0" />
+        Tu usuario aún no está vinculado a tu ficha de trabajador. Pídeselo a la empresa para verlo aquí.
+      </p>
+    </Card>
+  )
 
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">{nombre ? `Hola, ${nombre}` : 'Mi espacio'}</h1>
-        <p className="mt-1 text-[15px] text-muted">Tus tickets de gasto, tus nóminas y tus documentos en {owner.nombre_comercial || owner.nombre}.</p>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">{titulo}</h1>
+        <p className="mt-1 text-[15px] text-muted">{sub}</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="space-y-4">
+      {seccion === 'tickets' && (
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr] lg:items-start">
           <Card className="p-5 sm:p-6">
-            <h2 className="flex items-center gap-2 font-semibold">
-              <Receipt className="size-4" /> Mis tickets de gasto
+            <h2 className="mb-4 flex items-center gap-2 font-semibold">
+              <Receipt className="size-4" /> Subir un ticket
             </h2>
-            <p className="mb-4 text-sm text-muted">Haz una foto al ticket o sube el PDF: lo leemos solo y administración lo revisa.</p>
-            <UploadZone onFiles={subir} titulo="Subir tickets" texto="Foto o PDF · puedes subir varios" disabled={subiendo !== null} compacto />
+            <UploadZone onFiles={subir} titulo="Subir tickets" texto="Foto o PDF · puedes subir varios" disabled={subiendo !== null} compacto fotoPrimero />
             {subiendo && (
               <p className="mt-3 flex items-center gap-2 text-sm text-muted">
                 <Loader2 className="size-4 animate-spin" /> Subiendo y leyendo «{subiendo}»…
@@ -150,72 +178,107 @@ export default function MiEspacio() {
             )}
           </Card>
         </div>
+      )}
 
-        <div className="space-y-4">
+      {seccion === 'nominas' &&
+        (!trabajadorId && !ejemplo ? (
+          sinVincular
+        ) : nominasVer.length === 0 ? (
           <Card className="p-5 sm:p-6">
-            <h2 className="flex items-center gap-2 font-semibold">
-              <FileText className="size-4" /> Mis nóminas
-            </h2>
-            {!trabajadorId ? (
-              <p className="mt-3 flex items-start gap-2 text-sm text-muted">
-                <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                Tu usuario aún no está vinculado a tu ficha de trabajador. Pídeselo a la empresa para ver aquí tus nóminas.
-              </p>
-            ) : nominas.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">Todavía no hay nóminas publicadas.</p>
-            ) : (
-              <div className="mt-3 divide-y divide-line">
-                {nominas.map((n) => (
-                  <button key={n.id} className="flex w-full items-center justify-between gap-3 py-2.5 text-left hover:text-ink/70" onClick={() => abrirDocumento(n.file_path)}>
-                    <span className="capitalize">
-                      {MESES[n.mes - 1]} {n.anio}
-                      {n.tipo !== 'mensual' && <span className="text-muted"> · {n.tipo === 'extra' ? 'paga extra' : n.tipo}</span>}
-                    </span>
-                    <span className="num text-sm text-muted">Líquido {eur(Number(n.neto))}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <FileText className="size-4" /> Todavía no hay nóminas publicadas.
+            </p>
           </Card>
+        ) : (
+          <MisNominas nominas={nominasVer} ejemplo={ejemplo} />
+        ))}
 
-          {docs.length > 0 && (
-            <Card className="p-5 sm:p-6">
-              <h2 className="font-semibold">Mis documentos</h2>
-              <div className="mt-3 divide-y divide-line">
-                {docs.map((d) => (
-                  <button key={d.id} className="flex w-full items-center justify-between gap-3 py-2.5 text-left" onClick={() => abrirDocumento(d.path)}>
-                    <span>{nombreDoc(d.tipo)}</span>
-                    <span className="text-sm text-muted">{fecha(d.created_at)}</span>
-                  </button>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {ficha && (
-            <Card className="p-5 sm:p-6">
-              <h2 className="font-semibold">Mi ficha</h2>
-              <dl className="mt-3 space-y-2 text-[15px]">
-                {[
-                  ['Puesto', ficha.puesto],
-                  ['Desde', fecha(ficha.fecha_inicio)],
-                  ['Jornada', ficha.jornada === 'completa' ? 'Completa' : `Parcial${ficha.horas_semana ? ` · ${ficha.horas_semana} h/semana` : ''}`],
-                  ['Salario bruto mensual', eur(Number(ficha.salario_bruto_mensual))],
-                  ['Pagas', String(ficha.pagas)],
-                ]
-                  .filter(([, v]) => v)
-                  .map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-3">
-                      <dt className="text-muted">{k}</dt>
-                      <dd className="text-right">{v}</dd>
+      {seccion === 'documentos' &&
+        (!trabajadorId && !ejemplo ? (
+          sinVincular
+        ) : docsVer.length === 0 ? (
+          <Card>
+            <Empty icon={<FolderOpen className="size-5" />} title="Todavía no hay documentos" text="Cuando la empresa suba tu contrato u otros papeles, los verás aquí." />
+          </Card>
+        ) : (
+          <Card className="max-w-2xl divide-y divide-line px-5 sm:px-6">
+            {(() => {
+              const certs = docsVer.filter((d) => d.tipo === 'certificado_retenciones').sort((x, y) => Number(y.anio ?? 0) - Number(x.anio ?? 0))
+              const resto = docsVer.filter((d) => d.tipo !== 'certificado_retenciones')
+              return (
+                <>
+                  {certs.length > 0 && (
+                    <div>
+                      <button
+                        className="flex w-full items-center justify-between gap-3 py-3 text-left hover:text-ink/70"
+                        onClick={() => setCertAbierto((v) => !v)}
+                        aria-expanded={certAbierto}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <FileText className="size-4 text-muted" /> Certificado de retenciones (IRPF)
+                          <Badge tono="lima">Para la renta</Badge>
+                        </span>
+                        <span className="flex items-center gap-2 text-sm text-muted">
+                          {certs.length} {certs.length === 1 ? 'año' : 'años'}
+                          <ChevronDown className={cx('size-4 transition-transform', certAbierto && 'rotate-180')} />
+                        </span>
+                      </button>
+                      {certAbierto && (
+                        <div className="mb-3 flex flex-wrap gap-2 pl-6">
+                          {certs.map((d) => (
+                            <button
+                              key={d.id}
+                              onClick={() => verDoc(d.path)}
+                              className="num inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium hover:border-ink"
+                            >
+                              <Download className="size-3.5" /> {d.anio ?? fecha(d.created_at)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                  )}
+                  {resto.map((d) => (
+                    <button key={d.id} className="flex w-full items-center justify-between gap-3 py-3 text-left hover:text-ink/70" onClick={() => verDoc(d.path)}>
+                      <span className="flex items-center gap-2.5">
+                        <FileText className="size-4 text-muted" /> {nombreDoc(d.tipo, d.anio)}
+                      </span>
+                      <span className="text-sm text-muted">{fecha(d.created_at)}</span>
+                    </button>
                   ))}
-              </dl>
-              <p className="mt-4 text-xs text-muted">¿Algún dato no es correcto? Avisa a la empresa.</p>
-            </Card>
-          )}
-        </div>
-      </div>
+                </>
+              )
+            })()}
+          </Card>
+        ))}
+
+      {seccion === 'ficha' &&
+        (!fichaVer ? (
+          sinVincular
+        ) : (
+          <Card className="max-w-2xl p-5 sm:p-6">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <IdCard className="size-4" /> Datos de tu contrato
+            </h2>
+            <dl className="mt-3 divide-y divide-line text-[15px]">
+              {[
+                ['Puesto', fichaVer.puesto],
+                ['Desde', fecha(fichaVer.fecha_inicio)],
+                ['Jornada', fichaVer.jornada === 'completa' ? 'Completa' : `Parcial${fichaVer.horas_semana ? ` · ${fichaVer.horas_semana} h/semana` : ''}`],
+                ['Salario bruto mensual', eur(Number(fichaVer.salario_bruto_mensual))],
+                ['Pagas', String(fichaVer.pagas)],
+              ]
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-3 py-2.5">
+                    <dt className="text-muted">{k}</dt>
+                    <dd className="text-right">{v}</dd>
+                  </div>
+                ))}
+            </dl>
+            <p className="mt-4 text-xs text-muted">¿Algún dato no es correcto? Avisa a la empresa.</p>
+          </Card>
+        ))}
     </>
   )
 }

@@ -73,6 +73,19 @@ function storeOwner(id: string | null) {
   }
 }
 
+/** Vista previa de un rol, solo con el servidor de desarrollo (en producción no existe) */
+export function verComoDev(): RolEnCuenta | null {
+  if (!import.meta.env.DEV) return null
+  try {
+    const q = new URLSearchParams(location.search).get('verComo')
+    if (q) sessionStorage.setItem('nt-ver-como', q)
+    const v = sessionStorage.getItem('nt-ver-como')
+    return v && ['titular', 'admin', 'socio', 'comercial', 'empleado'].includes(v) ? (v as RolEnCuenta) : null
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [me, setMe] = useState<Profile | null>(null)
@@ -167,6 +180,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else if (isAdvisor) rol = 'asesor'
       else rol = miembro?.rol ?? null
     }
+    // Solo en local (npm run dev): http://localhost:5173/?verComo=empleado | comercial | socio | admin | titular
+    const simulado = verComoDev()
+    if (simulado && rol) rol = simulado
     return {
       session,
       loading,

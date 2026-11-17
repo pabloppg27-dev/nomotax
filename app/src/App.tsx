@@ -48,7 +48,7 @@ function Requiere({ permiso, children }: { permiso: Permiso; children: ReactNode
 function Inicio() {
   const { rol } = useAuth()
   if (rol === 'socio') return <Navigate to="/socio" replace />
-  if (rol === 'empleado') return <Navigate to="/mi-espacio" replace />
+  if (rol === 'empleado') return <Navigate to="/mi-espacio/tickets" replace />
   return <Resumen />
 }
 
@@ -149,7 +149,7 @@ export default function App() {
             <Route path="usuarios" element={<AbrirConfiguracion seccion="usuarios" />} />
             <Route path="configuracion/:seccion?" element={<AbrirConfiguracion />} />
             <Route path="socio" element={<Requiere permiso="socio"><VistaSocio /></Requiere>} />
-            <Route path="mi-espacio" element={<SoloEmpleado><MiEspacio /></SoloEmpleado>} />
+            <Route path="mi-espacio/:seccion?" element={<SoloEmpleado><MiEspacio /></SoloEmpleado>} />
             <Route path="perfil" element={<AbrirConfiguracion seccion="perfil" />} />
             <Route path="mi-asesor" element={<Requiere permiso="asesor"><MiAsesor /></Requiere>} />
             <Route

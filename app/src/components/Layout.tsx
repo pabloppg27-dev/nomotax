@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Briefcase,
+  FolderOpen,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -38,7 +39,13 @@ interface ItemNav {
 /** Menú según lo que eres en la empresa que estás viendo */
 function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[] {
   if (rol === 'socio') return [{ to: '/socio', label: 'Vista de socio', icon: PieChart }]
-  if (rol === 'empleado') return [{ to: '/mi-espacio', label: 'Mi espacio', icon: Wallet }]
+  if (rol === 'empleado')
+    return [
+      { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt },
+      { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet },
+      { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen },
+      { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard },
+    ]
   const items: (ItemNav & { si: boolean })[] = [
     { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true, si: true },
     { to: '/gastos', label: 'Gastos', icon: Receipt, si: puede('gastos') },

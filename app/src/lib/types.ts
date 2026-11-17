@@ -309,7 +309,7 @@ export interface Trabajador {
   updated_at: string
 }
 
-export type TipoDocTrabajador = 'dni' | 'contrato' | 'alta_ss' | 'teletrabajo' | 'modelo_145' | 'otro'
+export type TipoDocTrabajador = 'dni' | 'contrato' | 'alta_ss' | 'teletrabajo' | 'modelo_145' | 'certificado_retenciones' | 'otro'
 
 export interface DocTrabajador {
   id: string
@@ -318,6 +318,8 @@ export interface DocTrabajador {
   tipo: TipoDocTrabajador
   nombre: string | null
   path: string
+  /** Año al que se refiere (certificado de retenciones) */
+  anio?: number | null
   subido_por: string | null
   created_at: string
 }

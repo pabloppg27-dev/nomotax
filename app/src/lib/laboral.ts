@@ -38,9 +38,10 @@ export const TIPOS_DOC: { id: TipoDocTrabajador; nombre: string }[] = [
   { id: 'alta_ss', nombre: 'Alta en la Seguridad Social' },
   { id: 'teletrabajo', nombre: 'Acuerdo de teletrabajo' },
   { id: 'modelo_145', nombre: 'Modelo 145' },
+  { id: 'certificado_retenciones', nombre: 'Certificado de retenciones (IRPF)' },
   { id: 'otro', nombre: 'Otro' },
 ]
-export const nombreDoc = (id: string) => TIPOS_DOC.find((t) => t.id === id)?.nombre ?? 'Documento'
+export const nombreDoc = (id: string, anio?: number | null) => `${TIPOS_DOC.find((t) => t.id === id)?.nombre ?? 'Documento'}${anio ? ` ${anio}` : ''}`
 
 export const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 

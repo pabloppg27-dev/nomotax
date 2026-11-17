@@ -9,12 +9,15 @@ export default function UploadZone({
   texto,
   disabled,
   compacto,
+  fotoPrimero,
 }: {
   onFiles: (files: File[]) => void | Promise<void>
   titulo: string
   texto?: ReactNode
   disabled?: boolean
   compacto?: boolean
+  /** En el móvil, «Hacer foto» va primero y destacado (tickets de empleados) */
+  fotoPrimero?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const camRef = useRef<HTMLInputElement>(null)
@@ -54,15 +57,21 @@ export default function UploadZone({
       <p className="font-medium">{titulo}</p>
       {texto && <p className="mx-auto mt-1 max-w-md text-sm text-muted">{texto}</p>}
       <div className="mt-4 flex flex-wrap justify-center gap-2">
-        <Button disabled={disabled} icon={<Upload className="size-4" />} onClick={() => inputRef.current?.click()}>
+        <Button
+          variant={fotoPrimero ? 'secondary' : 'primary'}
+          disabled={disabled}
+          icon={<Upload className="size-4" />}
+          onClick={() => inputRef.current?.click()}
+          className={fotoPrimero ? 'order-2 max-sm:w-full' : undefined}
+        >
           Subir archivos
         </Button>
         <Button
-          variant="secondary"
+          variant={fotoPrimero ? 'primary' : 'secondary'}
           disabled={disabled}
           icon={<Camera className="size-4" />}
           onClick={() => camRef.current?.click()}
-          className="sm:hidden"
+          className={fotoPrimero ? 'order-1 w-full sm:hidden' : 'sm:hidden'}
         >
           Hacer foto
         </Button>
