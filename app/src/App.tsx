@@ -79,10 +79,11 @@ function SinAcceso() {
   )
 }
 
-/** Tarjetas: con claves de prueba en la web publicada, el asesor lo ve entero y los clientes ven «Próximamente» */
+/** Tarjetas: con claves de prueba en la web publicada, el asesor lo ve entero en su cuenta y las empresas de clientes ven «Próximamente» */
 function SoloTarjetas({ children }: { children: ReactNode }) {
-  const { isAdvisor } = useAuth()
-  return TARJETAS_PARA_CLIENTES || isAdvisor ? <>{children}</> : <TarjetasProximamente />
+  const { isAdvisor, viewingOther } = useAuth()
+  // Solo el asesor en su propia cuenta; en la empresa de un cliente (aunque entre el asesor) sale «Próximamente»
+  return TARJETAS_PARA_CLIENTES || (isAdvisor && !viewingOther) ? <>{children}</> : <TarjetasProximamente />
 }
 
 function SoloAsesor({ children }: { children: ReactNode }) {

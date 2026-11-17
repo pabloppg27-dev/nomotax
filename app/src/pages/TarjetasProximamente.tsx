@@ -5,7 +5,8 @@ import { Badge, Card, PageHeader } from '../components/ui'
 /** Lo que ven los clientes en «Tarjetas» hasta que Stripe apruebe la emisión (ver TARJETAS_PARA_CLIENTES) */
 export default function TarjetasProximamente() {
   const { owner } = useAuth()
-  const nombre = owner?.nombre_comercial || owner?.nombre || 'Tu empresa'
+  // Nombre comercial (marca del autónomo) si lo tiene; si no, el de la empresa o el del autónomo
+  const nombre = owner?.nombre_comercial || owner?.nombre || owner?.email || 'Tu empresa'
   return (
     <>
       <PageHeader title="Tarjetas" subtitle="Tarjetas Visa para los gastos de tu empresa, con tu propio saldo y límites." />

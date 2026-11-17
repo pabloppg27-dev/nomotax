@@ -163,7 +163,7 @@ export default function Tarjetas() {
       ) : estado === null ? (
         <Loading />
       ) : !cuenta ? (
-        <Presentacion cargando={ocupado === 'alta'} onActivar={() => empezarAlta(false)} />
+        <Presentacion nombre={nombreEmpresa} cargando={ocupado === 'alta'} onActivar={() => empezarAlta(false)} />
       ) : !cuenta.emision_activa ? (
         <AltaPendiente
           cuenta={cuenta}
@@ -268,7 +268,7 @@ export default function Tarjetas() {
 
 /* ------------------------------------------------------------- Alta */
 
-function Presentacion({ cargando, onActivar }: { cargando: boolean; onActivar: () => void }) {
+function Presentacion({ nombre, cargando, onActivar }: { nombre: string; cargando: boolean; onActivar: () => void }) {
   return (
     <Card className="overflow-hidden">
       <div className="grid gap-6 p-5 sm:p-8 md:grid-cols-2 md:items-center">
@@ -295,7 +295,7 @@ function Presentacion({ cargando, onActivar }: { cargando: boolean; onActivar: (
           <p className="mt-2 text-xs text-muted">Te pediremos los datos de tu empresa y de su representante. Lo verifica Stripe, no NomoTax.</p>
         </div>
         <div className="grid place-items-center">
-          <TarjetaVisual titular="Tu empresa S.L." alias="Ejemplo" ultimos4="4242" exp_mes={12} exp_anio={2029} />
+          <TarjetaVisual titular={nombre} alias="Ejemplo" ultimos4="4242" exp_mes={12} exp_anio={2029} />
         </div>
       </div>
     </Card>
