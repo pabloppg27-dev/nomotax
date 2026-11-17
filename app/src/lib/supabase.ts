@@ -9,6 +9,16 @@ export const supabase = createClient(url || 'http://localhost:54321', key || 'si
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 })
 
+/**
+ * Cliente aparte para el enlace de «nueva contraseña». Guarda la sesión solo en memoria:
+ * el resto de la app no la ve y desaparece al cerrar la pestaña.
+ */
+export function clienteRecuperacion() {
+  return createClient(url || 'http://localhost:54321', key || 'sin-configurar', {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'nt-recuperacion' },
+  })
+}
+
 export const BUCKET = 'documentos'
 
 /** Mensaje legible a partir de un error de Supabase o de una función */

@@ -5,6 +5,7 @@ import { configured } from './lib/supabase'
 import Layout from './components/Layout'
 import { ConfirmHost, Loading, ToastHost } from './components/ui'
 import Login from './pages/Login'
+import NuevaContrasena from './pages/NuevaContrasena'
 import Resumen from './pages/Resumen'
 import Gastos from './pages/Gastos'
 import Facturas from './pages/Facturas'
@@ -118,6 +119,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
           <Route
             element={
               <Protegido>
