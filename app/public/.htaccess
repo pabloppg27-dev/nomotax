@@ -2,6 +2,10 @@
 Options -Indexes
 RewriteEngine On
 
+# Archivos internos (despliegue y notas .md): no se sirven
+RewriteRule (^|/)\.ftp-deploy-sync-state\.json$ - [F,L]
+RewriteRule \.md$ - [F,L,NC]
+
 # Siempre por https y siempre en el subdominio
 RewriteCond %{HTTPS} !=on [OR]
 RewriteCond %{HTTP_HOST} !^clientes\.nomotax\.io$ [NC]
