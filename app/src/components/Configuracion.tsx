@@ -2,9 +2,9 @@
  * Configuración: una ventana grande con las secciones a la izquierda (Perfil, Plan, Usuarios,
  * Vista de socio…) y su contenido a la derecha. Se abre desde el menú sin salir de la página.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { GRUPOS_CONFIG, seccionesVisibles, type IdSeccion } from '../lib/configuracion'
 import { cuotaCliente } from '../lib/planes'
@@ -64,6 +64,15 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
   const secciones = seccionesVisibles(rol, puede)
   const [activa, setActiva] = useState<IdSeccion>(inicial && secciones.some((s) => s.id === inicial) ? inicial : secciones[0]?.id ?? 'perfil')
   const [q, setQ] = useState('')
+  // En el móvil se ve una cosa u otra: la lista de secciones o la sección elegida (en el ordenador, las dos a la vez).
+  // Si se llega con una sección concreta (un enlace del correo, «Tu plan»…), se abre directamente en ella.
+  const [verSeccion, setVerSeccion] = useState(Boolean(inicial))
+  const contenido = useRef<HTMLElement>(null)
+  const elegir = (id: IdSeccion) => {
+    setActiva(id)
+    setVerSeccion(true)
+    contenido.current?.scrollTo({ top: 0 })
+  }
 
   // Escape cierra (salvo que haya otra ventana encima, como «Dar acceso»), y la página de detrás no se mueve
   useEffect(() => {
@@ -97,10 +106,19 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
         aria-label="Configuración"
         className="relative flex h-dvh w-full flex-col overflow-hidden shadow-2xl sm:h-[min(88dvh,860px)] sm:max-w-6xl sm:rounded-2xl"
       >
-        {/* Cabecera blanca y una línea lima abajo */}
+        {/* Cabecera blanca y una línea lima abajo. En el móvil, dentro de una sección, el título es «‹ Configuración» y vuelve a la lista */}
         <div className="shrink-0 border-b-2 border-lima bg-white text-ink">
-          <div className="flex items-center justify-between gap-3 py-3 pl-5 pr-3 sm:py-3.5 sm:pl-6 sm:pr-4">
-            <h2 className="text-lg font-semibold tracking-tight">Configuración</h2>
+          <div className="flex items-center justify-between gap-3 py-3 pl-3 pr-3 sm:py-3.5 sm:pl-6 sm:pr-4">
+            {verSeccion ? (
+              <button
+                onClick={() => setVerSeccion(false)}
+                className="-ml-0.5 flex items-center gap-1 rounded-full py-1 pl-1 pr-3 text-lg font-semibold tracking-tight transition-colors hover:bg-paper sm:hidden"
+              >
+                <ChevronLeft className="size-6" />
+                Configuración
+              </button>
+            ) : null}
+            <h2 className={cx('pl-2 text-lg font-semibold tracking-tight sm:pl-0', verSeccion && 'hidden sm:block')}>Configuración</h2>
             <button
               onClick={onClose}
               className="grid size-9 shrink-0 place-items-center rounded-full bg-paper text-ink transition-colors hover:bg-ink/10"
@@ -112,42 +130,71 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col bg-white sm:flex-row">
-          {/* Izquierda: buscador y secciones (en el móvil, una fila arriba) */}
-          <aside className="shrink-0 border-b border-line bg-paper/60 sm:w-64 sm:overflow-y-auto sm:border-b-0 sm:border-r">
-            <div className="hidden p-3 sm:block">
-              <label className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-line focus-within:ring-ink/30">
+          {/* Izquierda: buscador y secciones. En el móvil es la pantalla de inicio: tarjetas por grupos con icono, explicación y flecha */}
+          <aside
+            className={cx(
+              'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-paper sm:block sm:w-64 sm:flex-none sm:border-r sm:border-line sm:bg-paper/60',
+              verSeccion && 'hidden',
+            )}
+          >
+            <div className="px-4 pb-1 pt-4 sm:p-3">
+              <label className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5 text-[15px] ring-1 ring-line focus-within:ring-ink/30 sm:py-2 sm:text-sm">
                 <Search className="size-4 shrink-0 text-muted" />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar" className="min-w-0 flex-1 bg-transparent outline-none" />
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar en configuración" className="min-w-0 flex-1 bg-transparent outline-none" />
               </label>
             </div>
-            <nav className="flex gap-1 overflow-x-auto px-3 py-2 sm:block sm:space-y-4 sm:px-3 sm:pb-4 sm:pt-0">
-              {grupos.map((g) => (
-                <div key={g.titulo} className="contents sm:block">
-                  <p className="hidden truncate px-2 pb-1.5 pt-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted sm:block">{g.titulo}</p>
-                  {g.items.map((s) => {
-                    const Icon = s.icon
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => setActiva(s.id)}
-                        className={cx(
-                          'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2 text-left text-[15px] transition-colors sm:w-full',
-                          s.id === actual?.id ? 'bg-lima font-medium text-ink' : 'text-ink/75 hover:bg-ink/[0.05] hover:text-ink',
-                        )}
-                      >
-                        <Icon className="size-[18px] shrink-0" />
-                        <span className="truncate">{s.label(ctx)}</span>
-                      </button>
-                    )
-                  })}
+
+            {/* Quién eres (solo móvil): la cuenta con la que estás configurando */}
+            {owner && !q && (
+              <div className="mx-4 mt-3 flex items-center gap-3 rounded-2xl bg-ink p-4 text-white sm:hidden">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-lima text-lg font-semibold text-ink">
+                  {(owner.nombre_comercial || owner.nombre || owner.email || '?').trim().charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{owner.nombre_comercial || owner.nombre || 'Mi cuenta'}</p>
+                  {owner.email && <p className="truncate text-sm text-white/60">{owner.email}</p>}
                 </div>
+              </div>
+            )}
+
+            <nav className="space-y-5 px-4 pb-6 pt-3 sm:space-y-4 sm:px-3 sm:pb-4 sm:pt-0">
+              {grupos.map((g) => (
+                <section key={g.titulo}>
+                  <p className="truncate px-2 pb-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-muted sm:pt-2">{g.titulo}</p>
+                  <div className="divide-y divide-line overflow-hidden rounded-2xl bg-white ring-1 ring-line sm:space-y-0.5 sm:divide-y-0 sm:overflow-visible sm:rounded-none sm:bg-transparent sm:ring-0">
+                    {g.items.map((s) => {
+                      const Icon = s.icon
+                      const sel = s.id === actual?.id
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => elegir(s.id)}
+                          aria-current={sel ? 'page' : undefined}
+                          className={cx(
+                            'flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors sm:gap-2.5 sm:rounded-xl sm:px-3 sm:py-2',
+                            sel ? 'sm:bg-lima sm:font-medium sm:text-ink' : 'active:bg-paper sm:text-ink/75 sm:hover:bg-ink/[0.05] sm:hover:text-ink sm:active:bg-transparent',
+                          )}
+                        >
+                          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink text-lima sm:size-auto sm:bg-transparent sm:text-current">
+                            <Icon className="size-[18px] shrink-0" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[15px] font-medium sm:font-normal">{s.label(ctx)}</span>
+                            <span className="line-clamp-1 text-[13px] text-muted sm:hidden">{s.detalle(ctx)}</span>
+                          </span>
+                          <ChevronRight className="size-4 shrink-0 text-muted/70 sm:hidden" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
               ))}
               {filtradas.length === 0 && <p className="px-2 py-2 text-sm text-muted">Nada con «{q}»</p>}
             </nav>
           </aside>
 
           {/* Derecha: la sección elegida */}
-          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8 sm:py-6">
+          <main ref={contenido} className={cx('min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:block sm:px-8 sm:py-6', !verSeccion && 'hidden')}>
             {actual && (
               <>
                 <div className="mb-6 flex items-center gap-3 border-b border-line pb-5">
