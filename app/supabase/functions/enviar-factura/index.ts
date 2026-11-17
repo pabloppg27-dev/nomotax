@@ -434,7 +434,7 @@ function textoSobre$1([r, g, b]) {
 	return .2126 * lin(r) + .7152 * lin(g) + .0722 * lin(b) > .179 ? INK : BLANCO;
 }
 /** Mezcla un color con blanco (a = proporción del color). */
-function tinte$1([r, g, b], a) {
+function tinte([r, g, b], a) {
 	return [
 		Math.round(255 - (255 - r) * a),
 		Math.round(255 - (255 - g) * a),
@@ -477,7 +477,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	const borrador = d.estado === "borrador";
 	const pruebas = esFactura && modoPruebas;
 	const T = TEXTOS[idiomaDePais(d.cliente?.pais)];
-	const SUAVE = tinte$1(MARCA, .08);
+	const SUAVE = tinte(MARCA, .08);
 	const nifEmisor = T.nif === "NIF" ? "NIF" : "NIF/VAT";
 	const etiqueta = (txt, x, yy, align = "left") => {
 		doc.setFont("helvetica", "bold");
@@ -912,8 +912,19 @@ const FRASES = {
 	}
 };
 const LIMA = "#CDF564";
-function colorValido(hex) {
-	return /^#[0-9a-f]{6}$/i.test((hex ?? "").trim()) ? hex.trim() : LIMA;
+function colorValido(hex, porDefecto = LIMA) {
+	return /^#[0-9a-f]{6}$/i.test((hex ?? "").trim()) ? hex.trim() : porDefecto;
+}
+/** Cabecera y botón de los correos: negro de NomoTax salvo que la empresa elija otro color */
+const NEGRO_CORREO = "#111110";
+/** Relación de contraste entre dos colores (1 a 21; a partir de 3 se lee bien un texto grande o en negrita) */
+function contraste(a, b) {
+	const [x, y] = [luminancia(a), luminancia(b)];
+	return (Math.max(x, y) + .05) / (Math.min(x, y) + .05);
+}
+/** El color de acento para escribir sobre la cabecera; si no se lee sobre ese fondo, blanco o negro */
+function acentoSobre(acento, fondo) {
+	return contraste(acento, fondo) >= 3 ? acento : textoSobre(fondo);
 }
 function luminancia(hex) {
 	const n = parseInt(hex.slice(1), 16);
@@ -925,16 +936,6 @@ function luminancia(hex) {
 }
 /** Negro o blanco, lo que mejor se lea sobre el color */
 const textoSobre = (hex) => luminancia(hex) > .179 ? "#111110" : "#ffffff";
-/** Mezcla el color con blanco (a = proporción del color) */
-function tinte(hex, a) {
-	const n = parseInt(hex.slice(1), 16);
-	const m = (c) => Math.round(255 - (255 - c) * a);
-	return `#${[
-		m(n >> 16 & 255),
-		m(n >> 8 & 255),
-		m(n & 255)
-	].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
-}
 const FONT = "Helvetica,Arial,sans-serif";
 /** HTML del correo, con el diseño de las facturas de NomoTax y la marca de la empresa */
 function htmlCorreoFactura(mensaje, d, diseno) {
@@ -942,7 +943,9 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 	const T = TEXTOS[lengua];
 	const F = FRASES[lengua];
 	const color = colorValido(diseno.color);
-	const acento = luminancia(color) < .12 ? tinte(color, .5) : color;
+	const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO);
+	const textoCab = textoSobre(cabecera);
+	const acento = acentoSobre(color, cabecera);
 	const rect = Boolean(diseno.rectificativa);
 	const cliente = d.cliente?.trim() ?? "";
 	const parrafos = mensaje.trim().split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
@@ -973,10 +976,10 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e7e7e2">
-  <tr><td style="background:#111110;padding:24px 32px">
+  <tr><td style="background:${cabecera};padding:24px 32px">
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       ${logo}
-      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:#ffffff">${esc(diseno.empresa)}<br>
+      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoCab}">${esc(diseno.empresa)}<br>
         <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${rect ? F.etiquetaRect : F.etiqueta}</span></td>
     </tr></table>
   </td></tr>
@@ -1046,6 +1049,61 @@ function textoCorreoFactura(mensaje, d, diseno) {
 		"",
 		`— ${F.enviadaCon} NomoTax · nomotax.io`
 	].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+}
+// supabase/functions/_compartido/smtp.ts
+const desdeB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function claveAes() {
+	const secreto = Deno.env.get("SMTP_CLAVE");
+	if (!secreto || secreto.length < 24) throw new Error("Falta el secreto SMTP_CLAVE (texto largo y aleatorio)");
+	const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secreto));
+	return crypto.subtle.importKey("raw", hash, "AES-GCM", false, ["encrypt", "decrypt"]);
+}
+async function descifrar(guardado) {
+	const [v, iv, datos] = guardado.split(":");
+	if (v !== "v1" || !iv || !datos) throw new Error("Contraseña guardada en un formato desconocido");
+	const plano = await crypto.subtle.decrypt({
+		name: "AES-GCM",
+		iv: desdeB64(iv)
+	}, await claveAes(), desdeB64(datos));
+	return new TextDecoder().decode(plano);
+}
+function transporte(c, pass) {
+	return nodemailer.createTransport({
+		host: c.host,
+		port: c.puerto,
+		secure: c.seguridad === "ssl",
+		requireTLS: c.seguridad === "starttls",
+		auth: {
+			user: c.usuario,
+			pass
+		},
+		connectionTimeout: 1e4,
+		greetingTimeout: 1e4,
+		socketTimeout: 2e4
+	});
+}
+/** El SMTP activo de la empresa con su contraseña, o null si envía con NomoTax */
+async function smtpActivo(admin, ownerId) {
+	const { data: config } = await admin.from("smtp_empresas").select("*").eq("owner_id", ownerId).eq("activo", true).maybeSingle();
+	if (!config) return null;
+	const { data: clave } = await admin.from("smtp_claves").select("clave_cifrada").eq("owner_id", ownerId).maybeSingle();
+	if (!clave) return null;
+	return {
+		config,
+		pass: await descifrar(clave.clave_cifrada)
+	};
+}
+/** Error de SMTP en palabras normales (para la app) */
+function explicarErrorSmtp(e) {
+	const err = e;
+	const m = err.message ?? String(e);
+	if (/smtp auth.*disabled|SmtpClientAuthentication/i.test(m)) return "Tu cuenta de Microsoft tiene desactivado el envío por SMTP. Tu administrador debe activar «SMTP autenticado» o usa el envío con NomoTax.";
+	if (err.code === "EAUTH" || err.responseCode === 535 || /auth|credentials|password|username/i.test(m)) return "El servidor no acepta el usuario o la contraseña. Revisa los datos (en Gmail hace falta una contraseña de aplicación).";
+	if (err.code === "ETIMEDOUT" || err.code === "ECONNECTION" || /timeout|timed out/i.test(m)) return "No se ha podido conectar con el servidor: revisa el servidor y el puerto.";
+	if (err.code === "ENOTFOUND" || err.code === "EDNS" || /getaddrinfo|not known|dns/i.test(m)) return "No existe ese servidor de correo: revisa el nombre.";
+	if (err.code === "ESOCKET" || /ssl|tls|certificate|wrong version/i.test(m)) return "Fallo de seguridad al conectar (SSL/TLS): prueba con el otro tipo de seguridad o puerto (465 SSL / 587 STARTTLS).";
+	if (/sender|from address|not owned|send as/i.test(m)) return "El servidor no deja enviar con ese email de remitente: usa el mismo email con el que entras.";
+	return `El servidor de correo ha respondido: ${m.slice(0, 200)}`;
 }
 // supabase/functions/enviar-factura/fuente.ts
 const MAX_DESTINATARIOS = 5;
@@ -1158,34 +1216,23 @@ Deno.serve(async (req) => {
 	const diseno = {
 		empresa,
 		color: empresaPerfil.color_marca,
+		cabecera: empresaPerfil.color_cabecera ?? null,
 		logo: logo ? "cid:logo-empresa" : null,
 		respuesta: responder || null,
 		telefono: emisorPdf.telefono ?? empresaPerfil.telefono ?? null,
 		iban: emisorPdf.iban ?? null,
 		rectificativa: inv.tipo === "rectificativa"
 	};
-	const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
-	const usuario = propio ? Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io" : Deno.env.get("SMTP_USER") ?? "info@nomotax.io";
-	const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
-	if (!pass) return json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500);
-	const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
-	const transporte = nodemailer.createTransport({
-		host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com",
-		port: 465,
-		secure: true,
-		auth: {
-			user: usuario,
-			pass
-		}
-	});
-	let errorEnvio = null;
-	let remitente = alias;
-	const enviar = (desde) => transporte.sendMail({
-		from: {
-			name: `${empresa} vía NomoTax`,
-			address: desde
-		},
-		...responder ? { replyTo: {
+	let propioSmtp = null;
+	try {
+		propioSmtp = await smtpActivo(admin, inv.owner_id);
+	} catch (e) {
+		console.error("enviar-factura: SMTP de la empresa:", e instanceof Error ? e.message : e);
+		return json({ error: "No se ha podido usar tu correo de envío. Revisa Configuración → Correo." }, 500);
+	}
+	const mail = (desde) => ({
+		from: desde,
+		...responder && responder !== desde.address ? { replyTo: {
 			name: empresa,
 			address: responder
 		} } : {},
@@ -1206,19 +1253,55 @@ Deno.serve(async (req) => {
 			cid: "logo-empresa"
 		}] : []]
 	});
-	try {
-		await enviar(alias);
-	} catch (e) {
-		const err = e;
-		if (alias !== usuario.toLowerCase()) {
-			console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${err.message}`);
-			remitente = usuario;
-			try {
-				await enviar(usuario);
-			} catch (e2) {
-				errorEnvio = e2 instanceof Error ? e2.message : String(e2);
+	let errorEnvio = null;
+	let errorParaUsuario = "No se ha podido enviar el correo. Prueba otra vez en unos minutos.";
+	let remitente;
+	if (propioSmtp) {
+		const c = propioSmtp.config;
+		remitente = c.remitente_email;
+		try {
+			await transporte(c, propioSmtp.pass).sendMail(mail({
+				name: c.remitente_nombre || empresa,
+				address: c.remitente_email
+			}));
+		} catch (e) {
+			errorEnvio = e instanceof Error ? e.message : String(e);
+			errorParaUsuario = `Tu servidor de correo no ha enviado la factura. ${explicarErrorSmtp(e)}`;
+			await admin.from("smtp_empresas").update({ ultimo_error: explicarErrorSmtp(e) }).eq("owner_id", inv.owner_id);
+		}
+	} else {
+		const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
+		const usuario = propio ? Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io" : Deno.env.get("SMTP_USER") ?? "info@nomotax.io";
+		const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
+		if (!pass) return json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500);
+		const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
+		const t = nodemailer.createTransport({
+			host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com",
+			port: 465,
+			secure: true,
+			auth: {
+				user: usuario,
+				pass
 			}
-		} else errorEnvio = e instanceof Error ? e.message : String(e);
+		});
+		const enviar = (desde) => t.sendMail(mail({
+			name: `${empresa} vía NomoTax`,
+			address: desde
+		}));
+		remitente = alias;
+		try {
+			await enviar(alias);
+		} catch (e) {
+			if (alias !== usuario.toLowerCase()) {
+				console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${e instanceof Error ? e.message : e}`);
+				remitente = usuario;
+				try {
+					await enviar(usuario);
+				} catch (e2) {
+					errorEnvio = e2 instanceof Error ? e2.message : String(e2);
+				}
+			} else errorEnvio = e instanceof Error ? e.message : String(e);
+		}
 	}
 	await admin.from("envios_factura").insert({
 		owner_id: inv.owner_id,
@@ -1231,7 +1314,7 @@ Deno.serve(async (req) => {
 	});
 	if (errorEnvio) {
 		console.error("enviar-factura:", errorEnvio);
-		return json({ error: "No se ha podido enviar el correo. Prueba otra vez en unos minutos." }, 502);
+		return json({ error: errorParaUsuario }, 502);
 	}
 	const enviadaAt = (/* @__PURE__ */ new Date()).toISOString();
 	await admin.from("invoices").update({

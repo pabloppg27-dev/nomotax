@@ -1,15 +1,19 @@
 /** Secciones de la ventana de Configuración (menú a la izquierda, contenido a la derecha). Se irán añadiendo más. */
-import { CreditCard, Mail, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
+import { CreditCard, FileText, Mail, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
 import type { Permiso, RolEnCuenta } from './types'
 
-export type IdSeccion = 'perfil' | 'envio' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
+export type IdSeccion = 'perfil' | 'correo' | 'plantillas' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
+
+/** Bloques del menú izquierdo, en este orden */
+export const GRUPOS_CONFIG = ['Tu cuenta', 'Equipo', 'Comunicación', 'Suscripción'] as const
+export type GrupoConfig = (typeof GRUPOS_CONFIG)[number]
 
 export interface SeccionConfig {
   id: IdSeccion
   to: string
   icon: LucideIcon
   /** Bloque del menú izquierdo de la ventana */
-  grupo: 'Tu cuenta' | 'Empresa'
+  grupo: GrupoConfig
   /** null = la ve todo el mundo */
   permiso: Permiso | null
   label: (o: { viewingOther: boolean; rol: RolEnCuenta | null; puede: (p: Permiso) => boolean }) => string
@@ -32,38 +36,10 @@ export const SECCIONES_CONFIG: SeccionConfig[] = [
       esMiembroSinEmpresa(rol, puede) ? 'Tu nombre, tu contraseña y tus accesos' : 'Datos fiscales, logo, facturación y contraseña',
   },
   {
-    id: 'envio',
-    to: '/configuracion/envio',
-    icon: Mail,
-    grupo: 'Empresa',
-    permiso: 'empresa',
-    label: () => 'Envío de facturas',
-    detalle: () => 'El correo con el que mandas tus facturas a tus clientes y a dónde llegan las respuestas',
-  },
-  {
-    id: 'plan',
-    to: '/configuracion/plan',
-    icon: CreditCard,
-    grupo: 'Empresa',
-    permiso: 'empresa',
-    label: () => 'Plan',
-    detalle: ({ viewingOther }) => (viewingOther ? 'Plan del cliente, cobro y todos los planes' : 'Tu plan de NomoTax y todos los planes'),
-  },
-  {
-    id: 'facturacion',
-    to: '/configuracion/facturacion',
-    icon: Receipt,
-    grupo: 'Empresa',
-    permiso: 'empresa',
-    label: () => 'Facturación',
-    detalle: ({ viewingOther }) =>
-      viewingOther ? 'Las facturas de NomoTax a este cliente y a qué email le llegan' : 'Las facturas de NomoTax y a qué email te llegan',
-  },
-  {
     id: 'usuarios',
     to: '/configuracion/usuarios',
     icon: UsersRound,
-    grupo: 'Empresa',
+    grupo: 'Equipo',
     permiso: 'usuarios',
     label: () => 'Usuarios',
     detalle: () => 'Quién entra en la cuenta y qué ve cada uno',
@@ -72,10 +48,47 @@ export const SECCIONES_CONFIG: SeccionConfig[] = [
     id: 'socio',
     to: '/configuracion/socio',
     icon: PieChart,
-    grupo: 'Empresa',
+    grupo: 'Equipo',
     permiso: 'socio',
     label: () => 'Vista de socio',
     detalle: () => 'Así ven tus socios la empresa',
+  },
+  {
+    id: 'correo',
+    to: '/configuracion/correo',
+    icon: Mail,
+    grupo: 'Comunicación',
+    permiso: 'empresa',
+    label: () => 'Correo',
+    detalle: () => 'Conecta el correo de tu dominio para enviar facturas, accesos, nóminas y presupuestos desde él',
+  },
+  {
+    id: 'plantillas',
+    to: '/configuracion/plantillas',
+    icon: FileText,
+    grupo: 'Comunicación',
+    permiso: 'empresa',
+    label: () => 'Plantillas',
+    detalle: () => 'El texto de los correos: facturas, accesos, nóminas y presupuestos',
+  },
+  {
+    id: 'plan',
+    to: '/configuracion/plan',
+    icon: CreditCard,
+    grupo: 'Suscripción',
+    permiso: 'empresa',
+    label: () => 'Plan',
+    detalle: ({ viewingOther }) => (viewingOther ? 'Plan del cliente, cobro y todos los planes' : 'Tu plan de NomoTax y todos los planes'),
+  },
+  {
+    id: 'facturacion',
+    to: '/configuracion/facturacion',
+    icon: Receipt,
+    grupo: 'Suscripción',
+    permiso: 'empresa',
+    label: () => 'Facturación',
+    detalle: ({ viewingOther }) =>
+      viewingOther ? 'Las facturas de NomoTax a este cliente y a qué email le llegan' : 'Las facturas de NomoTax y a qué email te llegan',
   },
 ]
 

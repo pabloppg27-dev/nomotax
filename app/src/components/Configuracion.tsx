@@ -6,10 +6,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { createPortal } from 'react-dom'
 import { Search, X } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { seccionesVisibles, type IdSeccion } from '../lib/configuracion'
+import { GRUPOS_CONFIG, seccionesVisibles, type IdSeccion } from '../lib/configuracion'
 import { cuotaCliente } from '../lib/planes'
 import Perfil from '../pages/Perfil'
-import EnvioFacturas from './EnvioFacturas'
+import CorreoEnvio from './CorreoEnvio'
+import Plantillas from './Plantillas'
 import Usuarios from '../pages/Usuarios'
 import VistaSocio from '../pages/VistaSocio'
 import { HistorialFacturacion, PlanTarjeta, TablaPlanes } from './Planes'
@@ -84,7 +85,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
   const filtradas = secciones.filter((s) => !filtro || `${s.label(ctx)} ${s.detalle(ctx)}`.toLowerCase().includes(filtro))
   const grupos = viewingOther
     ? [{ titulo: owner?.nombre || 'Cliente', items: filtradas }]
-    : (['Tu cuenta', 'Empresa'] as const).map((g) => ({ titulo: g, items: filtradas.filter((s) => s.grupo === g) })).filter((g) => g.items.length)
+    : GRUPOS_CONFIG.map((g) => ({ titulo: g, items: filtradas.filter((s) => s.grupo === g) })).filter((g) => g.items.length)
   const actual = secciones.find((s) => s.id === activa) ?? secciones[0]
 
   return createPortal(
@@ -159,7 +160,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                   </div>
                 </div>
                 {actual.id === 'perfil' && <Perfil />}
-                {actual.id === 'envio' && <EnvioFacturas />}
+                {actual.id === 'correo' && <CorreoEnvio />}
+                {actual.id === 'plantillas' && <Plantillas />}
                 {actual.id === 'plan' && <SeccionPlan />}
                 {actual.id === 'facturacion' && <SeccionFacturacion />}
                 {actual.id === 'usuarios' && <Usuarios embebido />}

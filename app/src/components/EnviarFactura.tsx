@@ -6,7 +6,7 @@ import { invocar, supabase } from '../lib/supabase'
 import { fecha as fmtFecha } from '../lib/format'
 import { correoDeFactura, htmlCorreoFactura, type DatosFacturaCorreo } from '../lib/correoFactura'
 import type { Emisor, Invoice } from '../lib/types'
-import { REMITENTE_FACTURAS, VistaPreviaCorreo, nombreEmpresa, useLogoUrl } from './EnvioFacturas'
+import { VistaPreviaCorreo, nombreEmpresa, useLogoUrl, useRemitente } from './CorreoComun'
 import { Button, Field, Input, Modal, Textarea, notify } from './ui'
 
 const EMAIL = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/
@@ -27,6 +27,7 @@ export default function EnviarFactura({
 }) {
   const { owner, configCorreo } = useCorreoEmpresa()
   const empresa = nombreEmpresa(owner)
+  const remitente = useRemitente()
   const datos: DatosFacturaCorreo = useMemo(
     () => ({
       cliente: factura.cliente?.nombre ?? null,
@@ -64,10 +65,11 @@ export default function EnviarFactura({
   }, [factura.contact_id])
 
   if (!owner) return null
-  const responder = owner.email_respuesta || owner.email || '—'
+  const responder = owner.email_respuesta || (remitente.propio ? remitente.direccion : owner.email) || '—'
   const html = htmlCorreoFactura(mensaje, datos, {
     empresa,
     color: owner.color_marca,
+    cabecera: owner.color_cabecera,
     logo,
     respuesta: responder,
     telefono: (factura.emisor as Emisor | null)?.telefono ?? owner.telefono,
@@ -97,7 +99,7 @@ export default function EnviarFactura({
         logo: logoEnvio,
       })
       notify(`Factura ${factura.numero} enviada a ${r.enviada_a}`)
-      if (r.remitente && r.remitente !== REMITENTE_FACTURAS) console.warn(`Enviada desde ${r.remitente}: el servidor no dejó usar ${REMITENTE_FACTURAS}`)
+      if (r.remitente && r.remitente !== remitente.direccion) console.warn(`Enviada desde ${r.remitente}: el servidor no dejó usar ${remitente.direccion}`)
       onEnviada({ enviada_at: r.enviada_at, enviada_a: r.enviada_a })
       onClose()
     } catch (e) {
@@ -150,13 +152,13 @@ export default function EnviarFactura({
             <Textarea rows={10} maxLength={5000} value={mensaje} onChange={(e) => setMensaje(e.target.value)} />
           </Field>
           <p className="text-sm text-muted">
-            Sale desde {REMITENTE_FACTURAS} con tu nombre. Si tu cliente responde, le llega a <strong className="text-ink">{responder}</strong>.
+            {remitente.propio ? <>Sale desde <strong className="text-ink">{remitente.direccion}</strong>.</> : <>Sale desde {remitente.direccion} con tu nombre.</>} Si tu cliente responde, le llega a <strong className="text-ink">{responder}</strong>.
             {owner.correo_copia && ' Recibirás una copia oculta.'}
           </p>
         </div>
         <div>
           <p className="mb-2 text-[13px] font-medium text-ink/80">Así le llegará</p>
-          <VistaPreviaCorreo de={`${empresa} vía NomoTax <${REMITENTE_FACTURAS}>`} para={lista(para).join(', ')} responder={responder} asunto={asunto} html={html} />
+          <VistaPreviaCorreo de={remitente.de} para={lista(para).join(', ')} responder={responder} asunto={asunto} html={html} />
         </div>
       </div>
     </Modal>

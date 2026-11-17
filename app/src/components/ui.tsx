@@ -10,7 +10,7 @@ import {
   type TextareaHTMLAttributes,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { CheckCircle2, AlertCircle, X, Loader2 } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Eye, EyeOff, X, Loader2 } from 'lucide-react'
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ')
 
@@ -64,10 +64,38 @@ const fieldBase =
   'rounded-lg border border-line bg-white px-3 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink focus:ring-2 focus:ring-lima/60 disabled:bg-paper disabled:text-muted'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
+  { className, type, ...rest },
+  ref,
+) {
+  // Toda contraseña de la app lleva el botón del ojo para ver lo que se escribe
+  if (type === 'password') return <CampoClave ref={ref} className={className} {...rest} />
+  return <input ref={ref} type={type} className={cx(fieldBase, ancho(className), 'h-10', className)} {...rest} />
+})
+
+const CampoClave = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function CampoClave(
   { className, ...rest },
   ref,
 ) {
-  return <input ref={ref} className={cx(fieldBase, ancho(className), 'h-10', className)} {...rest} />
+  const [ver, setVer] = useState(false)
+  // El ancho (w-…) va en el contenedor; el resto de clases, en el campo
+  const clases = (className ?? '').split(/\s+/).filter(Boolean)
+  const anchoCls = clases.filter((c) => /^!?w-/.test(c)).join(' ')
+  const demas = clases.filter((c) => !/^!?w-/.test(c)).join(' ')
+  return (
+    <div className={cx('relative', anchoCls || 'w-full')}>
+      <input ref={ref} type={ver ? 'text' : 'password'} className={cx(fieldBase, 'h-10 w-full pr-11', demas)} {...rest} />
+      <button
+        type="button"
+        onClick={() => setVer((v) => !v)}
+        aria-label={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-pressed={ver}
+        title={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        className="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-md text-muted transition-colors hover:bg-ink/5 hover:text-ink"
+      >
+        {ver ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+      </button>
+    </div>
+  )
 })
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(

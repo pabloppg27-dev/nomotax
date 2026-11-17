@@ -69,6 +69,16 @@ export interface Profile {
   correo_mensaje?: string | null
   /** Copia oculta de cada envío al email de respuestas */
   correo_copia?: boolean | null
+  /** Diseño de los correos (supabase/plantillas-diseno.sql): fondo de la cabecera y botón; vacío = negro */
+  color_cabecera?: string | null
+  color_boton?: string | null
+  /** Plantillas de los demás correos (supabase/correo-empresa.sql); vacío = la de por defecto (src/lib/plantillasCorreo.ts) */
+  acceso_asunto?: string | null
+  acceso_mensaje?: string | null
+  nomina_asunto?: string | null
+  nomina_mensaje?: string | null
+  presupuesto_asunto?: string | null
+  presupuesto_mensaje?: string | null
   created_at: string
 }
 

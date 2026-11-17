@@ -19,6 +19,8 @@
 //   Con un buzón propio: SMTP_FACTURAS_USER + SMTP_FACTURAS_PASSWORD.
 //   Opcionales: SMTP_HOST, FACTURAS_LIMITE_DIA (100).
 //   Las respuestas van siempre a la empresa («Responder a»), salga desde donde salga.
+//   Si la empresa ha conectado su propio correo (Configuración → Correo, smtp_empresas activo),
+//   sale desde su correo y sin «vía NomoTax». Necesita el secreto SMTP_CLAVE (supabase/functions/_compartido/smtp.ts).
 
 import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
@@ -26,6 +28,7 @@ import { construirPdf, type LogoPdf } from "../../../src/lib/pdfFactura";
 import { MODO_PRUEBAS_FACTURAS } from "../../../src/lib/config";
 import { htmlCorreoFactura, rellenar, textoCorreoFactura, type DatosFacturaCorreo } from "../../../src/lib/correoFactura";
 import type { Emisor, Invoice } from "../../../src/lib/types";
+import { explicarErrorSmtp, smtpActivo, transporte as transporteSmtp } from "../_compartido/smtp";
 
 const MAX_DESTINATARIOS = 5;
 const EMAIL = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
@@ -162,6 +165,7 @@ Deno.serve(async (req) => {
   const diseno = {
     empresa,
     color: empresaPerfil.color_marca,
+    cabecera: empresaPerfil.color_cabecera ?? null,
     logo: logo ? "cid:logo-empresa" : null,
     respuesta: responder || null,
     telefono: emisorPdf.telefono ?? empresaPerfil.telefono ?? null,
@@ -169,53 +173,72 @@ Deno.serve(async (req) => {
     rectificativa: inv.tipo === "rectificativa",
   };
 
-  // Buzón propio (SMTP_FACTURAS_PASSWORD) o, si no, se entra con info@ y se envía como el alias invoice@
-  const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
-  const usuario = propio ? (Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io") : (Deno.env.get("SMTP_USER") ?? "info@nomotax.io");
-  const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
-  if (!pass) return json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500);
-  const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
-  const transporte = nodemailer.createTransport({
-    host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com",
-    port: 465,
-    secure: true,
-    auth: { user: usuario, pass },
+  // ¿La empresa tiene su propio correo conectado? (Configuración → Correo, supabase/correo-empresa.sql)
+  let propioSmtp: Awaited<ReturnType<typeof smtpActivo>> = null;
+  try {
+    propioSmtp = await smtpActivo(admin, inv.owner_id);
+  } catch (e) {
+    // No se puede leer la contraseña (p. ej. falta SMTP_CLAVE): mejor avisar que enviar desde otro sitio
+    console.error("enviar-factura: SMTP de la empresa:", e instanceof Error ? e.message : e);
+    return json({ error: "No se ha podido usar tu correo de envío. Revisa Configuración → Correo." }, 500);
+  }
+
+  const mail = (desde: { name: string; address: string }) => ({
+    from: desde,
+    ...(responder && responder !== desde.address ? { replyTo: { name: empresa, address: responder } } : {}),
+    to: para,
+    ...(cc.length ? { cc } : {}),
+    ...(empresaPerfil.correo_copia && responder && !para.includes(responder) && !cc.includes(responder) ? { bcc: responder } : {}),
+    subject: asunto,
+    text: textoCorreoFactura(mensaje, datos, diseno),
+    html: htmlCorreoFactura(mensaje, datos, diseno),
+    attachments: [
+      { filename: archivo, content: pdf, contentType: "application/pdf" },
+      ...(logo ? [{ filename: `logo.${logo.ext}`, content: logo.bytes, contentType: logo.tipo, cid: "logo-empresa" }] : []),
+    ],
   });
 
   let errorEnvio: string | null = null;
-  let remitente = alias;
-  const enviar = (desde: string) =>
-    transporte.sendMail({
-        from: { name: `${empresa} vía NomoTax`, address: desde },
-        ...(responder ? { replyTo: { name: empresa, address: responder } } : {}),
-        to: para,
-        ...(cc.length ? { cc } : {}),
-        ...(empresaPerfil.correo_copia && responder && !para.includes(responder) && !cc.includes(responder) ? { bcc: responder } : {}),
-        subject: asunto,
-        text: textoCorreoFactura(mensaje, datos, diseno),
-        html: htmlCorreoFactura(mensaje, datos, diseno),
-        attachments: [
-          { filename: archivo, content: pdf, contentType: "application/pdf" },
-          ...(logo ? [{ filename: `logo.${logo.ext}`, content: logo.bytes, contentType: logo.tipo, cid: "logo-empresa" }] : []),
-        ],
-      });
+  let errorParaUsuario = "No se ha podido enviar el correo. Prueba otra vez en unos minutos.";
+  let remitente: string;
 
-  try {
-    await enviar(alias);
-  } catch (e) {
-    // Si falla con un remitente que no es el buzón (Hostinger no deja enviar como un alias: probado el 17/11/2026),
-    // se reintenta desde el buzón con el que se entra. Las respuestas van igual a la empresa.
-    const err = e as { message?: string };
-    if (alias !== usuario.toLowerCase()) {
-      console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${err.message}`);
-      remitente = usuario;
-      try {
-        await enviar(usuario);
-      } catch (e2) {
-        errorEnvio = e2 instanceof Error ? e2.message : String(e2);
-      }
-    } else {
+  if (propioSmtp) {
+    // Desde el correo de la empresa, sin «vía NomoTax»
+    const c = propioSmtp.config;
+    remitente = c.remitente_email;
+    try {
+      await transporteSmtp(c, propioSmtp.pass).sendMail(mail({ name: c.remitente_nombre || empresa, address: c.remitente_email }));
+    } catch (e) {
       errorEnvio = e instanceof Error ? e.message : String(e);
+      errorParaUsuario = `Tu servidor de correo no ha enviado la factura. ${explicarErrorSmtp(e)}`;
+      await admin.from("smtp_empresas").update({ ultimo_error: explicarErrorSmtp(e) }).eq("owner_id", inv.owner_id);
+    }
+  } else {
+    // Con NomoTax: buzón propio de facturas (SMTP_FACTURAS_PASSWORD) o info@ enviando como FACTURAS_FROM
+    const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
+    const usuario = propio ? (Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io") : (Deno.env.get("SMTP_USER") ?? "info@nomotax.io");
+    const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
+    if (!pass) return json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500);
+    const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
+    const t = nodemailer.createTransport({ host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com", port: 465, secure: true, auth: { user: usuario, pass } });
+    const enviar = (desde: string) => t.sendMail(mail({ name: `${empresa} vía NomoTax`, address: desde }));
+    remitente = alias;
+    try {
+      await enviar(alias);
+    } catch (e) {
+      // Si falla con un remitente que no es el buzón (Hostinger no deja enviar como un alias: probado el 17/11/2026),
+      // se reintenta desde el buzón con el que se entra. Las respuestas van igual a la empresa.
+      if (alias !== usuario.toLowerCase()) {
+        console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${e instanceof Error ? e.message : e}`);
+        remitente = usuario;
+        try {
+          await enviar(usuario);
+        } catch (e2) {
+          errorEnvio = e2 instanceof Error ? e2.message : String(e2);
+        }
+      } else {
+        errorEnvio = e instanceof Error ? e.message : String(e);
+      }
     }
   }
 
@@ -230,7 +253,7 @@ Deno.serve(async (req) => {
   });
   if (errorEnvio) {
     console.error("enviar-factura:", errorEnvio);
-    return json({ error: "No se ha podido enviar el correo. Prueba otra vez en unos minutos." }, 502);
+    return json({ error: errorParaUsuario }, 502);
   }
 
   const enviadaAt = new Date().toISOString();

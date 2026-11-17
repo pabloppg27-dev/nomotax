@@ -115,11 +115,25 @@ const FRASES = {
 
 const LIMA = '#CDF564'
 
-function colorValido(hex: string | null | undefined): string {
-  return /^#[0-9a-f]{6}$/i.test((hex ?? '').trim()) ? (hex as string).trim() : LIMA
+export function colorValido(hex: string | null | undefined, porDefecto: string = LIMA): string {
+  return /^#[0-9a-f]{6}$/i.test((hex ?? '').trim()) ? (hex as string).trim() : porDefecto
 }
 
-function luminancia(hex: string): number {
+/** Cabecera y botón de los correos: negro de NomoTax salvo que la empresa elija otro color */
+export const NEGRO_CORREO = '#111110'
+
+/** Relación de contraste entre dos colores (1 a 21; a partir de 3 se lee bien un texto grande o en negrita) */
+export function contraste(a: string, b: string): number {
+  const [x, y] = [luminancia(a), luminancia(b)]
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+}
+
+/** El color de acento para escribir sobre la cabecera; si no se lee sobre ese fondo, blanco o negro */
+export function acentoSobre(acento: string, fondo: string): string {
+  return contraste(acento, fondo) >= 3 ? acento : textoSobre(fondo)
+}
+
+export function luminancia(hex: string): number {
   const n = parseInt(hex.slice(1), 16)
   const lin = (c: number) => {
     const v = c / 255
@@ -129,10 +143,10 @@ function luminancia(hex: string): number {
 }
 
 /** Negro o blanco, lo que mejor se lea sobre el color */
-const textoSobre = (hex: string) => (luminancia(hex) > 0.179 ? '#111110' : '#ffffff')
+export const textoSobre = (hex: string) => (luminancia(hex) > 0.179 ? '#111110' : '#ffffff')
 
 /** Mezcla el color con blanco (a = proporción del color) */
-function tinte(hex: string, a: number): string {
+export function tinte(hex: string, a: number): string {
   const n = parseInt(hex.slice(1), 16)
   const m = (c: number) => Math.round(255 - (255 - c) * a)
   return `#${[m((n >> 16) & 255), m((n >> 8) & 255), m(n & 255)].map((c) => c.toString(16).padStart(2, '0')).join('')}`
@@ -141,8 +155,10 @@ function tinte(hex: string, a: number): string {
 export interface DisenoCorreo {
   /** Nombre comercial o razón social */
   empresa: string
-  /** #RRGGBB; vacío = lima de NomoTax */
+  /** Acento (franja, caja del total, etiqueta): #RRGGBB; vacío = lima de NomoTax */
   color?: string | null
+  /** Fondo de la cabecera: #RRGGBB; vacío = negro */
+  cabecera?: string | null
   /** URL del logo (en el servidor, «cid:…», adjunto en línea) */
   logo?: string | null
   /** Email al que van las respuestas (sale al pie) */
@@ -162,8 +178,10 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
   const T = TEXTOS[lengua]
   const F = FRASES[lengua]
   const color = colorValido(diseno.color)
-  // Sobre la cabecera negra, un color de marca muy oscuro no se leería: se aclara
-  const acento = luminancia(color) < 0.12 ? tinte(color, 0.5) : color
+  const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO)
+  const textoCab = textoSobre(cabecera)
+  // Sobre la cabecera, un acento que no contraste no se leería: se usa blanco o negro
+  const acento = acentoSobre(color, cabecera)
   const rect = Boolean(diseno.rectificativa)
   const cliente = d.cliente?.trim() ?? ''
 
@@ -223,10 +241,10 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e7e7e2">
-  <tr><td style="background:#111110;padding:24px 32px">
+  <tr><td style="background:${cabecera};padding:24px 32px">
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       ${logo}
-      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:#ffffff">${esc(diseno.empresa)}<br>
+      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoCab}">${esc(diseno.empresa)}<br>
         <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${rect ? F.etiquetaRect : F.etiqueta}</span></td>
     </tr></table>
   </td></tr>
