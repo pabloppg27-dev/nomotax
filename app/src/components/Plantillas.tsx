@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Palette, RotateCcw, Save } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { hoyISO, sumarDias } from '../lib/format'
+import { hoyISO } from '../lib/format'
 import { correoDeFactura, htmlCorreoFactura } from '../lib/correoFactura'
 import {
   PLANTILLAS,
@@ -112,7 +112,7 @@ export default function Plantillas() {
       cliente: 'Laura García',
       numero: `${owner.serie_factura || 'F'}${new Date().getFullYear()}-0001`,
       fecha: hoyISO(),
-      vencimiento: sumarDias(hoyISO(), 30),
+      vencimiento: hoyISO(),
       total: 1210,
       empresa,
       pais: 'España',

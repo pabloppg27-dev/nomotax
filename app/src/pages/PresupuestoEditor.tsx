@@ -147,7 +147,7 @@ export default function PresupuestoEditor() {
         cliente: q.cliente,
         serie: owner.serie_factura || 'F',
         fecha: hoyISO(),
-        vencimiento: sumarDias(hoyISO(), 30),
+        vencimiento: hoyISO(),
         lineas: q.lineas,
         irpf_pct: q.irpf_pct,
         base: q.base,

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle2, Copy, Download, FileMinus, Mail, Save, Send, Trash2, Undo2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { fecha as fmtFecha, fechaLarga, hoyISO, sumarDias } from '../lib/format'
+import { fecha as fmtFecha, fechaLarga, hoyISO } from '../lib/format'
 import { calcularTotales, lineaVacia } from '../lib/totals'
 import { CAUSAS_RECTIFICACION, analizarFacturas } from '../lib/estados'
 import { MODO_PRUEBAS_FACTURAS } from '../lib/config'
@@ -29,7 +29,7 @@ export default function FacturaEditor() {
   const [contactId, setContactId] = useState<string | null>(null)
   const [cliente, setCliente] = useState<ClienteSnapshot>({})
   const [fecha, setFecha] = useState(hoyISO())
-  const [vencimiento, setVencimiento] = useState(sumarDias(hoyISO(), 30))
+  const [vencimiento, setVencimiento] = useState(hoyISO())
   const [lineas, setLineas] = useState<Linea[]>([lineaVacia()])
   const [irpf, setIrpf] = useState(0)
   const [notas, setNotas] = useState('')
@@ -283,7 +283,7 @@ export default function FacturaEditor() {
         cliente: factura.cliente,
         serie: factura.serie,
         fecha: hoyISO(),
-        vencimiento: sumarDias(hoyISO(), 30),
+        vencimiento: hoyISO(),
         lineas: factura.lineas,
         irpf_pct: factura.irpf_pct,
         base: factura.base,
@@ -445,7 +445,11 @@ export default function FacturaEditor() {
       fechas={
         <div className="grid grid-cols-2 gap-3">
           <Field label="Fecha de factura">
-            <Input type="date" value={fecha} disabled={bloqueada} onChange={(e) => setFecha(e.target.value)} />
+            <Input type="date" value={fecha} disabled={bloqueada} onChange={(e) => {
+                // Si el vencimiento iba el mismo día que la fecha, lo mueve con ella
+                if (vencimiento === fecha) setVencimiento(e.target.value)
+                setFecha(e.target.value)
+              }} />
           </Field>
           <Field label="Vencimiento">
             <Input type="date" value={vencimiento} disabled={bloqueada} onChange={(e) => setVencimiento(e.target.value)} />
