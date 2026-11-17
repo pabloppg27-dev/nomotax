@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     nombre: body.nombre?.trim() || null,
     rol,
     permisos: rol === "admin" ? body.permisos ?? {} : {},
-    trabajador_id: rol === "empleado" ? body.trabajador_id ?? null : null,
+    trabajador_id: body.trabajador_id ?? null,
     invitado_por: userData.user.id,
   }).select().single();
   if (eM || !miembro) {

@@ -36,16 +36,18 @@ interface ItemNav {
   end?: boolean
 }
 
+/** Mi espacio: lo personal de quien es trabajador (nóminas, documentos, ficha y tickets) */
+const ESPACIO: ItemNav[] = [
+  { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt },
+  { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet },
+  { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen },
+  { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard },
+]
+
 /** Menú según lo que eres en la empresa que estás viendo */
 function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[] {
   if (rol === 'socio') return [{ to: '/socio', label: 'Vista de socio', icon: PieChart }]
-  if (rol === 'empleado')
-    return [
-      { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt },
-      { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet },
-      { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen },
-      { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard },
-    ]
+  if (rol === 'empleado') return ESPACIO
   const items: (ItemNav & { si: boolean })[] = [
     { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true, si: true },
     { to: '/gastos', label: 'Gastos', icon: Receipt, si: puede('gastos') },
@@ -120,12 +122,14 @@ function Logo({ dark = false }: { dark?: boolean }) {
 }
 
 export default function Layout() {
-  const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede } = useAuth()
+  const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede, miembro } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [mas, setMas] = useState(false)
   useEffect(() => setMas(false), [location.pathname])
   const NAV = menu(rol, puede)
+  // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
+  const ESP = rol !== 'empleado' && miembro?.trabajador_id ? ESPACIO : []
   /** En el móvil: 4 fijas abajo y el resto en «Más» */
   const FIJAS = NAV.slice(0, 4).map((n) => n.to)
   const enMas = !FIJAS.includes(location.pathname) && !FIJAS.filter((r) => r !== '/').some((r) => location.pathname.startsWith(r + '/'))
@@ -171,6 +175,26 @@ export default function Layout() {
               {label}
             </NavLink>
           ))}
+          {ESP.length > 0 && (
+            <>
+              <p className="mt-5 px-3 pb-1 text-[11px] uppercase tracking-[0.12em] text-white/40">Mi espacio</p>
+              {ESP.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    cx(
+                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
+                      isActive ? 'bg-lima font-medium text-ink' : 'text-white/75 hover:bg-white/5 hover:text-white',
+                    )
+                  }
+                >
+                  <Icon className="size-[18px]" />
+                  {label}
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
@@ -312,6 +336,7 @@ export default function Layout() {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   ...NAV.filter((n) => !FIJAS.includes(n.to)),
+                  ...ESP.map((e) => ({ ...e, label: e.to.endsWith('tickets') ? 'Mis tickets' : e.label })),
                   ...(verAsesor ? [{ to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare }] : []),
                   ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
                 ].map(({ to, label, icon: Icon }) => (

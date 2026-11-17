@@ -290,12 +290,13 @@ function aBorrador(m: Miembro): Borrador {
 }
 
 function detalle(m: Miembro, trabajador?: string): string {
+  if (m.rol === 'empleado') return trabajador ? `Ficha de trabajador: ${trabajador}` : 'Sin ficha de trabajador vinculada (no verá nóminas)'
+  let base = ROLES.find((r) => r.id === m.rol)?.detalle ?? ''
   if (m.rol === 'admin') {
     const si = MODULOS.filter((x) => m.permisos?.[x.id]).map((x) => (x.id === 'ventas' ? 'Facturas' : x.id === 'empresa' ? 'Datos de la empresa' : x.nombre))
-    return si.length ? si.join(' · ') : 'Ningún módulo activado'
+    base = si.length ? si.join(' · ') : 'Ningún módulo activado'
   }
-  if (m.rol === 'empleado') return trabajador ? `Ficha de trabajador: ${trabajador}` : 'Sin ficha de trabajador vinculada (no verá nóminas)'
-  return ROLES.find((r) => r.id === m.rol)?.detalle ?? ''
+  return trabajador ? `${base} · También trabajador: ${trabajador}` : base
 }
 
 function Fila({
@@ -362,7 +363,7 @@ function EditorAcceso({
           nombre: b.nombre.trim() || null,
           rol: b.rol,
           permisos: b.rol === 'admin' ? b.permisos : {},
-          trabajador_id: b.rol === 'empleado' ? b.trabajador_id || null : null,
+          trabajador_id: b.trabajador_id || null,
           bienvenida: b.bienvenida,
         })
         notify(r.nuevo ? 'Acceso creado' : 'Acceso dado. Ya tenía usuario en NomoTax: entra con su contraseña de siempre.')
@@ -374,7 +375,7 @@ function EditorAcceso({
             nombre: b.nombre.trim() || null,
             rol: b.rol,
             permisos: b.rol === 'admin' ? b.permisos : {},
-            trabajador_id: b.rol === 'empleado' ? b.trabajador_id || null : null,
+            trabajador_id: b.trabajador_id || null,
             activo: b.activo,
           })
           .eq('id', b.id!)
@@ -484,21 +485,25 @@ function EditorAcceso({
           </div>
         )}
 
-        {b.rol === 'empleado' && (
-          <Field
-            label="Su ficha de trabajador"
-            hint={trabajadores.length ? 'Para que vea sus nóminas y sus documentos.' : 'No hay trabajadores dados de alta en Laboral: podrá subir tickets, pero no verá nóminas.'}
-          >
-            <Select value={b.trabajador_id} onChange={(e) => setB({ ...b, trabajador_id: e.target.value })}>
-              <option value="">Sin vincular</option>
-              {trabajadores.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nombre}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        )}
+        <Field
+          label={b.rol === 'empleado' ? 'Su ficha de trabajador' : '¿También es trabajador de la empresa?'}
+          hint={
+            trabajadores.length
+              ? b.rol === 'empleado'
+                ? 'Para que vea sus nóminas y sus documentos.'
+                : 'Si lo vinculas, además de su rol tendrá su «Mi espacio»: nóminas, documentos, ficha y tickets de gasto. Verá solo lo suyo.'
+              : 'No hay trabajadores dados de alta en Laboral: no verá nóminas ni documentos de trabajador.'
+          }
+        >
+          <Select value={b.trabajador_id} onChange={(e) => setB({ ...b, trabajador_id: e.target.value })}>
+            <option value="">{b.rol === 'empleado' ? 'Sin vincular' : 'No, solo con su rol'}</option>
+            {trabajadores.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.nombre}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
         {b.rol === 'comercial' && (
           <p className="rounded-xl bg-paper p-3 text-sm text-muted">

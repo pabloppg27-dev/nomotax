@@ -52,9 +52,10 @@ function Inicio() {
   return <Resumen />
 }
 
-function SoloEmpleado({ children }: { children: ReactNode }) {
-  const { rol } = useAuth()
-  return rol === 'empleado' ? <>{children}</> : <Navigate to="/" replace />
+/** Mi espacio: el empleado, y cualquiera que además tenga su ficha de trabajador (admin, socio, comercial) */
+function ConFicha({ children }: { children: ReactNode }) {
+  const { rol, miembro } = useAuth()
+  return rol === 'empleado' || miembro?.trabajador_id ? <>{children}</> : <Navigate to="/" replace />
 }
 
 function SinAcceso() {
@@ -149,7 +150,7 @@ export default function App() {
             <Route path="usuarios" element={<AbrirConfiguracion seccion="usuarios" />} />
             <Route path="configuracion/:seccion?" element={<AbrirConfiguracion />} />
             <Route path="socio" element={<Requiere permiso="socio"><VistaSocio /></Requiere>} />
-            <Route path="mi-espacio/:seccion?" element={<SoloEmpleado><MiEspacio /></SoloEmpleado>} />
+            <Route path="mi-espacio/:seccion?" element={<ConFicha><MiEspacio /></ConFicha>} />
             <Route path="perfil" element={<AbrirConfiguracion seccion="perfil" />} />
             <Route path="mi-asesor" element={<Requiere permiso="asesor"><MiAsesor /></Requiere>} />
             <Route

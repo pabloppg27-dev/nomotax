@@ -86,6 +86,17 @@ export function verComoDev(): RolEnCuenta | null {
   }
 }
 
+export function verFichaDev(): boolean {
+  if (!import.meta.env.DEV) return false
+  try {
+    const q = new URLSearchParams(location.search).get('ficha')
+    if (q) sessionStorage.setItem('nt-ver-ficha', q)
+    return sessionStorage.getItem('nt-ver-ficha') === '1'
+  } catch {
+    return false
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [me, setMe] = useState<Profile | null>(null)
@@ -173,16 +184,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthState>(() => {
     const owner = other ?? me
     const isAdvisor = me?.role === 'advisor'
-    const miembro = other && !isAdvisor ? accesos.find((a) => a.cuenta_id === other.id) ?? null : null
+    let miembro = other && !isAdvisor ? accesos.find((a) => a.cuenta_id === other.id) ?? null : null
     let rol: RolEnCuenta | null = null
     if (owner && me) {
       if (owner.id === me.id) rol = me.role === 'member' ? null : 'titular'
       else if (isAdvisor) rol = 'asesor'
       else rol = miembro?.rol ?? null
     }
-    // Solo en local (npm run dev): http://localhost:5173/?verComo=empleado | comercial | socio | admin | titular
+    // Solo en local (npm run dev): http://localhost:5173/?verComo=empleado | comercial | socio | admin | titular  (+ &ficha=1: además es trabajador)
     const simulado = verComoDev()
-    if (simulado && rol) rol = simulado
+    if (simulado && rol) {
+      rol = simulado
+      // &ficha=1 simula que además tiene ficha de trabajador (comercial o admin que también es trabajador)
+      if (verFichaDev()) miembro = { ...(miembro ?? {}), trabajador_id: 'demo' } as unknown as Acceso
+    }
     return {
       session,
       loading,

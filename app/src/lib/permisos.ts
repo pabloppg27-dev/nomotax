@@ -33,7 +33,7 @@ export const ROLES: { id: RolMiembro; nombre: string; detalle: string }[] = [
   { id: 'admin', nombre: 'Administración', detalle: 'La gestión diaria. Eliges qué módulos ve.' },
   { id: 'socio', nombre: 'Socio', detalle: 'Vista de socio: cifras, pérdidas y ganancias, balance. No ve documentos sueltos.' },
   { id: 'comercial', nombre: 'Comercial', detalle: 'Presupuestos, facturas en borrador y clientes.' },
-  { id: 'empleado', nombre: 'Empleado', detalle: 'Sube sus tickets y ve sus nóminas y documentos.' },
+  { id: 'empleado', nombre: 'Empleado', detalle: 'Sube sus tickets y ve sus nóminas y documentos. Cualquier rol puede además vincularse a una ficha de trabajador.' },
 ]
 
 export const NOMBRE_ROL: Record<RolEnCuenta, string> = {

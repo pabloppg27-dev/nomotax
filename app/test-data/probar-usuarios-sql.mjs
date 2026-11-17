@@ -21,7 +21,7 @@ create role authenticated;
 await db.exec(prelude)
 
 const files = ['schema', 'laboral', 'rectificativas', 'asesor', 'contabilidad', 'divisas', 'bienvenida', 'impuestos', 'bancos',
-  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios']
+  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios', 'trabajador-cualquier-rol', 'trabajador-cualquier-rol']
 for (const f of files) {
   let sql = readFileSync(`${DIR}/${f}.sql`, 'utf8').replace(/create extension[^;]*;/i, '')
   try {
@@ -31,7 +31,7 @@ for (const f of files) {
     process.exit(1)
   }
 }
-console.log('✓ SQL aplicado (usuarios.sql dos veces)')
+console.log('✓ SQL aplicado (usuarios.sql y trabajador-cualquier-rol.sql, dos veces cada uno)')
 
 await db.exec(`
 grant usage on schema public, storage, auth to authenticated;
@@ -194,6 +194,22 @@ ok((await como(U.E, () => n(`select 1 from public.nominas`))) === 0, 'un acceso 
 
 // Advisor sigue igual
 ok((await como(U.ADV, () => intenta(`update public.profiles set nombre = 'Empresa T SL' where id = '${U.T}'`))) === 1, 'el asesor sigue pudiendo editar la empresa')
+
+// Ser trabajador con cualquier rol (trabajador-cualquier-rol.sql): un comercial y un admin con ficha
+await como(U.T, () => intenta(`update public.miembros set rol = 'comercial', activo = true, trabajador_id = '${W2}' where user_id = '${U.C}'`))
+ok((await db.query(`select trabajador_id from public.miembros where user_id = '${U.C}'`)).rows[0].trabajador_id === W2, 'comercial: la ficha de trabajador se queda vinculada')
+ok((await como(U.C, () => n(`select 1 from public.nominas`))) === 1, 'comercial con ficha: ve solo su nómina publicada (no la de Eva ni el borrador)')
+ok((await como(U.C, () => n(`select 1 from public.trabajador_documentos`))) === 1, 'comercial con ficha: ve solo su documento')
+ok((await como(U.C, () => n(`select 1 from public.trabajadores`))) === 1, 'comercial con ficha: ve solo su ficha')
+ok((await como(U.C, () => n(`select 1 from public.invoices`))) >= 2, 'comercial con ficha: sigue viendo las facturas como comercial')
+ok((await como(U.C, () => intenta(`insert into public.expenses (owner_id, estado, file_path) values ('${U.T}', 'pendiente', '${U.T}/gastos/ticket-c.jpg')`))) === 1, 'comercial con ficha: sube un ticket')
+ok(String(await como(U.C, () => intenta(`insert into public.expenses (owner_id, estado) values ('${U.T}', 'revisado')`))).startsWith('error'), 'comercial con ficha: NO puede dar un gasto por revisado')
+ok((await como(U.C, () => n(`select 1 from public.expenses`))) === 1, 'comercial con ficha: ve solo su ticket')
+ok((await como(U.C, () => intenta(`insert into storage.objects (bucket_id, name) values ('documentos', '${U.T}/gastos/c-nuevo.jpg')`))) === 1, 'comercial con ficha: puede subir a gastos')
+ok((await como(U.C, () => n(`select 1 from storage.objects where bucket_id = 'documentos' and name like '%/laboral/nominas/2026-01/j.pdf'`))) === 1, 'comercial con ficha: abre su nómina')
+ok((await como(U.C, () => n(`select 1 from storage.objects where bucket_id = 'documentos' and name like '%/laboral/nominas/2026-01/e.pdf'`))) === 0, 'comercial con ficha: NO abre la nómina de otro')
+ok((await como(U.T, () => intenta(`update public.miembros set trabajador_id = '${W1}' where user_id = '${U.A}'`))) === 1, 'admin: se le puede vincular una ficha')
+ok((await como(U.A, () => n(`select 1 from public.nominas`))) === 1, 'admin con ficha y sin «nóminas»: ve solo su nómina')
 
 console.log(fallos ? `\n${fallos} FALLO(S)` : '\nTodo OK')
 process.exit(fallos ? 1 : 0)

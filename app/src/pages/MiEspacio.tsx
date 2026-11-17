@@ -29,9 +29,10 @@ export default function MiEspacio() {
   const [subiendo, setSubiendo] = useState<string | null>(null)
   const [certAbierto, setCertAbierto] = useState(false)
 
-  const trabajadorId = miembro?.trabajador_id ?? null
-  // Solo en local con ?verComo=empleado y sin trabajador vinculado: una nómina de ejemplo para ver la pantalla
-  const ejemplo = import.meta.env.DEV && verComoDev() === 'empleado' && !trabajadorId
+  const idFicha = miembro?.trabajador_id ?? null
+  const trabajadorId = idFicha === 'demo' ? null : idFicha
+  // Solo en local con ?verComo=empleado (o &ficha=1) y sin trabajador vinculado: una nómina de ejemplo para ver la pantalla
+  const ejemplo = import.meta.env.DEV && !trabajadorId && (verComoDev() === 'empleado' || idFicha === 'demo')
 
   const cargar = useCallback(async () => {
     if (!ownerId || !me) return
