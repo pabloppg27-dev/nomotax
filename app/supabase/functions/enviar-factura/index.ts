@@ -866,14 +866,6 @@ function demoForzada() {
 		return false;
 	}
 }
-// src/lib/correoFactura.ts
-/**
-* Correo con el que una empresa envía su factura a su cliente (función enviar-factura).
-* Mismo diseño que el correo de las facturas de NomoTax (supabase/functions/facturar-planes/correo.ts):
-* cabecera oscura con el logo y el nombre de la empresa, resumen con el total, conceptos, impuestos y pago.
-* El asunto y el mensaje se editan en Configuración → Envío de facturas. Al pie, una marca discreta de NomoTax.
-* Sin navegador: lo usan la vista previa de la app y la función del servidor.
-*/
 /** Cambia {cliente}, {numero}… por los datos de la factura (las que no existen se quedan como están) */
 function rellenar(texto, d) {
 	const v = {
@@ -896,7 +888,7 @@ function esc(s) {
 	})[c]);
 }
 /** Textos fijos del diseño (el resto, de TEXTOS de la factura) */
-const FRASES = {
+const FRASES$1 = {
 	es: {
 		etiqueta: "FACTURA",
 		etiquetaRect: "FACTURA RECTIFICATIVA",
@@ -951,12 +943,12 @@ function luminancia(hex) {
 }
 /** Negro o blanco, lo que mejor se lea sobre el color */
 const textoSobre = (hex) => luminancia(hex) > .179 ? "#111110" : "#ffffff";
-const FONT = "Helvetica,Arial,sans-serif";
+const FONT$1 = "Helvetica,Arial,sans-serif";
 /** HTML del correo, con el diseño de las facturas de NomoTax y la marca de la empresa */
 function htmlCorreoFactura(mensaje, d, diseno) {
 	const lengua = idiomaDePais(d.pais) === "es" ? "es" : "en";
 	const T = TEXTOS[lengua];
-	const F = FRASES[lengua];
+	const F = FRASES$1[lengua];
 	const color = colorValido(diseno.color);
 	const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO);
 	const textoCab = textoSobre(cabecera);
@@ -966,8 +958,8 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 	const parrafos = mensaje.trim().split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 	const logo = diseno.logo ? `<td style="padding-right:14px" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#ffffff;border-radius:10px;padding:6px 8px"><img src="${esc(diseno.logo)}" alt="" height="32" style="display:block;height:32px;width:auto;max-width:150px;border:0"></td></tr></table></td>` : "";
 	const fila = (izq, der, fuerte = false) => `
-      <tr><td style="padding:6px 0;font:${fuerte ? "600 " : ""}14px/1.5 ${FONT};color:${fuerte ? "#111110" : "#6b6b66"}">${izq}</td>
-      <td align="right" style="padding:6px 0;font:${fuerte ? "600 " : ""}14px/1.5 ${FONT};color:#111110;white-space:nowrap">${der}</td></tr>`;
+      <tr><td style="padding:6px 0;font:${fuerte ? "600 " : ""}14px/1.5 ${FONT$1};color:${fuerte ? "#111110" : "#6b6b66"}">${izq}</td>
+      <td align="right" style="padding:6px 0;font:${fuerte ? "600 " : ""}14px/1.5 ${FONT$1};color:#111110;white-space:nowrap">${der}</td></tr>`;
 	const lineas = (d.lineas ?? []).filter((l) => l.concepto?.trim() || Number(l.precio));
 	const conceptos = lineas.map((l) => {
 		const [titulo, ...resto] = String(l.concepto ?? "").split("\n");
@@ -975,10 +967,10 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 		const cantidad = Number(l.cantidad || 0);
 		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${eur(Number(l.precio))}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" · ");
 		return `
-      <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110">
+      <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ""}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ""}
       </td>
-      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110;white-space:nowrap">${esc(eur(importeLinea(l)))}</td></tr>`;
+      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110;white-space:nowrap">${esc(eur(importeLinea(l)))}</td></tr>`;
 	}).join("");
 	let impuestos = "";
 	if (lineas.length) {
@@ -994,25 +986,25 @@ function htmlCorreoFactura(mensaje, d, diseno) {
   <tr><td style="background:${cabecera};padding:24px 32px">
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       ${logo}
-      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoCab}">${esc(diseno.empresa)}<br>
-        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${rect ? F.etiquetaRect : F.etiqueta}</span></td>
+      <td valign="middle" style="font:600 18px/1.3 ${FONT$1};color:${textoCab}">${esc(diseno.empresa)}<br>
+        <span style="font:500 11px ${FONT$1};letter-spacing:2px;color:${acento}">${rect ? F.etiquetaRect : F.etiqueta}</span></td>
     </tr></table>
   </td></tr>
   <tr><td style="height:4px;line-height:4px;font-size:0;background:${color}">&nbsp;</td></tr>
-  <tr><td style="padding:30px 32px 8px 32px;font:15px/1.6 ${FONT};color:#111110">
-    ${cliente ? `<p style="margin:0 0 4px 0;font:13px/1.5 ${FONT};color:#6b6b66">${esc(F.atencion(cliente))}</p>` : ""}
-    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(rect ? F.tituloRect(diseno.empresa) : F.titulo(diseno.empresa))}</h1>
+  <tr><td style="padding:30px 32px 8px 32px;font:15px/1.6 ${FONT$1};color:#111110">
+    ${cliente ? `<p style="margin:0 0 4px 0;font:13px/1.5 ${FONT$1};color:#6b6b66">${esc(F.atencion(cliente))}</p>` : ""}
+    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT$1};color:#111110">${esc(rect ? F.tituloRect(diseno.empresa) : F.titulo(diseno.empresa))}</h1>
     ${parrafos}
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px;margin-top:8px">
       <tr><td style="padding:18px 20px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td style="font:14px/1.5 ${FONT};color:#111110">
+          <td style="font:14px/1.5 ${FONT$1};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${rect ? F.etiquetaRect : F.etiqueta}</span><br>
             <strong style="font-size:17px">${esc(d.numero)}</strong><br>
             <span style="color:#6b6b66">${esc(fecha(d.fecha))}${d.vencimiento ? ` · ${F.vence}: ${esc(fecha(d.vencimiento))}` : ""}</span>
           </td>
-          <td align="right" valign="top" style="font:14px/1.5 ${FONT};color:#111110">
+          <td align="right" valign="top" style="font:14px/1.5 ${FONT$1};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${esc(T.total)}</span><br>
             <strong style="font-family:Menlo,Consolas,monospace;font-size:18px;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(eur(d.total))}</strong>
           </td>
@@ -1028,20 +1020,20 @@ function htmlCorreoFactura(mensaje, d, diseno) {
     ${iban ? `<p style="margin:16px 0 0 0;font-size:14px;color:#6b6b66">${F.pago(esc(iban), esc(d.numero))} ${F.qr}</p>` : ""}
     <p style="margin:16px 0 22px 0;font-size:13px;color:#6b6b66">📎 ${F.adjunto}: ${esc(T.archivoFactura)}-${esc(d.numero)}.pdf</p>
   </td></tr>
-  <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT};color:#111110;border-top:1px solid #efefea">
+  <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT$1};color:#111110;border-top:1px solid #efefea">
     <p style="margin:18px 0 4px 0">${F.dudas}</p>
     ${contacto}
     <p style="margin:18px 0 0 0">${F.saludo}<br><strong>${esc(diseno.empresa)}</strong></p>
   </td></tr>
 </table>
-<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+<p style="font:12px ${FONT$1};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
 </td></tr></table></body></html>`;
 }
 /** Versión en texto plano (algunos programas de correo la prefieren) */
 function textoCorreoFactura(mensaje, d, diseno) {
 	const lengua = idiomaDePais(d.pais) === "es" ? "es" : "en";
 	const T = TEXTOS[lengua];
-	const F = FRASES[lengua];
+	const F = FRASES$1[lengua];
 	const cliente = d.cliente?.trim() ?? "";
 	const lineas = (d.lineas ?? []).filter((l) => l.concepto?.trim() || Number(l.precio));
 	const iban = diseno.iban?.toUpperCase().replace(/\s+/g, " ").trim();
@@ -1063,6 +1055,131 @@ function textoCorreoFactura(mensaje, d, diseno) {
 		diseno.empresa,
 		"",
 		`— ${F.enviadaCon} NomoTax · nomotax.io`
+	].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+}
+/** Cambia {nombre}, {empresa}… por sus datos (las variables que no existen se quedan como están) */
+function rellenarVars(texto, vars) {
+	return texto.replace(/\{\s*([a-zA-Z]+)\s*\}/g, (m, k) => k.toLowerCase() in vars ? vars[k.toLowerCase()] : m);
+}
+/** Idioma del correo (el PDF sale en el del cliente; el correo, en español o en inglés, como el de las facturas) */
+const lenguaCorreo = (pais) => idiomaDePais(pais) === "es" ? "es" : "en";
+/** Variables del correo de un presupuesto (las mismas en la vista previa y en la función enviar-factura) */
+function variablesPresupuesto(q, empresa) {
+	const numero = q.numero ?? "";
+	return {
+		empresa,
+		cliente: q.cliente?.nombre?.trim() || "",
+		numero,
+		total: eur(Number(q.total)),
+		fecha: fecha(q.fecha),
+		validez: q.valido_hasta ? fecha(q.valido_hasta) : "—",
+		archivo: `${TEXTOS[idiomaDePais(q.cliente?.pais)].archivoPresupuesto}-${numero}.pdf`
+	};
+}
+const FONT = "Helvetica,Arial,sans-serif";
+const APP_URL = "https://clientes.nomotax.io";
+const ETIQUETA = {
+	acceso: "ACCESO",
+	nomina: "NÓMINA",
+	presupuesto: "PRESUPUESTO"
+};
+/** Textos fijos del correo de presupuestos en cada idioma (accesos y nóminas, siempre en español) */
+const FRASES = {
+	es: {
+		etiqueta: "PRESUPUESTO",
+		titulo: (e) => `Presupuesto de ${e}`,
+		total: "Total",
+		valido: (f) => `Válido hasta el ${f}`,
+		dudas: "Si tienes cualquier duda, responde a este correo o escríbenos a:",
+		enviado: "Enviado con"
+	},
+	en: {
+		etiqueta: "QUOTE",
+		titulo: (e) => `Quote from ${e}`,
+		total: "Total",
+		valido: (f) => `Valid until ${f}`,
+		dudas: "If you have any questions, reply to this email or write to us at:",
+		enviado: "Sent with"
+	}
+};
+/** Cuadro de resumen de cada tipo (accesos, datos de la nómina o del presupuesto) */
+function cuadro(tipo, v, color, F = FRASES.es) {
+	const etiqueta = (t) => `<span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${t}</span><br>`;
+	let dentro = "";
+	if (tipo === "acceso") {
+		const clave = v.contrasena ? `Contraseña provisional: <strong style="font-family:Menlo,Consolas,monospace;font-size:16px;background:${color};color:${textoSobre(color)};padding:2px 6px;border-radius:6px">${esc(v.contrasena)}</strong>` : "Contraseña: <strong>la que ya usas en NomoTax</strong><br><span style=\"color:#6b6b66\">Arriba, en la barra lateral, podrás elegir la empresa.</span>";
+		dentro = `${etiqueta("TUS ACCESOS")}Usuario: <strong>${esc(v.usuario ?? "")}</strong><br>${clave}`;
+	} else if (tipo === "nomina") dentro = `${etiqueta("NÓMINA")}<strong style="font-size:17px">${esc(v.mes ?? "")}</strong><br><span style="color:#6b6b66">📎 ${esc(v.archivo ?? "")}</span>`;
+	else dentro = `${etiqueta(F.etiqueta)}<strong style="font-size:17px">${esc(v.numero ?? "")}</strong> · <span style="color:#6b6b66">${esc(v.fecha ?? "")}</span><br>${F.total}: <strong style="font-family:Menlo,Consolas,monospace;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(v.total ?? "")}</strong><br><span style="color:#6b6b66">${esc(F.valido(v.validez ?? ""))} · 📎 ${esc(v.archivo ?? "")}</span>`;
+	return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px;margin-top:8px"><tr><td style="padding:18px 20px;font:15px/1.7 ${FONT};color:#111110">${dentro}</td></tr></table>`;
+}
+const TITULO = {
+	acceso: (v) => `Hola${v.nombre ? " " + v.nombre : ""}, ya tienes acceso`,
+	nomina: (v) => `Tu nómina de ${v.mes ?? ""}`,
+	presupuesto: (v) => `Presupuesto de ${v.empresa ?? ""}`
+};
+/** HTML del correo de accesos, nóminas y presupuestos, con la marca de la empresa */
+function htmlCorreoPlantilla(tipo, mensaje, v, diseno) {
+	const color = colorValido(diseno.color);
+	const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO);
+	const colorBoton = colorValido(diseno.boton, NEGRO_CORREO);
+	const acento = acentoSobre(color, cabecera);
+	const F = FRASES[tipo === "presupuesto" && diseno.lengua === "en" ? "en" : "es"];
+	const etiqueta = tipo === "presupuesto" ? F.etiqueta : ETIQUETA[tipo];
+	const titulo = tipo === "presupuesto" ? F.titulo(v.empresa ?? "") : TITULO[tipo](v);
+	const parrafos = mensaje.trim().split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+	const logo = diseno.logo ? `<td style="padding-right:14px" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#ffffff;border-radius:10px;padding:6px 8px"><img src="${esc(diseno.logo)}" alt="" height="32" style="display:block;height:32px;width:auto;max-width:150px;border:0"></td></tr></table></td>` : "";
+	const contacto = [diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : "", diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ""))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : ""].filter(Boolean).join(" &nbsp;·&nbsp; ");
+	const boton = tipo === "acceso" ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0"><tr><td style="background:${colorBoton};border-radius:999px"><a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px ${FONT};color:${textoSobre(colorBoton)};text-decoration:none">Entrar en el Área de clientes →</a></td></tr></table>${v.contrasena ? `<p style="margin:0 0 16px 0;font-size:13px;color:#6b6b66">Al entrar, cambia la contraseña en «Mi perfil».</p>` : ""}` : "";
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e7e7e2">
+  <tr><td style="background:${cabecera};padding:24px 32px">
+    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+      ${logo}
+      <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoSobre(cabecera)}">${esc(diseno.empresa)}<br>
+        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${etiqueta}</span></td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="height:4px;line-height:4px;font-size:0;background:${color}">&nbsp;</td></tr>
+  <tr><td style="padding:30px 32px 8px 32px;font:15px/1.6 ${FONT};color:#111110">
+    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(titulo)}</h1>
+    ${parrafos}
+    ${cuadro(tipo, v, color, F)}
+    ${boton}
+    <p style="margin:0 0 22px 0"></p>
+  </td></tr>
+  <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT};color:#111110;border-top:1px solid #efefea">
+    ${contacto ? `<p style="margin:18px 0 4px 0">${F.dudas}</p>${contacto}` : ""}
+    <p style="margin:18px 0 0 0"><strong>${esc(diseno.empresa)}</strong></p>
+  </td></tr>
+</table>
+<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviado} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+</td></tr></table></body></html>`;
+}
+/** Versión en texto plano */
+function textoCorreoPlantilla(tipo, mensaje, v, diseno) {
+	const F = FRASES[tipo === "presupuesto" && diseno.lengua === "en" ? "en" : "es"];
+	const extra = tipo === "acceso" ? [
+		`Entra en: ${APP_URL}`,
+		`Usuario: ${v.usuario ?? ""}`,
+		v.contrasena ? `Contraseña provisional: ${v.contrasena}` : "Contraseña: la que ya usas en NomoTax."
+	] : tipo === "nomina" ? [`Nómina: ${v.mes ?? ""}`, `Adjunto: ${v.archivo ?? ""}`] : [
+		`${F.etiqueta.charAt(0) + F.etiqueta.slice(1).toLowerCase()} ${v.numero ?? ""} · ${v.fecha ?? ""}`,
+		`${F.total}: ${v.total ?? ""}`,
+		F.valido(v.validez ?? "")
+	];
+	return [
+		tipo === "presupuesto" ? F.titulo(v.empresa ?? "") : TITULO[tipo](v),
+		"",
+		mensaje.trim(),
+		"",
+		...extra,
+		"",
+		[diseno.respuesta, diseno.telefono].filter(Boolean).join(" · "),
+		diseno.empresa,
+		"",
+		`— ${F.enviado} NomoTax · nomotax.io`
 	].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
 }
 // supabase/functions/_compartido/smtp.ts
@@ -1176,6 +1293,7 @@ Deno.serve(async (req) => {
 	} catch {
 		return json({ error: "Petición no válida" }, 400);
 	}
+	if (body.quote_id && !body.invoice_id) return enviarPresupuesto(body, user.id, asUser, admin);
 	if (!body.invoice_id || !/^[0-9a-f-]{36}$/i.test(body.invoice_id)) return json({ error: "Falta la factura" }, 400);
 	const { data: factura } = await asUser.from("invoices").select("*").eq("id", body.invoice_id).maybeSingle();
 	if (!factura) return json({ error: "Factura no encontrada" }, 404);
@@ -1370,4 +1488,186 @@ function logoDeLaApp(v) {
 	} catch {
 		return null;
 	}
+}
+/** Envía un presupuesto (mismo remitente, límite y registro que las facturas; correo con la plantilla de presupuestos) */
+async function enviarPresupuesto(body, userId, asUser, admin) {
+	if (!body.quote_id || !/^[0-9a-f-]{36}$/i.test(body.quote_id)) return json({ error: "Falta el presupuesto" }, 400);
+	const { data: presupuesto } = await asUser.from("quotes").select("*").eq("id", body.quote_id).maybeSingle();
+	if (!presupuesto) return json({ error: "Presupuesto no encontrado" }, 404);
+	const q = presupuesto;
+	if (!q.numero) return json({ error: "Guarda el presupuesto antes de enviarlo" }, 400);
+	const { data: puede, error: ePuede } = await asUser.rpc("puede", {
+		cuenta: q.owner_id,
+		modulo: "ventas"
+	});
+	let autorizado = puede === true;
+	if (ePuede) {
+		const { data: yo } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
+		autorizado = userId === q.owner_id || yo?.role === "advisor";
+	}
+	if (!autorizado) return json({ error: "No puedes enviar presupuestos de esta empresa" }, 403);
+	const para = emails(body.para);
+	const cc = emails(body.cc ?? []);
+	if (!para || !cc) return json({ error: "Hay algún email que no es válido" }, 400);
+	if (!para.length) return json({ error: "Indica a quién se envía" }, 400);
+	if (para.length + cc.length > MAX_DESTINATARIOS) return json({ error: `Como máximo ${MAX_DESTINATARIOS} destinatarios` }, 400);
+	const asuntoRaw = linea(String(body.asunto ?? ""));
+	const mensajeRaw = String(body.mensaje ?? "").replace(/\r\n/g, "\n").trim();
+	if (!asuntoRaw || asuntoRaw.length > 200) return json({ error: "El asunto tiene que tener entre 1 y 200 caracteres" }, 400);
+	if (!mensajeRaw || mensajeRaw.length > 5e3) return json({ error: "El mensaje tiene que tener entre 1 y 5.000 caracteres" }, 400);
+	const limite = Number(Deno.env.get("FACTURAS_LIMITE_DIA") ?? 100);
+	const { count } = await admin.from("envios_factura").select("id", {
+		count: "exact",
+		head: true
+	}).eq("owner_id", q.owner_id).gte("created_at", (/* @__PURE__ */ new Date(Date.now() - 864e5)).toISOString());
+	if ((count ?? 0) >= limite) return json({ error: `Has llegado al límite de ${limite} envíos en 24 horas. Escríbenos si necesitas más.` }, 429);
+	const { data: empresaPerfil } = await admin.from("profiles").select("*").eq("id", q.owner_id).single();
+	if (!empresaPerfil) return json({ error: "Empresa no encontrada" }, 404);
+	const empresa = linea(empresaPerfil.nombre_comercial || empresaPerfil.nombre || empresaPerfil.email || "Empresa");
+	const responder = (empresaPerfil.email_respuesta || empresaPerfil.email || "").trim().toLowerCase();
+	const emisorPdf = empresaPerfil;
+	const logo = logoDeLaApp(body.logo);
+	const { doc, nombre: archivo } = await construirPdf("presupuesto", q, emisorPdf, {
+		color: empresaPerfil.color_marca,
+		nombreComercial: empresaPerfil.nombre_comercial
+	}, logo?.pdf ?? null, false);
+	const pdf = new Uint8Array(doc.output("arraybuffer"));
+	const vars = {
+		...variablesPresupuesto(q, empresa),
+		archivo
+	};
+	const asunto = linea(rellenarVars(asuntoRaw, vars));
+	const mensaje = rellenarVars(mensajeRaw, vars);
+	const diseno = {
+		empresa,
+		color: empresaPerfil.color_marca,
+		cabecera: empresaPerfil.color_cabecera ?? null,
+		logo: logo ? "cid:logo-empresa" : null,
+		respuesta: responder || null,
+		telefono: empresaPerfil.telefono ?? null,
+		lengua: lenguaCorreo(q.cliente?.pais)
+	};
+	let propioSmtp = null;
+	try {
+		propioSmtp = await smtpActivo(admin, q.owner_id);
+	} catch (e) {
+		console.error("enviar-factura (presupuesto): SMTP de la empresa:", e instanceof Error ? e.message : e);
+		return json({ error: "No se ha podido usar tu correo de envío. Revisa Configuración → Correo." }, 500);
+	}
+	const mail = (desde) => ({
+		from: desde,
+		...responder && responder !== desde.address ? { replyTo: {
+			name: empresa,
+			address: responder
+		} } : {},
+		to: para,
+		...cc.length ? { cc } : {},
+		...empresaPerfil.correo_copia && responder && !para.includes(responder) && !cc.includes(responder) ? { bcc: responder } : {},
+		subject: asunto,
+		text: textoCorreoPlantilla("presupuesto", mensaje, vars, diseno),
+		html: htmlCorreoPlantilla("presupuesto", mensaje, vars, diseno),
+		attachments: [{
+			filename: archivo,
+			content: pdf,
+			contentType: "application/pdf"
+		}, ...logo ? [{
+			filename: `logo.${logo.ext}`,
+			content: logo.bytes,
+			contentType: logo.tipo,
+			cid: "logo-empresa"
+		}] : []]
+	});
+	const r = await enviarCorreo(admin, q.owner_id, propioSmtp, empresa, mail, "el presupuesto");
+	if ("respuesta" in r) return r.respuesta;
+	const { error: eReg } = await admin.from("envios_factura").insert({
+		owner_id: q.owner_id,
+		invoice_id: null,
+		quote_id: q.id,
+		enviado_por: userId,
+		para,
+		cc,
+		asunto,
+		error: r.error
+	});
+	if (eReg) console.warn("enviar-factura (presupuesto): sin registro del envío (¿falta envio-presupuestos.sql?):", eReg.message);
+	if (r.error) {
+		console.error("enviar-factura (presupuesto):", r.error);
+		return json({ error: r.paraUsuario }, 502);
+	}
+	const enviadoAt = (/* @__PURE__ */ new Date()).toISOString();
+	const enviadoA = [...para, ...cc].join(", ");
+	const estado = q.estado === "borrador" ? "enviado" : q.estado;
+	if (estado !== q.estado) await admin.from("quotes").update({ estado }).eq("id", q.id);
+	await admin.from("quotes").update({
+		enviado_at: enviadoAt,
+		enviado_a: enviadoA
+	}).eq("id", q.id);
+	return json({
+		ok: true,
+		enviado_at: enviadoAt,
+		enviado_a: enviadoA,
+		estado,
+		remitente: r.remitente
+	});
+}
+/**
+* Manda el correo desde el SMTP propio de la empresa o desde NomoTax (igual que las facturas).
+* Devuelve el remitente usado y el error (si lo hubo), o una respuesta si falta configuración.
+*/
+async function enviarCorreo(admin, ownerId, propioSmtp, empresa, mail, queEs) {
+	let error = null;
+	let paraUsuario = "No se ha podido enviar el correo. Prueba otra vez en unos minutos.";
+	let remitente;
+	if (propioSmtp) {
+		const c = propioSmtp.config;
+		remitente = c.remitente_email;
+		try {
+			await transporte(c, propioSmtp.pass).sendMail(mail({
+				name: c.remitente_nombre || empresa,
+				address: c.remitente_email
+			}));
+		} catch (e) {
+			error = e instanceof Error ? e.message : String(e);
+			paraUsuario = `Tu servidor de correo no ha enviado ${queEs}. ${explicarErrorSmtp(e)}`;
+			await admin.from("smtp_empresas").update({ ultimo_error: explicarErrorSmtp(e) }).eq("owner_id", ownerId);
+		}
+	} else {
+		const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
+		const usuario = propio ? Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io" : Deno.env.get("SMTP_USER") ?? "info@nomotax.io";
+		const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
+		if (!pass) return { respuesta: json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500) };
+		const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
+		const t = nodemailer.createTransport({
+			host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com",
+			port: 465,
+			secure: true,
+			auth: {
+				user: usuario,
+				pass
+			}
+		});
+		const enviar = (desde) => t.sendMail(mail({
+			name: `${empresa} vía NomoTax`,
+			address: desde
+		}));
+		remitente = alias;
+		try {
+			await enviar(alias);
+		} catch (e) {
+			if (alias !== usuario.toLowerCase()) {
+				console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${e instanceof Error ? e.message : e}`);
+				remitente = usuario;
+				try {
+					await enviar(usuario);
+				} catch (e2) {
+					error = e2 instanceof Error ? e2.message : String(e2);
+				}
+			} else error = e instanceof Error ? e.message : String(e);
+		}
+	}
+	return {
+		remitente,
+		error,
+		paraUsuario
+	};
 }

@@ -144,6 +144,9 @@ export interface Quote extends DocBase {
   valido_hasta: string | null
   estado: QuoteEstado
   invoice_id: string | null
+  /** Último envío por email (supabase/envio-presupuestos.sql) */
+  enviado_at?: string | null
+  enviado_a?: string | null
 }
 
 export type InvoiceEstado = 'borrador' | 'emitida' | 'cobrada'

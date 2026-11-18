@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Download, FileText, Save, Trash2 } from 'lucide-react'
+import { Download, FileText, Mail, Save, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
-import { hoyISO, sumarDias } from '../lib/format'
+import { fecha as fmtFecha, hoyISO, sumarDias } from '../lib/format'
 import { calcularTotales, lineaVacia } from '../lib/totals'
 import { ESTADOS_PRESUPUESTO } from '../lib/estados'
 import type { ClienteSnapshot, Emisor, Linea, Quote, QuoteEstado } from '../lib/types'
@@ -11,6 +11,7 @@ import ContactPicker from '../components/ContactPicker'
 import { NOMBRE_IDIOMA, idiomaDePais } from '../lib/idiomaFactura'
 import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
+import EnviarPresupuesto from '../components/EnviarPresupuesto'
 import LinesEditor from '../components/LinesEditor'
 import TotalsBox from '../components/TotalsBox'
 import { Badge, Button, Field, Input, Loading, Select, Textarea, confirmar, notify } from '../components/ui'
@@ -30,6 +31,7 @@ export default function PresupuestoEditor() {
   const [irpf, setIrpf] = useState(0)
   const [notas, setNotas] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [enviar, setEnviar] = useState<Quote | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -129,6 +131,12 @@ export default function PresupuestoEditor() {
     })
   }
 
+  // Guarda los cambios (si se puede editar) y abre la ventana de envío
+  const abrirEnvio = async () => {
+    const q = bloqueado ? quote : await guardar()
+    if (q) setEnviar(q)
+  }
+
   const facturar = async () => {
     const q = await guardar()
     if (!q) return
@@ -182,6 +190,7 @@ export default function PresupuestoEditor() {
   const est = quote ? ESTADOS_PRESUPUESTO[quote.estado] : null
 
   return (
+    <>
     <DocShell
       back="/presupuestos"
       backLabel="Presupuestos"
@@ -252,6 +261,16 @@ export default function PresupuestoEditor() {
               {quote ? 'Guardar cambios' : 'Crear presupuesto'}
             </Button>
           )}
+          {quote && (
+            <Button variant={quote.enviado_at || bloqueado ? 'secondary' : 'accent'} icon={<Mail className="size-4" />} onClick={abrirEnvio} disabled={guardando}>
+              {quote.enviado_at ? 'Enviar otra vez' : 'Enviar por email'}
+            </Button>
+          )}
+          {quote?.enviado_at && (
+            <p className="-mt-1 px-1 text-xs text-muted">
+              Enviado el {fmtFecha(quote.enviado_at)} a {quote.enviado_a}
+            </p>
+          )}
           <Button variant="secondary" icon={<Download className="size-4" />} onClick={pdf}>
             Descargar PDF
           </Button>
@@ -268,5 +287,13 @@ export default function PresupuestoEditor() {
         </>
       }
     />
+    {enviar && (
+      <EnviarPresupuesto
+        presupuesto={enviar}
+        onClose={() => setEnviar(null)}
+        onEnviado={(r) => setQuote((q) => (q ? { ...q, ...r } : q))}
+      />
+    )}
+    </>
   )
 }

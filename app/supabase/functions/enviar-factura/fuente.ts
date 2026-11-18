@@ -9,10 +9,13 @@
 //   · Correo con el logo y el color de marca (src/lib/correoFactura.ts).
 //
 // Entrada (POST JSON, con la sesión del usuario):
-//   { invoice_id, para: string[], cc?: string[], asunto, mensaje }
+//   { invoice_id, para: string[], cc?: string[], asunto, mensaje }   → factura
+//   { quote_id,   para: string[], cc?: string[], asunto, mensaje }   → presupuesto
 //
-// Puede enviar quien puede emitir facturas de esa empresa (titular, asesor, administración con «ventas»;
+// Facturas: puede enviar quien puede emitir facturas de esa empresa (titular, asesor, administración con «ventas»;
 // el comercial no), función SQL puede_emitir() de supabase/usuarios.sql.
+// Presupuestos: quien tiene «ventas» (también el comercial), función SQL puede(). El envío queda en
+// envios_factura (columna quote_id, supabase/envio-presupuestos.sql) y el presupuesto pasa a «Enviado».
 //
 // Correo: entra con info@nomotax.io (SMTP_USER / SMTP_PASSWORD, los de siempre) y envía como el alias
 //   invoice@nomotax.io (FACTURAS_FROM). Si Hostinger no deja usar el alias, sale desde info@.
@@ -22,12 +25,13 @@
 //   Si la empresa ha conectado su propio correo (Configuración → Correo, smtp_empresas activo),
 //   sale desde su correo y sin «vía NomoTax». Necesita el secreto SMTP_CLAVE (supabase/functions/_compartido/smtp.ts).
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
 import { construirPdf, type LogoPdf } from "../../../src/lib/pdfFactura";
 import { MODO_PRUEBAS_FACTURAS } from "../../../src/lib/config";
 import { htmlCorreoFactura, rellenar, textoCorreoFactura, type DatosFacturaCorreo } from "../../../src/lib/correoFactura";
-import type { Emisor, Invoice } from "../../../src/lib/types";
+import { htmlCorreoPlantilla, lenguaCorreo, rellenarVars, textoCorreoPlantilla, variablesPresupuesto } from "../../../src/lib/plantillasCorreo";
+import type { Emisor, Invoice, Quote } from "../../../src/lib/types";
 import { explicarErrorSmtp, smtpActivo, transporte as transporteSmtp } from "../_compartido/smtp";
 
 const MAX_DESTINATARIOS = 5;
@@ -83,12 +87,14 @@ Deno.serve(async (req) => {
   if (!user) return json({ error: "Sesión no válida" }, 401);
   const admin = createClient(url, secreta, { auth: { persistSession: false, autoRefreshToken: false } });
 
-  let body: { invoice_id?: string; para?: unknown; cc?: unknown; asunto?: string; mensaje?: string; logo?: unknown };
+  let body: { invoice_id?: string; quote_id?: string; para?: unknown; cc?: unknown; asunto?: string; mensaje?: string; logo?: unknown };
   try {
     body = await req.json();
   } catch {
     return json({ error: "Petición no válida" }, 400);
   }
+
+  if (body.quote_id && !body.invoice_id) return enviarPresupuesto(body, user.id, asUser, admin);
 
   // ------------------------------------------------ Factura y permisos
   if (!body.invoice_id || !/^[0-9a-f-]{36}$/i.test(body.invoice_id)) return json({ error: "Falta la factura" }, 400);
@@ -279,4 +285,189 @@ function logoDeLaApp(v: unknown): { pdf: LogoPdf; bytes: Uint8Array; tipo: strin
   } catch {
     return null;
   }
+}
+
+// deno-lint-ignore no-explicit-any
+type Cliente = SupabaseClient<any, "public", any>;
+
+/** Envía un presupuesto (mismo remitente, límite y registro que las facturas; correo con la plantilla de presupuestos) */
+async function enviarPresupuesto(
+  body: { quote_id?: string; para?: unknown; cc?: unknown; asunto?: string; mensaje?: string; logo?: unknown },
+  userId: string,
+  asUser: Cliente,
+  admin: Cliente,
+): Promise<Response> {
+  // ------------------------------------------------ Presupuesto y permisos
+  if (!body.quote_id || !/^[0-9a-f-]{36}$/i.test(body.quote_id)) return json({ error: "Falta el presupuesto" }, 400);
+  const { data: presupuesto } = await asUser.from("quotes").select("*").eq("id", body.quote_id).maybeSingle();
+  if (!presupuesto) return json({ error: "Presupuesto no encontrado" }, 404);
+  const q = presupuesto as Quote;
+  if (!q.numero) return json({ error: "Guarda el presupuesto antes de enviarlo" }, 400);
+
+  const { data: puede, error: ePuede } = await asUser.rpc("puede", { cuenta: q.owner_id, modulo: "ventas" });
+  let autorizado = puede === true;
+  if (ePuede) {
+    // Sin supabase/usuarios.sql: el titular o el asesor
+    const { data: yo } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
+    autorizado = userId === q.owner_id || yo?.role === "advisor";
+  }
+  if (!autorizado) return json({ error: "No puedes enviar presupuestos de esta empresa" }, 403);
+
+  // ------------------------------------------------ Destinatarios y texto
+  const para = emails(body.para);
+  const cc = emails(body.cc ?? []);
+  if (!para || !cc) return json({ error: "Hay algún email que no es válido" }, 400);
+  if (!para.length) return json({ error: "Indica a quién se envía" }, 400);
+  if (para.length + cc.length > MAX_DESTINATARIOS) return json({ error: `Como máximo ${MAX_DESTINATARIOS} destinatarios` }, 400);
+  const asuntoRaw = linea(String(body.asunto ?? ""));
+  const mensajeRaw = String(body.mensaje ?? "").replace(/\r\n/g, "\n").trim();
+  if (!asuntoRaw || asuntoRaw.length > 200) return json({ error: "El asunto tiene que tener entre 1 y 200 caracteres" }, 400);
+  if (!mensajeRaw || mensajeRaw.length > 5000) return json({ error: "El mensaje tiene que tener entre 1 y 5.000 caracteres" }, 400);
+
+  // Límite diario por empresa, compartido con las facturas
+  const limite = Number(Deno.env.get("FACTURAS_LIMITE_DIA") ?? 100);
+  const { count } = await admin
+    .from("envios_factura")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", q.owner_id)
+    .gte("created_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString());
+  if ((count ?? 0) >= limite) return json({ error: `Has llegado al límite de ${limite} envíos en 24 horas. Escríbenos si necesitas más.` }, 429);
+
+  // ------------------------------------------------ Empresa, PDF y correo
+  const { data: empresaPerfil } = await admin.from("profiles").select("*").eq("id", q.owner_id).single();
+  if (!empresaPerfil) return json({ error: "Empresa no encontrada" }, 404);
+  const empresa = linea(empresaPerfil.nombre_comercial || empresaPerfil.nombre || empresaPerfil.email || "Empresa");
+  const responder = (empresaPerfil.email_respuesta || empresaPerfil.email || "").trim().toLowerCase();
+
+  // Como en la app (Descargar PDF): el emisor es el perfil actual de la empresa
+  const emisorPdf = empresaPerfil as Emisor;
+  const logo = logoDeLaApp(body.logo);
+  const { doc, nombre: archivo } = await construirPdf(
+    "presupuesto",
+    q,
+    emisorPdf,
+    { color: empresaPerfil.color_marca, nombreComercial: empresaPerfil.nombre_comercial },
+    logo?.pdf ?? null,
+    MODO_PRUEBAS_FACTURAS,
+  );
+  const pdf = new Uint8Array(doc.output("arraybuffer"));
+
+  const vars = { ...variablesPresupuesto(q, empresa), archivo };
+  const asunto = linea(rellenarVars(asuntoRaw, vars));
+  const mensaje = rellenarVars(mensajeRaw, vars);
+  const diseno = {
+    empresa,
+    color: empresaPerfil.color_marca,
+    cabecera: empresaPerfil.color_cabecera ?? null,
+    logo: logo ? "cid:logo-empresa" : null,
+    respuesta: responder || null,
+    telefono: empresaPerfil.telefono ?? null,
+    lengua: lenguaCorreo(q.cliente?.pais),
+  };
+
+  let propioSmtp: Awaited<ReturnType<typeof smtpActivo>> = null;
+  try {
+    propioSmtp = await smtpActivo(admin, q.owner_id);
+  } catch (e) {
+    console.error("enviar-factura (presupuesto): SMTP de la empresa:", e instanceof Error ? e.message : e);
+    return json({ error: "No se ha podido usar tu correo de envío. Revisa Configuración → Correo." }, 500);
+  }
+
+  const mail = (desde: { name: string; address: string }) => ({
+    from: desde,
+    ...(responder && responder !== desde.address ? { replyTo: { name: empresa, address: responder } } : {}),
+    to: para,
+    ...(cc.length ? { cc } : {}),
+    ...(empresaPerfil.correo_copia && responder && !para.includes(responder) && !cc.includes(responder) ? { bcc: responder } : {}),
+    subject: asunto,
+    text: textoCorreoPlantilla("presupuesto", mensaje, vars, diseno),
+    html: htmlCorreoPlantilla("presupuesto", mensaje, vars, diseno),
+    attachments: [
+      { filename: archivo, content: pdf, contentType: "application/pdf" },
+      ...(logo ? [{ filename: `logo.${logo.ext}`, content: logo.bytes, contentType: logo.tipo, cid: "logo-empresa" }] : []),
+    ],
+  });
+
+  const r = await enviarCorreo(admin, q.owner_id, propioSmtp, empresa, mail, "el presupuesto");
+  if ("respuesta" in r) return r.respuesta;
+
+  // Registro (sin supabase/envio-presupuestos.sql no hay columna quote_id: el envío sale igual, sin registro)
+  const { error: eReg } = await admin.from("envios_factura").insert({
+    owner_id: q.owner_id,
+    invoice_id: null,
+    quote_id: q.id,
+    enviado_por: userId,
+    para,
+    cc,
+    asunto,
+    error: r.error,
+  });
+  if (eReg) console.warn("enviar-factura (presupuesto): sin registro del envío (¿falta envio-presupuestos.sql?):", eReg.message);
+  if (r.error) {
+    console.error("enviar-factura (presupuesto):", r.error);
+    return json({ error: r.paraUsuario }, 502);
+  }
+
+  const enviadoAt = new Date().toISOString();
+  const enviadoA = [...para, ...cc].join(", ");
+  // El estado, aparte: así cambia aunque falten las columnas de envio-presupuestos.sql
+  const estado = q.estado === "borrador" ? "enviado" : q.estado;
+  if (estado !== q.estado) await admin.from("quotes").update({ estado }).eq("id", q.id);
+  await admin.from("quotes").update({ enviado_at: enviadoAt, enviado_a: enviadoA }).eq("id", q.id);
+  return json({ ok: true, enviado_at: enviadoAt, enviado_a: enviadoA, estado, remitente: r.remitente });
+}
+
+/**
+ * Manda el correo desde el SMTP propio de la empresa o desde NomoTax (igual que las facturas).
+ * Devuelve el remitente usado y el error (si lo hubo), o una respuesta si falta configuración.
+ */
+async function enviarCorreo(
+  admin: Cliente,
+  ownerId: string,
+  propioSmtp: Awaited<ReturnType<typeof smtpActivo>>,
+  empresa: string,
+  // deno-lint-ignore no-explicit-any
+  mail: (desde: { name: string; address: string }) => any,
+  queEs: string,
+): Promise<{ remitente: string; error: string | null; paraUsuario: string } | { respuesta: Response }> {
+  let error: string | null = null;
+  let paraUsuario = "No se ha podido enviar el correo. Prueba otra vez en unos minutos.";
+  let remitente: string;
+  if (propioSmtp) {
+    const c = propioSmtp.config;
+    remitente = c.remitente_email;
+    try {
+      await transporteSmtp(c, propioSmtp.pass).sendMail(mail({ name: c.remitente_nombre || empresa, address: c.remitente_email }));
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
+      paraUsuario = `Tu servidor de correo no ha enviado ${queEs}. ${explicarErrorSmtp(e)}`;
+      await admin.from("smtp_empresas").update({ ultimo_error: explicarErrorSmtp(e) }).eq("owner_id", ownerId);
+    }
+  } else {
+    const propio = Deno.env.get("SMTP_FACTURAS_PASSWORD");
+    const usuario = propio ? (Deno.env.get("SMTP_FACTURAS_USER") ?? "invoice@nomotax.io") : (Deno.env.get("SMTP_USER") ?? "info@nomotax.io");
+    const pass = propio ?? Deno.env.get("SMTP_PASSWORD");
+    if (!pass) return { respuesta: json({ error: "Falta configurar el correo de envío (SMTP_PASSWORD)" }, 500) };
+    const alias = (Deno.env.get("FACTURAS_FROM") ?? "invoice@nomotax.io").trim().toLowerCase();
+    const t = nodemailer.createTransport({ host: Deno.env.get("SMTP_HOST") ?? "smtp.hostinger.com", port: 465, secure: true, auth: { user: usuario, pass } });
+    const enviar = (desde: string) => t.sendMail(mail({ name: `${empresa} vía NomoTax`, address: desde }));
+    remitente = alias;
+    try {
+      await enviar(alias);
+    } catch (e) {
+      // Hostinger no deja enviar como un alias: se reintenta desde el buzón con el que se entra
+      if (alias !== usuario.toLowerCase()) {
+        console.warn(`enviar-factura: no se ha podido enviar como ${alias}, se reintenta desde ${usuario}: ${e instanceof Error ? e.message : e}`);
+        remitente = usuario;
+        try {
+          await enviar(usuario);
+        } catch (e2) {
+          error = e2 instanceof Error ? e2.message : String(e2);
+        }
+      } else {
+        error = e instanceof Error ? e.message : String(e);
+      }
+    }
+  }
+  return { remitente, error, paraUsuario };
 }

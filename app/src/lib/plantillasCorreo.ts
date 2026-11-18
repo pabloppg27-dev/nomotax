@@ -5,6 +5,9 @@
  * Sin navegador: lo usan la vista previa de la app y las funciones del servidor (invitar-miembro…).
  */
 import { NEGRO_CORREO, VARIABLES_CORREO, acentoSobre, colorValido, esc, plantillaPorDefecto, textoSobre } from './correoFactura'
+import { eur, fecha as fmtFecha } from './format'
+import { TEXTOS, idiomaDePais } from './idiomaFactura'
+import type { Quote } from './types'
 
 export type TipoPlantilla = 'factura' | 'acceso' | 'nomina' | 'presupuesto'
 
@@ -102,7 +105,7 @@ export const PLANTILLAS: DefPlantilla[] = [
       mensaje:
         'Estimado cliente:\n\nLe enviamos el presupuesto {numero} por un importe de {total}, válido hasta el {validez}. Encontrará el PDF adjunto.\n\nQuedamos a su disposición para cualquier consulta.',
     },
-    enUso: false,
+    enUso: true,
   },
 ]
 
@@ -125,6 +128,38 @@ export function correoDePlantilla(
     // Si una variable va vacía (p. ej. sin nombre) no queda «Hola :»
     mensaje: rellenarVars(guardada.mensaje?.trim() || def.mensaje, vars).replace(/ +([:,;])/g, '$1'),
   }
+}
+
+/** Correo del presupuesto a un cliente de fuera de España: la plantilla propia está en español, se usa esta */
+const PRESUPUESTO_EN = {
+  asunto: 'Quote {numero} · {empresa}',
+  mensaje: 'Dear Customer,\n\nPlease find attached quote {numero} for {total}, valid until {validez}.\n\nPlease let us know if you have any questions.',
+}
+
+/** Idioma del correo (el PDF sale en el del cliente; el correo, en español o en inglés, como el de las facturas) */
+export const lenguaCorreo = (pais: string | null | undefined): 'es' | 'en' => (idiomaDePais(pais) === 'es' ? 'es' : 'en')
+
+/** Variables del correo de un presupuesto (las mismas en la vista previa y en la función enviar-factura) */
+export function variablesPresupuesto(q: Pick<Quote, 'numero' | 'fecha' | 'valido_hasta' | 'total' | 'cliente'>, empresa: string): Record<string, string> {
+  const numero = q.numero ?? ''
+  return {
+    empresa,
+    cliente: q.cliente?.nombre?.trim() || '',
+    numero,
+    total: eur(Number(q.total)),
+    fecha: fmtFecha(q.fecha),
+    validez: q.valido_hasta ? fmtFecha(q.valido_hasta) : '—',
+    archivo: `${TEXTOS[idiomaDePais(q.cliente?.pais)].archivoPresupuesto}-${numero}.pdf`,
+  }
+}
+
+/** Asunto y mensaje del presupuesto: la plantilla de la empresa o, a un cliente extranjero, la de por defecto en inglés */
+export function correoDePresupuesto(
+  guardada: { asunto?: string | null; mensaje?: string | null },
+  vars: Record<string, string>,
+  pais: string | null | undefined,
+): { asunto: string; mensaje: string } {
+  return correoDePlantilla('presupuesto', lenguaCorreo(pais) === 'es' ? guardada : PRESUPUESTO_EN, vars)
 }
 
 /** Datos de ejemplo para la vista previa de cada plantilla */
@@ -150,6 +185,8 @@ export interface DisenoPlantilla {
   /** Email al que van las respuestas (sale al pie) */
   respuesta?: string | null
   telefono?: string | null
+  /** Idioma del correo (solo cambia el de presupuestos; por defecto, español) */
+  lengua?: 'es' | 'en'
 }
 
 const FONT = 'Helvetica,Arial,sans-serif'
@@ -157,8 +194,28 @@ export const APP_URL = 'https://clientes.nomotax.io'
 
 const ETIQUETA: Record<Exclude<TipoPlantilla, 'factura'>, string> = { acceso: 'ACCESO', nomina: 'NÓMINA', presupuesto: 'PRESUPUESTO' }
 
+/** Textos fijos del correo de presupuestos en cada idioma (accesos y nóminas, siempre en español) */
+const FRASES = {
+  es: {
+    etiqueta: 'PRESUPUESTO',
+    titulo: (e: string) => `Presupuesto de ${e}`,
+    total: 'Total',
+    valido: (f: string) => `Válido hasta el ${f}`,
+    dudas: 'Si tienes cualquier duda, responde a este correo o escríbenos a:',
+    enviado: 'Enviado con',
+  },
+  en: {
+    etiqueta: 'QUOTE',
+    titulo: (e: string) => `Quote from ${e}`,
+    total: 'Total',
+    valido: (f: string) => `Valid until ${f}`,
+    dudas: 'If you have any questions, reply to this email or write to us at:',
+    enviado: 'Sent with',
+  },
+}
+
 /** Cuadro de resumen de cada tipo (accesos, datos de la nómina o del presupuesto) */
-function cuadro(tipo: Exclude<TipoPlantilla, 'factura'>, v: Record<string, string>, color: string): string {
+function cuadro(tipo: Exclude<TipoPlantilla, 'factura'>, v: Record<string, string>, color: string, F = FRASES.es): string {
   const etiqueta = (t: string) => `<span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${t}</span><br>`
   let dentro = ''
   if (tipo === 'acceso') {
@@ -169,7 +226,7 @@ function cuadro(tipo: Exclude<TipoPlantilla, 'factura'>, v: Record<string, strin
   } else if (tipo === 'nomina') {
     dentro = `${etiqueta('NÓMINA')}<strong style="font-size:17px">${esc(v.mes ?? '')}</strong><br><span style="color:#6b6b66">📎 ${esc(v.archivo ?? '')}</span>`
   } else {
-    dentro = `${etiqueta('PRESUPUESTO')}<strong style="font-size:17px">${esc(v.numero ?? '')}</strong> · <span style="color:#6b6b66">${esc(v.fecha ?? '')}</span><br>Total: <strong style="font-family:Menlo,Consolas,monospace;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(v.total ?? '')}</strong><br><span style="color:#6b6b66">Válido hasta el ${esc(v.validez ?? '')} · 📎 ${esc(v.archivo ?? '')}</span>`
+    dentro = `${etiqueta(F.etiqueta)}<strong style="font-size:17px">${esc(v.numero ?? '')}</strong> · <span style="color:#6b6b66">${esc(v.fecha ?? '')}</span><br>${F.total}: <strong style="font-family:Menlo,Consolas,monospace;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(v.total ?? '')}</strong><br><span style="color:#6b6b66">${esc(F.valido(v.validez ?? ''))} · 📎 ${esc(v.archivo ?? '')}</span>`
   }
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px;margin-top:8px"><tr><td style="padding:18px 20px;font:15px/1.7 ${FONT};color:#111110">${dentro}</td></tr></table>`
 }
@@ -191,6 +248,9 @@ export function htmlCorreoPlantilla(
   const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO)
   const colorBoton = colorValido(diseno.boton, NEGRO_CORREO)
   const acento = acentoSobre(color, cabecera)
+  const F = FRASES[tipo === 'presupuesto' && diseno.lengua === 'en' ? 'en' : 'es']
+  const etiqueta = tipo === 'presupuesto' ? F.etiqueta : ETIQUETA[tipo]
+  const titulo = tipo === 'presupuesto' ? F.titulo(v.empresa ?? '') : TITULO[tipo](v)
   const parrafos = mensaje
     .trim()
     .split(/\n{2,}/)
@@ -217,23 +277,23 @@ export function htmlCorreoPlantilla(
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       ${logo}
       <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoSobre(cabecera)}">${esc(diseno.empresa)}<br>
-        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${ETIQUETA[tipo]}</span></td>
+        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${etiqueta}</span></td>
     </tr></table>
   </td></tr>
   <tr><td style="height:4px;line-height:4px;font-size:0;background:${color}">&nbsp;</td></tr>
   <tr><td style="padding:30px 32px 8px 32px;font:15px/1.6 ${FONT};color:#111110">
-    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(TITULO[tipo](v))}</h1>
+    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(titulo)}</h1>
     ${parrafos}
-    ${cuadro(tipo, v, color)}
+    ${cuadro(tipo, v, color, F)}
     ${boton}
     <p style="margin:0 0 22px 0"></p>
   </td></tr>
   <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT};color:#111110;border-top:1px solid #efefea">
-    ${contacto ? `<p style="margin:18px 0 4px 0">Si tienes cualquier duda, responde a este correo o escríbenos a:</p>${contacto}` : ''}
+    ${contacto ? `<p style="margin:18px 0 4px 0">${F.dudas}</p>${contacto}` : ''}
     <p style="margin:18px 0 0 0"><strong>${esc(diseno.empresa)}</strong></p>
   </td></tr>
 </table>
-<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">Enviado con NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviado} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
 </td></tr></table></body></html>`
 }
 
@@ -244,14 +304,15 @@ export function textoCorreoPlantilla(
   v: Record<string, string>,
   diseno: DisenoPlantilla,
 ): string {
+  const F = FRASES[tipo === 'presupuesto' && diseno.lengua === 'en' ? 'en' : 'es']
   const extra =
     tipo === 'acceso'
       ? [`Entra en: ${APP_URL}`, `Usuario: ${v.usuario ?? ''}`, v.contrasena ? `Contraseña provisional: ${v.contrasena}` : 'Contraseña: la que ya usas en NomoTax.']
       : tipo === 'nomina'
         ? [`Nómina: ${v.mes ?? ''}`, `Adjunto: ${v.archivo ?? ''}`]
-        : [`Presupuesto ${v.numero ?? ''} · ${v.fecha ?? ''}`, `Total: ${v.total ?? ''}`, `Válido hasta el ${v.validez ?? ''}`]
+        : [`${F.etiqueta.charAt(0) + F.etiqueta.slice(1).toLowerCase()} ${v.numero ?? ''} · ${v.fecha ?? ''}`, `${F.total}: ${v.total ?? ''}`, F.valido(v.validez ?? '')]
   return [
-    TITULO[tipo](v),
+    tipo === 'presupuesto' ? F.titulo(v.empresa ?? '') : TITULO[tipo](v),
     '',
     mensaje.trim(),
     '',
@@ -260,7 +321,7 @@ export function textoCorreoPlantilla(
     [diseno.respuesta, diseno.telefono].filter(Boolean).join(' · '),
     diseno.empresa,
     '',
-    '— Enviado con NomoTax · nomotax.io',
+    `— ${F.enviado} NomoTax · nomotax.io`,
   ]
     .filter((l, i, a) => !(l === '' && a[i - 1] === ''))
     .join('\n')
