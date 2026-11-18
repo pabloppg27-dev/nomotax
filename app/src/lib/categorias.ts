@@ -15,4 +15,5 @@ export const CATEGORIAS: { id: string; nombre: string }[] = [
   { id: 'otros', nombre: 'Otros' },
 ]
 
-export const nombreCategoria = (id: string) => CATEGORIAS.find((c) => c.id === id)?.nombre ?? 'Otros'
+export const nombreCategoria = (id: string) =>
+  id === 'personal' ? 'Personal (nóminas)' : CATEGORIAS.find((c) => c.id === id)?.nombre ?? 'Otros'

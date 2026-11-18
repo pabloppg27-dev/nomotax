@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, hoyISO, proximoPlazoTrimestral, rangoPeriodo, textoPeriodo, trimestreActual, type Periodo } from '../lib/format'
 import { nombreCategoria } from '../lib/categorias'
 import { analizarFacturas } from '../lib/estados'
-import type { Expense, Invoice, Quote } from '../lib/types'
+import type { Expense, Invoice, Nomina, Quote } from '../lib/types'
 import MonthlyChart, { type Mes } from '../components/MonthlyChart'
 import { AsesorCard } from './MiAsesor'
 import { AvisoPlazos } from './Impuestos'
@@ -14,12 +14,14 @@ import { conPlazo, type DocArchivo } from '../lib/impuestos'
 import PeriodPicker from '../components/PeriodPicker'
 import { Button, Card, Loading, cx } from '../components/ui'
 
-type Datos = { facturas: Invoice[]; gastos: Expense[]; presupuestos: Quote[] }
+type Datos = { facturas: Invoice[]; gastos: Expense[]; presupuestos: Quote[]; nominas: Nomina[] }
 
 export default function Resumen() {
   const { ownerId, owner, viewingOther, puede } = useAuth()
   // Cada uno ve lo de sus módulos: el comercial, por ejemplo, solo las ventas
   const verGastos = puede('gastos')
+  // Las nóminas cuentan como gasto de personal (solo para quien puede ver nóminas)
+  const verNominas = verGastos && puede('nominas')
   const verVentas = puede('ventas')
   const verImpuestos = puede('impuestos')
   const verAsesor = puede('asesor')
@@ -56,21 +58,33 @@ export default function Resumen() {
         ? supabase.from('expenses').select('*').eq('owner_id', ownerId).or(`and(fecha.gte.${desde},fecha.lte.${hasta}),estado.eq.pendiente`)
         : nada,
       verVentas ? supabase.from('quotes').select('*').eq('owner_id', ownerId).in('estado', ['enviado', 'aceptado']) : nada,
-    ]).then(([f, g, p]) =>
+      verNominas
+        ? supabase.from('nominas').select('*').eq('owner_id', ownerId).eq('estado', 'publicada')
+            .gte('anio', Number(desde.slice(0, 4))).lte('anio', Number(hasta.slice(0, 4)))
+        : nada,
+    ]).then(([f, g, p, n]) =>
       setDatos({
         facturas: (f.data as Invoice[]) ?? [],
         gastos: (g.data as Expense[]) ?? [],
         presupuestos: (p.data as Quote[]) ?? [],
+        nominas: (n.data as Nomina[]) ?? [],
       }),
     )
-  }, [ownerId, cargaDesde, cargaHasta, verVentas, verGastos])
+  }, [ownerId, cargaDesde, cargaHasta, verVentas, verGastos, verNominas])
 
   const calc = useMemo(() => {
     if (!datos) return null
     const fPer = datos.facturas.filter((f) => enPeriodo(f.fecha, periodo))
     const gPer = datos.gastos.filter((g) => g.fecha && enPeriodo(g.fecha, periodo))
     const ingresos = fPer.reduce((s, f) => s + Number(f.base), 0)
-    const gastos = gPer.reduce((s, g) => s + Number(g.base), 0)
+    // Nómina: gasto del último día del mes (bruto + Seguridad Social de la empresa)
+    const nominas = datos.nominas.map((n) => ({
+      fecha: new Date(Date.UTC(n.anio, n.mes, 0)).toISOString().slice(0, 10),
+      coste: Number(n.coste_total) || Number(n.bruto) + Number(n.ss_empresa),
+    }))
+    const nPer = nominas.filter((n) => enPeriodo(n.fecha, periodo))
+    const personal = nPer.reduce((s, n) => s + n.coste, 0)
+    const gastos = gPer.reduce((s, g) => s + Number(g.base), 0) + personal
     const ivaRep = fPer.reduce((s, f) => s + Number(f.cuota_iva), 0)
     const ivaSop = gPer.reduce((s, g) => s + Number(g.cuota_iva), 0)
     const retenciones = fPer.reduce((s, f) => s + Number(f.cuota_irpf), 0)
@@ -82,9 +96,13 @@ export default function Resumen() {
     for (const g of datos.gastos) {
       if (g.fecha?.startsWith(String(periodo.anio))) meses[Number(g.fecha.slice(5, 7)) - 1].gastos += Number(g.base)
     }
+    for (const n of nominas) {
+      if (n.fecha.startsWith(String(periodo.anio))) meses[Number(n.fecha.slice(5, 7)) - 1].gastos += n.coste
+    }
 
     const porCat = new Map<string, number>()
     for (const g of gPer) porCat.set(g.categoria, (porCat.get(g.categoria) ?? 0) + Number(g.base))
+    if (personal) porCat.set('personal', personal)
     const categorias = [...porCat.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6)
 
     const info = analizarFacturas(datos.facturas, hoyISO())
