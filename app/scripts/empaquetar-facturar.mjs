@@ -30,6 +30,10 @@ async function empaquetar(entrada, salida, paraDeno) {
   const bundle = await rolldown({
     input: resolve(raiz, entrada),
     platform: 'neutral',
+    // En Deno no existe import.meta.env (es cosa de Vite). Si src/lib/config.ts lo lee y llega al paquete,
+    // la función se cae al arrancar en CADA llamada («TypeError: Cannot read properties of undefined»).
+    // Aquí se sustituye por un objeto vacío: DEV y las VITE_* quedan sin definir (= publicado, sin extras).
+    transform: { define: { 'import.meta.env': '{}' } },
     plugins: [
       {
         name: 'externos',

@@ -851,12 +851,12 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		nombre: `${esFactura ? T.archivoFactura : T.archivoPresupuesto}-${d.numero || T.borrador.toLowerCase()}.pdf`
 	};
 }
-import.meta.env.DEV || import.meta.env.VITE_TARJETAS;
-import.meta.env.DEV || import.meta.env.VITE_TARJETAS_CLIENTES;
-demoForzada() || import.meta.env.VITE_TARJETAS_MODO === "real" || import.meta.env.VITE_TARJETAS_MODO === "demo" || import.meta.env.DEV;
+({}).DEV || {}.VITE_TARJETAS;
+({}).DEV || {}.VITE_TARJETAS_CLIENTES;
+demoForzada() || {}.VITE_TARJETAS_MODO === "real" || {}.VITE_TARJETAS_MODO === "demo" || {}.DEV;
 /** Solo en local: abrir /tarjetas?demo=1 fuerza la demostración (y ?demo=0 la quita) durante esa sesión del navegador */
 function demoForzada() {
-	if (!import.meta.env.DEV || typeof window === "undefined") return false;
+	if (!{}.DEV || typeof window === "undefined") return false;
 	try {
 		const q = new URLSearchParams(window.location.search).get("demo");
 		if (q === "1") sessionStorage.setItem("nt-tarjetas-demo", "1");
