@@ -142,7 +142,7 @@ export default function Layout() {
       .then((r) => setConTarjeta(r.tarjetas.length > 0))
       .catch(() => setConTarjeta(false))
   }, [ownerId, me, location.pathname])
-  const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Fichar', icon: Clock }] : []
+  const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Registro de jornada', icon: Clock }] : []
   const NAV = [...(rol === 'empleado' ? FICHAR : []), ...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
   // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
   const ESP = rol !== 'empleado' && miembro?.trabajador_id ? [...FICHAR, ...ESPACIO] : []

@@ -63,9 +63,9 @@ export default function Fichar() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">Fichar</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">Registro de jornada</h1>
         {demo && <p className="mb-2 inline-block rounded-xl bg-lima/40 px-3 py-1 text-sm">Modo demo: así lo ve Laura, una trabajadora</p>}
-        <p className="mt-1 text-[15px] text-muted">Registro de jornada: pulsa al empezar y al acabar. La hora la pone el servidor.</p>
+        <p className="mt-1 text-[15px] text-muted">Pulsa al empezar y al acabar. La hora la pone el servidor.</p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr] lg:items-start">
