@@ -7,6 +7,7 @@ import type { CategoriaConvenio, CentroTrabajo, PerfilLaboral } from '../../lib/
 import NumInput from '../../components/NumInput'
 import { Button, Card, Empty, Field, Input, Loading, Modal, Select, Textarea, confirmar, notify } from '../../components/ui'
 import LaboralTabs from './LaboralTabs'
+import CamposDireccion from '../../components/CamposDireccion'
 
 const perfilVacio = (owner_id: string): PerfilLaboral => ({
   owner_id,
@@ -268,18 +269,7 @@ export default function Empresa() {
             <Field label="Nombre" className="sm:col-span-2">
               <Input value={centro.nombre ?? ''} onChange={(e) => setCentro({ ...centro, nombre: e.target.value })} placeholder="Ej.: Oficina central" autoFocus />
             </Field>
-            <Field label="Dirección" className="sm:col-span-2">
-              <Input value={centro.direccion ?? ''} onChange={(e) => setCentro({ ...centro, direccion: e.target.value })} />
-            </Field>
-            <Field label="Código postal">
-              <Input value={centro.cp ?? ''} onChange={(e) => setCentro({ ...centro, cp: e.target.value })} />
-            </Field>
-            <Field label="Ciudad">
-              <Input value={centro.ciudad ?? ''} onChange={(e) => setCentro({ ...centro, ciudad: e.target.value })} />
-            </Field>
-            <Field label="Provincia">
-              <Input value={centro.provincia ?? ''} onChange={(e) => setCentro({ ...centro, provincia: e.target.value })} />
-            </Field>
+            <CamposDireccion valor={centro} conPais={false} onChange={(c) => setCentro((x) => (x ? { ...x, ...c } : x))} />
             <Field label="Código de cuenta de cotización">
               <Input value={centro.ccc ?? ''} onChange={(e) => setCentro({ ...centro, ccc: e.target.value })} />
             </Field>

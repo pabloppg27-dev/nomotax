@@ -81,7 +81,8 @@ export async function construirPdf(
   const borrador = estado === 'borrador'
   const pruebas = esFactura && modoPruebas
   // Idioma según el país del cliente
-  const T = TEXTOS[idiomaDePais(d.cliente?.pais)]
+  const idioma = idiomaDePais(d.cliente?.pais)
+  const T = TEXTOS[idioma]
 
   const SUAVE = tinte(MARCA, 0.08)
   const H = 297
@@ -134,7 +135,7 @@ export async function construirPdf(
   doc.setFontSize(8.3)
   doc.setTextColor(...MUTED)
   const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(' · ')
-  for (const l of [emisor.nif ? `${nifEmisor} ${emisor.nif}` : '', ...direccionCompleta(emisor), contacto]) {
+  for (const l of [emisor.nif ? `${nifEmisor} ${emisor.nif}` : '', ...direccionCompleta(emisor, idioma), contacto]) {
     if (!l) continue
     doc.text(l, xE, yE, { maxWidth: anchoE })
     yE += 3.8
@@ -182,7 +183,7 @@ export async function construirPdf(
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8.5)
   doc.setTextColor(...MUTED)
-  for (const l of [c.nif ? `${T.nif} ${c.nif}` : '', direccionCompleta({ ...c, provincia: c.provincia === c.ciudad ? null : c.provincia }).join(', '), c.email ?? '']) {
+  for (const l of [c.nif ? `${T.nif} ${c.nif}` : '', direccionCompleta({ ...c, provincia: c.provincia === c.ciudad ? null : c.provincia }, idioma).join(', '), c.email ?? '']) {
     if (!l) continue
     const partes = doc.splitTextToSize(l, W - 2 * M - 4)
     doc.text(partes, M + 4, yc)

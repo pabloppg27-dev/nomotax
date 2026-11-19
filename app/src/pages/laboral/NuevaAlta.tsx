@@ -18,6 +18,8 @@ import {
 } from '../../lib/laboral'
 import type { CategoriaConvenio, CentroTrabajo, PerfilLaboral, Trabajador } from '../../lib/types'
 import NumInput from '../../components/NumInput'
+import { InputDireccion } from '../../components/CamposDireccion'
+import { direccionEnLinea } from '../../lib/direcciones'
 import { Button, Card, Field, Input, Loading, Select, Textarea, cx, notify } from '../../components/ui'
 
 type Form = {
@@ -264,7 +266,12 @@ export default function NuevaAlta() {
             <Input type="tel" value={form.telefono} onChange={txt('telefono')} />
           </Field>
           <Field label="Domicilio" className="sm:col-span-2">
-            <Input value={form.domicilio} onChange={txt('domicilio')} placeholder="Calle, número, CP y ciudad" />
+            <InputDireccion
+              value={form.domicilio}
+              onChange={(v) => set('domicilio', v)}
+              onElegir={(d) => set('domicilio', direccionEnLinea(d))}
+              placeholder="Calle, número, CP y ciudad"
+            />
           </Field>
           <Field label="IBAN para la nómina">
             <Input value={form.iban} onChange={txt('iban')} placeholder="ES00 0000 0000 0000 0000 0000" className={cx(ibanMal && '!border-ambar')} />

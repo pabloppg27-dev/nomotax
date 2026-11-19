@@ -3,6 +3,7 @@ import { supabase, errorMessage } from '../lib/supabase'
 import { limpiarNif } from '../lib/format'
 import type { Contact } from '../lib/types'
 import { Button, Field, Input, Modal, Textarea, notify } from './ui'
+import CamposDireccion from './CamposDireccion'
 
 type Datos = Omit<Contact, 'id' | 'owner_id' | 'created_at'>
 
@@ -91,21 +92,7 @@ export default function ContactForm({
         <Field label="Email">
           <Input type="email" value={form.email ?? ''} onChange={set('email')} />
         </Field>
-        <Field label="Dirección" className="sm:col-span-2">
-          <Input value={form.direccion ?? ''} onChange={set('direccion')} />
-        </Field>
-        <Field label="Código postal">
-          <Input value={form.cp ?? ''} onChange={set('cp')} />
-        </Field>
-        <Field label="Ciudad">
-          <Input value={form.ciudad ?? ''} onChange={set('ciudad')} />
-        </Field>
-        <Field label="Provincia">
-          <Input value={form.provincia ?? ''} onChange={set('provincia')} />
-        </Field>
-        <Field label="País">
-          <Input value={form.pais ?? ''} onChange={set('pais')} />
-        </Field>
+        <CamposDireccion valor={form} onChange={(c) => setForm((f) => ({ ...f, ...c }))} />
         <Field label="Teléfono">
           <Input value={form.telefono ?? ''} onChange={set('telefono')} />
         </Field>

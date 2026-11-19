@@ -1,3 +1,5 @@
+import { paisEnIdioma } from './paises'
+
 /**
  * Formato español de Pablo: punto de miles siempre (también en 4 cifras: 1.234),
  * coma decimal y el € pegado al número: 1.234,56€
@@ -112,14 +114,18 @@ export function limpiarNif(nif: string | null | undefined): string | null {
   return v || null
 }
 
-export function direccionCompleta(d: {
-  direccion?: string | null
-  cp?: string | null
-  ciudad?: string | null
-  provincia?: string | null
-  pais?: string | null
-}): string[] {
+/** Líneas de la dirección. El país sale siempre, escrito en `idioma` (el de la factura; español por defecto) */
+export function direccionCompleta(
+  d: {
+    direccion?: string | null
+    cp?: string | null
+    ciudad?: string | null
+    provincia?: string | null
+    pais?: string | null
+  },
+  idioma = 'es',
+): string[] {
   const linea2 = [d.cp, d.ciudad].filter(Boolean).join(' ')
-  const linea3 = [d.provincia, d.pais && d.pais !== 'España' ? d.pais : null].filter(Boolean).join(', ')
+  const linea3 = [d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(', ')
   return [d.direccion, linea2, linea3].filter((x): x is string => Boolean(x && x.trim()))
 }

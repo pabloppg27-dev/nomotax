@@ -5,6 +5,139 @@ import { createClient } from "npm:@supabase/supabase-js@^2.119.0";
 import nodemailer from "npm:nodemailer@6.9.16";
 import { GState, jsPDF } from "npm:jspdf@^4.2.1";
 import autoTable from "npm:jspdf-autotable@^5.0.9";
+const CODIGOS_PAIS = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
+const norm$1 = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+const nombres = /* @__PURE__ */ new Map();
+function nombreEn(idioma, codigo) {
+	let dn = nombres.get(idioma);
+	if (!dn) {
+		try {
+			dn = new Intl.DisplayNames([idioma], { type: "region" });
+		} catch {
+			return codigo;
+		}
+		nombres.set(idioma, dn);
+	}
+	try {
+		return dn.of(codigo) ?? codigo;
+	} catch {
+		return codigo;
+	}
+}
+let indice = null;
+const EXTRA = {
+	esp: "ES",
+	espana: "ES",
+	spain: "ES",
+	usa: "US",
+	eeuu: "US",
+	estadosunidos: "US",
+	unitedstates: "US",
+	uk: "GB",
+	inglaterra: "GB",
+	granbretana: "GB",
+	england: "GB",
+	holanda: "NL",
+	deu: "DE",
+	fra: "FR",
+	ita: "IT",
+	prt: "PT",
+	gbr: "GB",
+	schweiz: "CH",
+	suisse: "CH",
+	osterreich: "AT",
+	deutschland: "DE",
+	belgique: "BE",
+	vaticano: "VA"
+};
+function indicePaises() {
+	if (indice) return indice;
+	indice = new Map(Object.entries(EXTRA));
+	for (const c of CODIGOS_PAIS) {
+		indice.set(c.toLowerCase(), c);
+		for (const idioma of [
+			"es",
+			"en",
+			"fr",
+			"it",
+			"de",
+			"pt",
+			"ca"
+		]) {
+			const n = norm$1(nombreEn(idioma, c));
+			if (n && !indice.has(n)) indice.set(n, c);
+		}
+	}
+	return indice;
+}
+/** Código ISO a partir del texto guardado («España», «Spain», «ES»…); null si no se reconoce */
+function codigoPais(pais) {
+	if (!pais?.trim()) return null;
+	return indicePaises().get(norm$1(pais)) ?? null;
+}
+/** Texto del país para un documento en ese idioma (si no se reconoce, tal cual) */
+function paisEnIdioma(pais, idioma) {
+	if (!pais?.trim()) return "";
+	const c = codigoPais(pais);
+	return c ? nombreEn(idioma, c) : pais.trim();
+}
+/** Por orden de código: las dos primeras cifras del código postal */
+const PROVINCIAS = [
+	"Álava",
+	"Albacete",
+	"Alicante",
+	"Almería",
+	"Ávila",
+	"Badajoz",
+	"Illes Balears",
+	"Barcelona",
+	"Burgos",
+	"Cáceres",
+	"Cádiz",
+	"Castellón",
+	"Ciudad Real",
+	"Córdoba",
+	"A Coruña",
+	"Cuenca",
+	"Girona",
+	"Granada",
+	"Guadalajara",
+	"Gipuzkoa",
+	"Huelva",
+	"Huesca",
+	"Jaén",
+	"León",
+	"Lleida",
+	"La Rioja",
+	"Lugo",
+	"Madrid",
+	"Málaga",
+	"Murcia",
+	"Navarra",
+	"Ourense",
+	"Asturias",
+	"Palencia",
+	"Las Palmas",
+	"Pontevedra",
+	"Salamanca",
+	"Santa Cruz de Tenerife",
+	"Cantabria",
+	"Segovia",
+	"Sevilla",
+	"Soria",
+	"Tarragona",
+	"Teruel",
+	"Toledo",
+	"Valencia",
+	"Valladolid",
+	"Bizkaia",
+	"Zamora",
+	"Zaragoza",
+	"Ceuta",
+	"Melilla"
+];
+[...PROVINCIAS].sort((a, b) => a.localeCompare(b, "es"));
+new Map(PROVINCIAS.map((p) => [norm$1(p), p]));
 // src/lib/format.ts
 /**
 * Formato español de Pablo: punto de miles siempre (también en 4 cifras: 1.234),
@@ -26,9 +159,10 @@ function fecha(iso) {
 	const [y, m, d] = iso.slice(0, 10).split("-");
 	return `${d}/${m}/${y}`;
 }
-function direccionCompleta(d) {
+/** Líneas de la dirección. El país sale siempre, escrito en `idioma` (el de la factura; español por defecto) */
+function direccionCompleta(d, idioma = "es") {
 	const linea2 = [d.cp, d.ciudad].filter(Boolean).join(" ");
-	const linea3 = [d.provincia, d.pais && d.pais !== "España" ? d.pais : null].filter(Boolean).join(", ");
+	const linea3 = [d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(", ");
 	return [
 		d.direccion,
 		linea2,
@@ -152,10 +286,58 @@ const PAISES = [
 		"brazil"
 	]]
 ];
+const POR_CODIGO = [
+	["es", [
+		"ES",
+		"MX",
+		"AR",
+		"CO",
+		"CL",
+		"PE",
+		"UY",
+		"VE",
+		"EC",
+		"BO",
+		"PY",
+		"CR",
+		"PA",
+		"GT",
+		"HN",
+		"SV",
+		"NI",
+		"CU",
+		"DO",
+		"PR",
+		"AD",
+		"GQ"
+	]],
+	["it", [
+		"IT",
+		"SM",
+		"VA"
+	]],
+	["fr", [
+		"FR",
+		"BE",
+		"LU",
+		"MC",
+		"CH"
+	]],
+	["de", [
+		"DE",
+		"AT",
+		"LI"
+	]],
+	["pt", ["PT", "BR"]]
+];
 function idiomaDePais(pais) {
 	if (!pais?.trim()) return "es";
 	const p = norm(pais);
 	for (const [idioma, lista] of PAISES) if (lista.includes(p)) return idioma;
+	const codigo = codigoPais(pais);
+	if (codigo) {
+		for (const [idioma, lista] of POR_CODIGO) if (lista.includes(codigo)) return idioma;
+	}
 	return "en";
 }
 const TEXTOS = {
@@ -476,7 +658,8 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	const rectificativa = esFactura && inv.tipo === "rectificativa";
 	const borrador = d.estado === "borrador";
 	const pruebas = esFactura && modoPruebas;
-	const T = TEXTOS[idiomaDePais(d.cliente?.pais)];
+	const idioma = idiomaDePais(d.cliente?.pais);
+	const T = TEXTOS[idioma];
 	const SUAVE = tinte(MARCA, .08);
 	const nifEmisor = T.nif === "NIF" ? "NIF" : "NIF/VAT";
 	const etiqueta = (txt, x, yy, align = "left") => {
@@ -522,7 +705,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(" · ");
 	for (const l of [
 		emisor.nif ? `${nifEmisor} ${emisor.nif}` : "",
-		...direccionCompleta(emisor),
+		...direccionCompleta(emisor, idioma),
 		contacto
 	]) {
 		if (!l) continue;
@@ -570,7 +753,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		direccionCompleta({
 			...c,
 			provincia: c.provincia === c.ciudad ? null : c.provincia
-		}).join(", "),
+		}, idioma).join(", "),
 		c.email ?? ""
 	]) {
 		if (!l) continue;

@@ -1,3 +1,5 @@
+import { codigoPais } from './paises'
+
 /** Idioma de la factura según el país del cliente (español por defecto) */
 export type Idioma = 'es' | 'en' | 'it' | 'fr' | 'de' | 'pt'
 
@@ -16,10 +18,20 @@ const PAISES: [Idioma, string[]][] = [
   ['pt', ['portugal', 'pt', 'prt', 'brasil', 'brazil']],
 ]
 
+const POR_CODIGO: [Idioma, string[]][] = [
+  ['es', ['ES', 'MX', 'AR', 'CO', 'CL', 'PE', 'UY', 'VE', 'EC', 'BO', 'PY', 'CR', 'PA', 'GT', 'HN', 'SV', 'NI', 'CU', 'DO', 'PR', 'AD', 'GQ']],
+  ['it', ['IT', 'SM', 'VA']],
+  ['fr', ['FR', 'BE', 'LU', 'MC', 'CH']],
+  ['de', ['DE', 'AT', 'LI']],
+  ['pt', ['PT', 'BR']],
+]
+
 export function idiomaDePais(pais: string | null | undefined): Idioma {
   if (!pais?.trim()) return 'es'
   const p = norm(pais)
   for (const [idioma, lista] of PAISES) if (lista.includes(p)) return idioma
+  const codigo = codigoPais(pais)
+  if (codigo) for (const [idioma, lista] of POR_CODIGO) if (lista.includes(codigo)) return idioma
   return 'en' // cualquier otro país: inglés
 }
 

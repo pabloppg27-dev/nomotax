@@ -7,6 +7,7 @@ import { limpiarNif } from '../lib/format'
 import type { Profile } from '../lib/types'
 import { NOMBRE_ROL } from '../lib/permisos'
 import { Button, Card, Field, Input, Loading, Textarea, notify } from '../components/ui'
+import CamposDireccion from '../components/CamposDireccion'
 
 type Editable = Pick<
   Profile,
@@ -179,21 +180,7 @@ function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
               <Field label="Teléfono">
                 <Input value={form.telefono ?? ''} onChange={set('telefono')} />
               </Field>
-              <Field label="Dirección" className="sm:col-span-2">
-                <Input value={form.direccion ?? ''} onChange={set('direccion')} />
-              </Field>
-              <Field label="Código postal">
-                <Input value={form.cp ?? ''} onChange={set('cp')} />
-              </Field>
-              <Field label="Ciudad">
-                <Input value={form.ciudad ?? ''} onChange={set('ciudad')} />
-              </Field>
-              <Field label="Provincia">
-                <Input value={form.provincia ?? ''} onChange={set('provincia')} />
-              </Field>
-              <Field label="País">
-                <Input value={form.pais ?? ''} onChange={set('pais')} />
-              </Field>
+              <CamposDireccion valor={form} onChange={(c) => setForm((f) => (f ? { ...f, ...c } : f))} />
             </div>
 
             <h2 className="mb-4 mt-8 font-semibold">Facturación</h2>
