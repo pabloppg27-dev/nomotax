@@ -5,6 +5,7 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { fecha } from '../lib/format'
 import { NOMBRE_TIPO, duracion, estadoActual, hora, resumenDias, type Fichaje, type TipoFichaje } from '../lib/fichaje'
 import { enDemo, fichajesDemo } from '../lib/demoFichaje'
+import { avisarGuia, useGuia } from '../lib/guia'
 import { Badge, Button, Card, Field, Input, Loading, Modal, Select, Textarea, notify } from '../components/ui'
 
 /** Página del trabajador: fichar entrada, pausas y salida, y ver su registro */
@@ -16,6 +17,12 @@ export default function Fichar() {
   const [enviando, setEnviando] = useState(false)
   const [, setTick] = useState(0)
   const [corregir, setCorregir] = useState(false)
+  // Guía rápida: lo que se ficha durante la guía es de prueba y no sale de esta pantalla
+  const { simulando } = useGuia()
+  const [sim, setSim] = useState<Fichaje[]>([])
+  useEffect(() => {
+    if (!simulando) setSim([])
+  }, [simulando])
 
   const cargar = useCallback(async () => {
     if (demo) return setFs((x) => x ?? fichajesDemo().filter((f) => f.trabajador_id === 'd1'))
@@ -41,12 +48,24 @@ export default function Fichar() {
     )
   }
 
-  const estado = estadoActual(fs)
-  const dias = resumenDias(fs)
-  const hoy = dias.find((d) => d.dia === new Date().toLocaleDateString('sv-SE'))
-  const pendientes = fs.filter((f) => f.estado === 'pendiente')
+  const hoyDia = new Date().toLocaleDateString('sv-SE')
+  // En la guía se empieza el día «fuera», para poder probar «Fichar entrada»
+  const ver = simulando ? [...fs.filter((f) => new Date(f.momento).toLocaleDateString('sv-SE') !== hoyDia), ...sim] : fs
+  const estado = estadoActual(ver)
+  const dias = resumenDias(ver)
+  const hoy = dias.find((d) => d.dia === hoyDia)
+  const pendientes = ver.filter((f) => f.estado === 'pendiente')
 
   const fichar = async (tipo: TipoFichaje) => {
+    if (simulando) {
+      const ahora = new Date().toISOString()
+      setSim((x) => [
+        ...x,
+        { id: `guia-${Date.now()}`, owner_id: ownerId ?? 'guia', trabajador_id: trabajadorId ?? 'guia', tipo, momento: ahora, origen: 'app', estado: 'valido', motivo: null, anula_id: null, registrado_por: null, revisado_por: null, revisado_at: null, created_at: ahora },
+      ])
+      notify(`${NOMBRE_TIPO[tipo]} a las ${hora(ahora)} · era una prueba, no se ha guardado`)
+      return avisarGuia('fichado')
+    }
     if (demo) {
       const ahora = new Date().toISOString()
       setFs((x) => [...(x ?? []), { ...x![0], id: `n${Date.now()}`, tipo, momento: ahora, origen: 'app', estado: 'valido', motivo: null, anula_id: null }])
@@ -69,14 +88,14 @@ export default function Fichar() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr] lg:items-start">
-        <Card className="p-5 text-center sm:p-6">
+        <Card className="p-5 text-center sm:p-6" guia="fichar-estado">
           <Badge tono={estado === 'dentro' ? 'verde' : estado === 'pausa' ? 'ambar' : 'gris'}>
             {estado === 'dentro' ? 'Trabajando' : estado === 'pausa' ? 'En pausa' : 'Fuera'}
           </Badge>
           <p className="num mt-3 text-4xl font-semibold">{duracion(hoy?.trabajadoMin ?? 0)}</p>
           <p className="text-sm text-muted">trabajado hoy{hoy?.entrada ? ` · entrada ${hora(hoy.entrada)}` : ''}</p>
 
-          <div className="mt-6 grid gap-2">
+          <div className="mt-6 grid gap-2" data-guia="fichar-boton">
             {estado === 'fuera' && (
               <Button className="h-14 text-lg" loading={enviando} icon={<LogIn className="size-5" />} onClick={() => fichar('entrada')}>
                 Fichar entrada

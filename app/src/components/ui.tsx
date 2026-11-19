@@ -137,8 +137,12 @@ export function Field({
 
 /* ------------------------------------------------------------ Contenedores */
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cx('rounded-2xl border border-line bg-white', className)}>{children}</div>
+export function Card({ className, children, guia }: { className?: string; children: ReactNode; guia?: string }) {
+  return (
+    <div data-guia={guia} className={cx('rounded-2xl border border-line bg-white', className)}>
+      {children}
+    </div>
+  )
 }
 
 export function PageHeader({

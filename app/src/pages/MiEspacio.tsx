@@ -111,7 +111,7 @@ export default function MiEspacio() {
 
       {seccion === 'tickets' && (
         <div className="grid gap-4 lg:grid-cols-[1fr_1.3fr] lg:items-start">
-          <Card className="p-5 sm:p-6">
+          <Card className="p-5 sm:p-6" guia="subir-ticket">
             <h2 className="mb-4 flex items-center gap-2 font-semibold">
               <Receipt className="size-4" /> Subir un ticket
             </h2>
@@ -243,7 +243,7 @@ export default function MiEspacio() {
 /** Tarjeta «Datos de tu contrato» que ve el trabajador */
 export function FichaContrato({ ficha }: { ficha: Trabajador }) {
   return (
-    <Card className="max-w-2xl p-5 sm:p-6">
+    <Card className="max-w-2xl p-5 sm:p-6" guia="ficha-contrato">
       <h2 className="flex items-center gap-2 font-semibold">
         <IdCard className="size-4" /> Datos de tu contrato
       </h2>

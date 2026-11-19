@@ -35,6 +35,7 @@ import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
 import { SubidasProvider } from './lib/subidas'
 import PanelSubidas from './components/PanelSubidas'
+import { GuiaProvider } from './components/GuiaEmpleado'
 import type { Permiso } from './lib/types'
 import { TARJETAS_ACTIVAS, TARJETAS_PARA_CLIENTES } from './lib/config'
 
@@ -145,7 +146,9 @@ export default function App() {
               <Protegido>
                 <SubidasProvider>
                   <ConfigProvider>
-                    <Layout />
+                    <GuiaProvider>
+                      <Layout />
+                    </GuiaProvider>
                   </ConfigProvider>
                   <PanelSubidas />
                 </SubidasProvider>

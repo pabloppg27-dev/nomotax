@@ -24,6 +24,7 @@ import {
   CreditCard,
   type LucideIcon,
   Clock,
+  Compass,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
@@ -33,6 +34,7 @@ import { cx } from './ui'
 import { PlanLateral } from './Planes'
 import { TARJETAS_ACTIVAS } from '../lib/config'
 import { misTarjetas } from '../lib/tarjetas'
+import { useGuia } from '../lib/guia'
 
 interface ItemNav {
   to: string
@@ -66,6 +68,9 @@ function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[
   ]
   return items.filter((i) => i.si)
 }
+
+/** Para que la guía rápida encuentre cada apartado del menú: nav-nominas, nav-ficha… */
+const guiaDe = (to: string) => `nav-${to.split('/').pop() || 'inicio'}`
 
 /** Nombre corto de una empresa */
 const nombreDe = (p: Pick<Profile, 'nombre' | 'email'> & { nombre_comercial?: string | null }) => p.nombre_comercial || p.nombre || p.email || 'Empresa'
@@ -152,6 +157,7 @@ export default function Layout() {
   const verAsesor = puede('asesor')
   // Configuración: perfil, plan, usuarios y vista de socio, en una ventana con las secciones a la izquierda
   const { abrir: abrirConfig, abierta: enConfig } = useConfig()
+  const guia = useGuia()
 
   const salirDeCuenta = async () => {
     await setOwner(null)
@@ -180,6 +186,7 @@ export default function Layout() {
               key={to}
               to={to}
               end={end}
+              data-guia={guiaDe(to)}
               className={({ isActive }) =>
                 cx(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
@@ -198,6 +205,7 @@ export default function Layout() {
                 <NavLink
                   key={to}
                   to={to}
+                  data-guia={guiaDe(to)}
                   className={({ isActive }) =>
                     cx(
                       'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
@@ -242,6 +250,15 @@ export default function Layout() {
               <Briefcase className="size-[18px]" />
               Panel del asesor
             </NavLink>
+          )}
+          {guia.disponible && (
+            <button
+              onClick={guia.abrir}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] text-white/75 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Compass className="size-[18px]" />
+              Guía rápida
+            </button>
           )}
           <button
             onClick={() => abrirConfig()}
@@ -318,6 +335,7 @@ export default function Layout() {
               key={to}
               to={to}
               end={end}
+              data-guia={guiaDe(to)}
               className={({ isActive }) => cx('flex flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'font-medium text-ink' : 'text-muted')}
             >
               {({ isActive }) => (
@@ -330,7 +348,7 @@ export default function Layout() {
               )}
             </NavLink>
           ))}
-          <button onClick={() => setMas(true)} className={cx('flex flex-col items-center gap-1 py-2 text-[11px]', enMas ? 'font-medium text-ink' : 'text-muted')}>
+          <button onClick={() => setMas(true)} data-guia="nav-mas" className={cx('flex flex-col items-center gap-1 py-2 text-[11px]', enMas ? 'font-medium text-ink' : 'text-muted')}>
             <span className={cx('grid h-7 w-12 place-items-center rounded-full', enMas && 'bg-lima')}>
               <LayoutGrid className="size-[19px]" />
             </span>
@@ -367,6 +385,18 @@ export default function Layout() {
                     {label}
                   </NavLink>
                 ))}
+                {guia.disponible && (
+                  <button
+                    onClick={() => {
+                      setMas(false)
+                      guia.abrir()
+                    }}
+                    className="flex flex-col items-center gap-2 rounded-2xl bg-paper px-2 py-4 text-center text-sm active:bg-ink/5"
+                  >
+                    <Compass className="size-6" />
+                    Guía rápida
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setMas(false)

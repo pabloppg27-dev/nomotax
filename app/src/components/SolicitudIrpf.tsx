@@ -4,6 +4,7 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { fecha, num } from '../lib/format'
 import { MESES } from '../lib/laboral'
 import type { Trabajador } from '../lib/types'
+import { avisarGuia, useGuia } from '../lib/guia'
 import { Badge, Button, Card, Field, Input, Modal, Select, Textarea, notify } from './ui'
 
 export type SolicitudIrpf = {
@@ -71,21 +72,35 @@ export function PedirCambioIrpf({ trabajador: t, demo = false }: { trabajador: T
   const [desde, setDesde] = useState(meses[1])
   const [comentario, setComentario] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const pendiente = lista.some((s) => s.estado === 'pendiente')
+  // Guía rápida: la solicitud de prueba vive solo aquí, en memoria, y desaparece al acabar la guía
+  const { simulando } = useGuia()
+  const [sim, setSim] = useState<SolicitudIrpf[]>([])
+  useEffect(() => {
+    if (!simulando) setSim([])
+  }, [simulando])
+  const ver = simulando ? sim : lista
+  const pendiente = ver.some((s) => s.estado === 'pendiente')
 
   const abrir = () => {
     setPct(actual != null ? String(Math.ceil(actual + 1)) : '')
     setDesde(meses[1])
     setComentario('')
     setAbierto(true)
+    avisarGuia('irpf-abierto')
   }
 
   const enviar = async () => {
     const n = Number(pct.replace(',', '.'))
     if (!n || n > 47) return notify('Pon un porcentaje entre el actual y el 47%.', 'error')
     if (actual != null && n <= actual) return notify(`Tiene que ser mayor que tu retención actual (${num(actual)}%).`, 'error')
-    setEnviando(true)
     const fila = { owner_id: t.owner_id, trabajador_id: t.id, pct_actual: actual, pct_solicitado: n, desde, comentario: comentario.trim() || null }
+    if (simulando) {
+      setSim([{ ...fila, id: crypto.randomUUID(), estado: 'pendiente', respuesta: null, resuelta_at: null, created_at: new Date().toISOString() }])
+      setAbierto(false)
+      notify('Solicitud enviada · era una prueba, no le ha llegado a nadie')
+      return avisarGuia('irpf-enviada')
+    }
+    setEnviando(true)
     if (demo) {
       DEMO = [{ ...fila, id: crypto.randomUUID(), estado: 'pendiente', respuesta: null, resuelta_at: null, created_at: new Date().toISOString() }, ...DEMO]
       avisar()
@@ -103,7 +118,7 @@ export function PedirCambioIrpf({ trabajador: t, demo = false }: { trabajador: T
   }
 
   return (
-    <Card className="mt-4 max-w-2xl p-5 sm:p-6">
+    <Card className="mt-4 max-w-2xl p-5 sm:p-6" guia="irpf-tarjeta">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 font-semibold">
@@ -114,14 +129,14 @@ export function PedirCambioIrpf({ trabajador: t, demo = false }: { trabajador: T
             Si tienes otros ingresos o consideras que tu retención es insuficiente, puedes solicitar que se incremente.
           </p>
         </div>
-        <Button variant="secondary" onClick={abrir} disabled={pendiente}>
+        <Button variant="secondary" onClick={abrir} disabled={pendiente} data-guia="irpf-boton">
           Solicitar más retención
         </Button>
       </div>
 
-      {lista.length > 0 && (
+      {ver.length > 0 && (
         <ul className="mt-4 divide-y divide-line border-t border-line text-[15px]">
-          {lista.map((s) => (
+          {ver.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
               <span>
                 <span className="num font-medium">{num(Number(s.pct_solicitado))}%</span>

@@ -44,7 +44,7 @@ export default function MisNominas({ nominas, ejemplo }: { nominas: Nomina[]; ej
   const abrir = (n: Nomina) => (n.file_path ? abrirDocumento(n.file_path) : notify('Es una nómina de ejemplo: no tiene PDF.'))
 
   return (
-    <Card className="p-5 sm:p-6">
+    <Card className="p-5 sm:p-6" guia="mis-nominas">
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 font-semibold">
           <FileText className="size-4" /> Mis nóminas
