@@ -320,7 +320,8 @@ export function GuiaProvider({ children }: { children: ReactNode }) {
   // Primera vez que entra con ese perfil: arranca sola
   const comprobada = useRef('')
   useEffect(() => {
-    if (!tipo || !me) return
+    // Al asesor no le sale sola: la abre él desde Configuración
+    if (!tipo || !me || (isAdvisor && !verComoDev())) return
     const k = `${me.id}:${tipo}`
     if (comprobada.current === k) return
     comprobada.current = k
@@ -328,7 +329,7 @@ export function GuiaProvider({ children }: { children: ReactNode }) {
       setI(0)
       setActiva(true)
     }
-  }, [tipo, me, session])
+  }, [tipo, me, session, isAdvisor])
 
   const terminar = useCallback(() => {
     setActiva(false)
@@ -340,12 +341,12 @@ export function GuiaProvider({ children }: { children: ReactNode }) {
     }
     // En la cuenta, para que no salga otra vez en el móvil. No en la vista previa de local (es la cuenta del titular).
     const campo = `guia_${tipo}`
-    if (!verComoDev() && !session?.user.user_metadata?.[campo])
+    if (!isAdvisor && !verComoDev() && !session?.user.user_metadata?.[campo])
       supabase.auth.updateUser({ data: { [campo]: new Date().toISOString() } }).then(
         () => {},
         () => {},
       )
-  }, [me, session, tipo])
+  }, [me, session, tipo, isAdvisor])
 
   const siguiente = useCallback(() => {
     if (i + 1 >= pasos.length) terminar()

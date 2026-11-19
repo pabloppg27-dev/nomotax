@@ -35,9 +35,10 @@ export function escucharGuia(f: (e: EventoGuia) => void) {
 
 export type TipoGuia = 'empleado' | 'comercial' | 'gestion'
 
-/** Qué guía le toca a cada uno (al asesor ninguna, salvo en la vista previa de local con ?verComo=) */
+/** Qué guía le toca a cada uno. El asesor, dentro de la cuenta de un cliente, la del titular (para enseñársela);
+ *  en su propia cuenta, ninguna (salvo en la vista previa de local con ?verComo=) */
 export function tipoGuia(rol: RolEnCuenta | null, isAdvisor: boolean, vistaPrevia: boolean): TipoGuia | null {
-  if (isAdvisor && !vistaPrevia) return null
+  if (isAdvisor && !vistaPrevia) return rol === 'asesor' ? 'gestion' : null
   if (rol === 'empleado') return 'empleado'
   if (rol === 'comercial') return 'comercial'
   if (rol === 'titular' || rol === 'admin') return 'gestion'
