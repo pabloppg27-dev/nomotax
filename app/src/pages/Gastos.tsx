@@ -88,11 +88,13 @@ export default function Gastos() {
         subtitle="Sube tus facturas y tickets: los leemos por ti y tú solo revisas."
       />
 
-      <UploadZone
-        onFiles={procesar}
-        titulo="Arrastra aquí tus facturas o tickets"
-        texto="PDF o foto (JPG, PNG, HEIC). Puedes subir varios a la vez: se leen en segundo plano y puedes seguir trabajando."
-      />
+      <div data-guia="subir-gasto">
+        <UploadZone
+          onFiles={procesar}
+          titulo="Arrastra aquí tus facturas o tickets"
+          texto="PDF o foto (JPG, PNG, HEIC). Puedes subir varios a la vez: se leen en segundo plano y puedes seguir trabajando."
+        />
+      </div>
 
       <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <PeriodPicker value={periodo} onChange={setPeriodo} />

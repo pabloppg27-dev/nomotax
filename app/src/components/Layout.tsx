@@ -24,7 +24,6 @@ import {
   CreditCard,
   type LucideIcon,
   Clock,
-  Compass,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
@@ -34,7 +33,6 @@ import { cx } from './ui'
 import { PlanLateral } from './Planes'
 import { TARJETAS_ACTIVAS } from '../lib/config'
 import { misTarjetas } from '../lib/tarjetas'
-import { useGuia } from '../lib/guia'
 
 interface ItemNav {
   to: string
@@ -157,7 +155,6 @@ export default function Layout() {
   const verAsesor = puede('asesor')
   // Configuración: perfil, plan, usuarios y vista de socio, en una ventana con las secciones a la izquierda
   const { abrir: abrirConfig, abierta: enConfig } = useConfig()
-  const guia = useGuia()
 
   const salirDeCuenta = async () => {
     await setOwner(null)
@@ -226,6 +223,7 @@ export default function Layout() {
           {verAsesor && (
           <NavLink
             to="/mi-asesor"
+            data-guia="nav-mi-asesor"
             className={({ isActive }) =>
               cx(
                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
@@ -251,17 +249,9 @@ export default function Layout() {
               Panel del asesor
             </NavLink>
           )}
-          {guia.disponible && (
-            <button
-              onClick={guia.abrir}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] text-white/75 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <Compass className="size-[18px]" />
-              Guía rápida
-            </button>
-          )}
           <button
             onClick={() => abrirConfig()}
+            data-guia="nav-config"
             className={cx(
               'flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] transition-colors',
               enConfig ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/5 hover:text-white',
@@ -289,7 +279,7 @@ export default function Layout() {
           </NavLink>
           <div className="flex items-center gap-1">
             {verAsesor && (
-              <NavLink to="/mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
+              <NavLink to="/mi-asesor" data-guia="nav-mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
                 <MessagesSquare className="size-5" />
               </NavLink>
             )}
@@ -298,7 +288,7 @@ export default function Layout() {
                 <Briefcase className="size-5" />
               </NavLink>
             )}
-            <button onClick={() => abrirConfig()} className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Configuración">
+            <button onClick={() => abrirConfig()} data-guia="nav-config" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Configuración">
               <Settings className="size-5" />
             </button>
           </div>
@@ -385,18 +375,6 @@ export default function Layout() {
                     {label}
                   </NavLink>
                 ))}
-                {guia.disponible && (
-                  <button
-                    onClick={() => {
-                      setMas(false)
-                      guia.abrir()
-                    }}
-                    className="flex flex-col items-center gap-2 rounded-2xl bg-paper px-2 py-4 text-center text-sm active:bg-ink/5"
-                  >
-                    <Compass className="size-6" />
-                    Guía rápida
-                  </button>
-                )}
                 <button
                   onClick={() => {
                     setMas(false)

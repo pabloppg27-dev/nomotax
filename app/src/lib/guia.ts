@@ -5,6 +5,7 @@
  * La guía en sí está en components/GuiaEmpleado.tsx.
  */
 import { createContext, useContext } from 'react'
+import type { RolEnCuenta } from './types'
 
 export type EventoGuia = 'fichado' | 'irpf-abierto' | 'irpf-enviada'
 
@@ -31,3 +32,18 @@ export function escucharGuia(f: (e: EventoGuia) => void) {
   oyentes.add(f)
   return () => void oyentes.delete(f)
 }
+
+export type TipoGuia = 'empleado' | 'comercial' | 'gestion'
+
+/** Qué guía le toca a cada uno (al asesor ninguna, salvo en la vista previa de local con ?verComo=) */
+export function tipoGuia(rol: RolEnCuenta | null, isAdvisor: boolean, vistaPrevia: boolean): TipoGuia | null {
+  if (isAdvisor && !vistaPrevia) return null
+  if (rol === 'empleado') return 'empleado'
+  if (rol === 'comercial') return 'comercial'
+  if (rol === 'titular' || rol === 'admin') return 'gestion'
+  return null
+}
+
+/** Configuración → «Guía rápida» (la ventana de Configuración está fuera del proveedor de la guía) */
+export const EVENTO_ABRIR_GUIA = 'nt-abrir-guia'
+export const abrirGuia = () => window.dispatchEvent(new Event(EVENTO_ABRIR_GUIA))

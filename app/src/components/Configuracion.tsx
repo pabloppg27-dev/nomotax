@@ -4,8 +4,9 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
-import { useAuth } from '../lib/auth'
+import { ChevronLeft, ChevronRight, Compass, Search, X } from 'lucide-react'
+import { useAuth, verComoDev } from '../lib/auth'
+import { abrirGuia, tipoGuia } from '../lib/guia'
 import { GRUPOS_CONFIG, seccionesVisibles, type IdSeccion } from '../lib/configuracion'
 import { cuotaCliente } from '../lib/planes'
 import Perfil from '../pages/Perfil'
@@ -59,7 +60,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 }
 
 function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClose: () => void }) {
-  const { rol, puede, viewingOther, owner } = useAuth()
+  const { rol, puede, viewingOther, owner, isAdvisor } = useAuth()
+  const conGuia = tipoGuia(rol, isAdvisor, Boolean(verComoDev())) !== null
   const ctx = { viewingOther, rol, puede }
   const secciones = seccionesVisibles(rol, puede)
   const [activa, setActiva] = useState<IdSeccion>(inicial && secciones.some((s) => s.id === inicial) ? inicial : secciones[0]?.id ?? 'perfil')
@@ -131,6 +133,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
         <div className="flex min-h-0 flex-1 flex-col bg-white sm:flex-row">
           {/* Izquierda: buscador y secciones. En el móvil es la pantalla de inicio: tarjetas por grupos con icono, explicación y flecha */}
           <aside
+            data-guia="config-secciones"
             className={cx(
               'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-paper sm:block sm:w-64 sm:flex-none sm:border-r sm:border-line sm:bg-paper/60',
               verSeccion && 'hidden',
@@ -195,7 +198,30 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                   </div>
                 </section>
               ))}
-              {filtradas.length === 0 && <p className="px-2 py-2 text-sm text-muted">Nada con «{q}»</p>}
+              {conGuia && (!filtro || 'guía rápida ayuda tutorial'.includes(filtro)) && (
+                <section>
+                  <p className="truncate px-2 pb-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-muted sm:pt-2">Ayuda</p>
+                  <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-line sm:overflow-visible sm:rounded-none sm:bg-transparent sm:ring-0">
+                    <button
+                      onClick={() => {
+                        onClose()
+                        abrirGuia()
+                      }}
+                      className="flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors active:bg-paper sm:gap-2.5 sm:rounded-xl sm:px-3 sm:py-2 sm:text-ink/75 sm:hover:bg-ink/[0.05] sm:hover:text-ink"
+                    >
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ink text-lima sm:size-auto sm:bg-transparent sm:text-current">
+                        <Compass className="size-[18px] shrink-0" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[15px] font-medium sm:font-normal">Guía rápida</span>
+                        <span className="line-clamp-1 text-[13px] text-muted sm:hidden">Repasa en un minuto dónde está todo</span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted/70 sm:hidden" />
+                    </button>
+                  </div>
+                </section>
+              )}
+              {filtradas.length === 0 && !conGuia && <p className="px-2 py-2 text-sm text-muted">Nada con «{q}»</p>}
             </nav>
           </aside>
 

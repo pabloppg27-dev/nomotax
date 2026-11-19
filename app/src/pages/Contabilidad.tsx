@@ -143,7 +143,7 @@ export default function Contabilidad() {
 
       <div className="mb-5 flex flex-wrap gap-2">
         {verBancos && (
-          <Button icon={<Landmark className="size-4" />} onClick={() => setSubirExtracto(true)}>
+          <Button icon={<Landmark className="size-4" />} onClick={() => setSubirExtracto(true)} data-guia="subir-extracto">
             Subir extracto bancario
           </Button>
         )}
@@ -193,6 +193,7 @@ export default function Contabilidad() {
         {VISTAS.filter((v) => v.id !== 'bancos' || verBancos).map((v) => (
           <button
             key={v.id}
+            data-guia={`conta-${v.id}`}
             onClick={() => setVista(v.id)}
             className={cx(
               '-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-[15px] transition-colors',

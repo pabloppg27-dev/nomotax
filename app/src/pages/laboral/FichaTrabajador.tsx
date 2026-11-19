@@ -205,7 +205,8 @@ export default function FichaTrabajador() {
           <Datos filas={filasContrato(t, centro?.nombre, categoria)} />
         </Card>
 
-        <SolicitudesIrpfGestor trabajador={t} onAplicada={cargar} />
+        {/* Las peticiones de más retención las gestiona el asesor, no la empresa */}
+        {isAdvisor && <SolicitudesIrpfGestor trabajador={t} onAplicada={cargar} />}
 
         <Documentos trabajador={t} docs={docs} isAdvisor={isAdvisor} miId={me?.id ?? ''} onChanged={cargar} />
 
