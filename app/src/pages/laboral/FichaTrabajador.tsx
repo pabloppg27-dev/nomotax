@@ -3,10 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft, FileText, Paperclip, Pencil, Trash2, Upload } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import { BUCKET, abrirDocumento, errorMessage, supabase } from '../../lib/supabase'
-import { eur, fecha, hoyISO, sumarDias } from '../../lib/format'
+import { eur, fecha, hoyISO, num, sumarDias } from '../../lib/format'
 import { nuevoId } from '../../lib/id'
 import { prepararArchivo } from '../../lib/upload'
-import { ESTADOS_TRABAJADOR, MESES, TIPOS_DOC, comprobarSalario, nombreContrato, nombreDoc } from '../../lib/laboral'
+import { ESTADOS_TRABAJADOR, MESES, TIPOS_DOC, comprobarSalario, nombreContrato, nombreDoc, textoPrueba, textoVacaciones } from '../../lib/laboral'
+import { SolicitudesIrpfGestor } from '../../components/SolicitudIrpf'
 import type {
   CategoriaConvenio,
   CentroTrabajo,
@@ -197,47 +198,14 @@ export default function FichaTrabajador() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-5 sm:p-6">
           <h2 className="mb-3 font-semibold">Datos personales</h2>
-          <Datos
-            filas={[
-              ['DNI / NIE', t.dni],
-              [
-                'Caducidad',
-                t.dni_caducidad ? (
-                  <span className={caducaPronto ? 'inline-flex items-center gap-1 text-ambar' : ''}>
-                    {caducaPronto && <AlertTriangle className="size-4" />}
-                    {fecha(t.dni_caducidad)}
-                  </span>
-                ) : null,
-              ],
-              ['Seguridad Social', t.nss_tramitar ? 'No tiene: lo tramitamos nosotros' : t.nss],
-              ['Nacimiento', t.fecha_nacimiento ? fecha(t.fecha_nacimiento) : null],
-              ['Domicilio', t.domicilio],
-              ['Teléfono', t.telefono],
-              ['IBAN', t.iban ? t.iban.replace(/(.{4})/g, '$1 ').trim() : null],
-              ['Estudios', t.nivel_estudios],
-            ]}
-          />
+          <Datos filas={filasPersonales(t, Boolean(caducaPronto))} />
         </Card>
         <Card className="p-5 sm:p-6">
           <h2 className="mb-3 font-semibold">Contrato</h2>
-          <Datos
-            filas={[
-              ['Tipo', nombreContrato(t.tipo_contrato)],
-              ['Inicio', fecha(t.fecha_inicio)],
-              ['Fin', t.fecha_fin ? fecha(t.fecha_fin) : null],
-              ['Motivo', t.motivo_temporal],
-              ['Sustituye a', t.sustituye_a],
-              ['Centro', centro ? centro.nombre : null],
-              ['Jornada', t.jornada === 'completa' ? 'Completa' : `Parcial · ${Number(t.horas_semana)} h/semana`],
-              ['Horario', t.horario],
-              ['Teletrabajo', t.teletrabajo ? 'Sí' : 'No'],
-              ['Salario', `${eur(t.salario_bruto_mensual)} brutos × ${t.pagas} pagas = ${eur(Number(t.salario_bruto_mensual) * t.pagas)}/año`],
-              ['Categoría', categoria ? `${categoria.nombre}${categoria.grupo_cotizacion ? ` (grupo ${categoria.grupo_cotizacion})` : ''}` : null],
-              ['Puesto', t.puesto],
-              ['Observaciones', t.observaciones],
-            ]}
-          />
+          <Datos filas={filasContrato(t, centro?.nombre, categoria)} />
         </Card>
+
+        <SolicitudesIrpfGestor trabajador={t} onAplicada={cargar} />
 
         <Documentos trabajador={t} docs={docs} isAdvisor={isAdvisor} miId={me?.id ?? ''} onChanged={cargar} />
 
@@ -279,7 +247,51 @@ function Cifra({ label, valor, nota, destacada }: { label: string; valor: string
   )
 }
 
-function Datos({ filas }: { filas: [string, ReactNode][] }) {
+export function filasPersonales(t: Trabajador, caducaPronto = false): [string, ReactNode][] {
+  return [
+              ['DNI / NIE', t.dni],
+              [
+                'Caducidad',
+                t.dni_caducidad ? (
+                  <span className={caducaPronto ? 'inline-flex items-center gap-1 text-ambar' : ''}>
+                    {caducaPronto && <AlertTriangle className="size-4" />}
+                    {fecha(t.dni_caducidad)}
+                  </span>
+                ) : null,
+              ],
+              ['Seguridad Social', t.nss_tramitar ? 'No tiene: lo tramitamos nosotros' : t.nss],
+              ['Nacimiento', t.fecha_nacimiento ? fecha(t.fecha_nacimiento) : null],
+              ['Domicilio', t.domicilio],
+              ['Teléfono', t.telefono],
+              ['IBAN', t.iban ? t.iban.replace(/(.{4})/g, '$1 ').trim() : null],
+              ['Estudios', t.nivel_estudios],
+  ]
+}
+
+export function filasContrato(t: Trabajador, centro?: string | null, categoria?: { nombre: string; grupo_cotizacion: number | null } | null): [string, ReactNode][] {
+  return [
+              ['Tipo', nombreContrato(t.tipo_contrato)],
+              ['Inicio', fecha(t.fecha_inicio)],
+              ['Fin', t.fecha_fin ? fecha(t.fecha_fin) : null],
+              ['Motivo', t.motivo_temporal],
+              ['Sustituye a', t.sustituye_a],
+              ['Centro', centro ?? null],
+              ['Jornada', t.jornada === 'completa' ? 'Completa' : `Parcial · ${Number(t.horas_semana)} h/semana`],
+              ['Horario', t.horario],
+              ['Teletrabajo', t.teletrabajo ? 'Sí' : 'No'],
+              ['Salario', `${eur(t.salario_bruto_mensual)} brutos × ${t.pagas} pagas = ${eur(Math.round(Number(t.salario_bruto_mensual) * t.pagas))}/año`],
+              ['Retención IRPF', t.irpf_pct != null ? `${num(Number(t.irpf_pct))}%` : null],
+              ['Convenio', t.convenio],
+              ['Clasificación', t.clasificacion],
+              ['Periodo de prueba', textoPrueba(t.fecha_inicio, t.prueba_meses)],
+              ['Vacaciones', textoVacaciones(t.vacaciones_dias, t.vacaciones_nota)],
+              ['Categoría', categoria ? `${categoria.nombre}${categoria.grupo_cotizacion ? ` (grupo ${categoria.grupo_cotizacion})` : ''}` : null],
+              ['Puesto', t.puesto],
+              ['Observaciones', t.observaciones],
+  ]
+}
+
+export function Datos({ filas }: { filas: [string, ReactNode][] }) {
   return (
     <dl className="divide-y divide-line text-[15px]">
       {filas
@@ -287,7 +299,7 @@ function Datos({ filas }: { filas: [string, ReactNode][] }) {
         .map(([k, v]) => (
           <div key={k} className="grid grid-cols-[120px_1fr] gap-3 py-2">
             <dt className="text-sm text-muted">{k}</dt>
-            <dd className="min-w-0 break-words">{v}</dd>
+            <dd className="min-w-0 whitespace-pre-line break-words">{v}</dd>
           </div>
         ))}
     </dl>

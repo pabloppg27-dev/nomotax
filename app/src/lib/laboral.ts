@@ -112,3 +112,24 @@ export function ibanValido(v: string): boolean {
   }
   return resto === 1
 }
+
+/** Fin del periodo de prueba (inicio + meses) en ISO */
+export function finPrueba(inicio: string, meses: number): string {
+  const [a, m, d] = inicio.split('-').map(Number)
+  const f = new Date(Date.UTC(a, m - 1 + meses, d))
+  return f.toISOString().slice(0, 10)
+}
+
+/** «Superado» o «6 meses · hasta el 13/01/2027» */
+export function textoPrueba(inicio: string, meses: number | null | undefined): string | null {
+  if (!meses) return null
+  const fin = finPrueba(inicio, meses)
+  const [a, m, d] = fin.split('-')
+  return fin <= new Date().toISOString().slice(0, 10) ? 'Superado' : `${meses} meses · hasta el ${d}/${m}/${a}`
+}
+
+/** «25 días laborables (24 + 1 por cumpleaños)» */
+export function textoVacaciones(dias: number | null | undefined, nota?: string | null): string | null {
+  if (!dias) return null
+  return `${dias} días laborables al año${nota ? ` (${nota})` : ''}`
+}

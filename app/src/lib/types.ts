@@ -307,6 +307,12 @@ export interface Trabajador {
   salario_bruto_mensual: number
   pagas: 12 | 14
   observaciones: string | null
+  irpf_pct?: number | null
+  convenio?: string | null
+  clasificacion?: string | null
+  prueba_meses?: number | null
+  vacaciones_dias?: number | null
+  vacaciones_nota?: string | null
   categoria_id: string | null
   notas_asesor: string | null
   fecha_baja: string | null

@@ -91,7 +91,8 @@ export function verFichaDev(): boolean {
   try {
     const q = new URLSearchParams(location.search).get('ficha')
     if (q) sessionStorage.setItem('nt-ver-ficha', q)
-    return sessionStorage.getItem('nt-ver-ficha') === '1'
+    const v = sessionStorage.getItem('nt-ver-ficha')
+    return v === '1' || /^[0-9a-f-]{36}$/.test(v ?? '')
   } catch {
     return false
   }
@@ -196,7 +197,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (simulado && rol) {
       rol = simulado
       // &ficha=1 simula que además tiene ficha de trabajador (comercial o admin que también es trabajador)
-      if (verFichaDev()) miembro = { ...(miembro ?? {}), trabajador_id: 'demo' } as unknown as Acceso
+      // &ficha=<id del trabajador>: ver la ficha real de ese trabajador como lo vería él
+      if (verFichaDev()) {
+        const f = sessionStorage.getItem('nt-ver-ficha')
+        miembro = { ...(miembro ?? {}), trabajador_id: f && f !== '1' ? f : 'demo' } as unknown as Acceso
+      }
     }
     return {
       session,

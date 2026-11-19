@@ -4,12 +4,13 @@ import { AlertCircle, ChevronDown, FileText, Download, FolderOpen, IdCard, Recei
 import { useAuth, verComoDev } from '../lib/auth'
 import { DOCS_DEMO, FICHA_DEMO, NOMINAS_DEMO } from '../lib/demoEmpleado'
 import { BUCKET, abrirDocumento, errorMessage, supabase } from '../lib/supabase'
-import { eur, fecha } from '../lib/format'
-import { nombreDoc } from '../lib/laboral'
+import { eur, fecha, num } from '../lib/format'
+import { nombreContrato, nombreDoc, textoPrueba, textoVacaciones } from '../lib/laboral'
 import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
 import type { Expense, Nomina, Trabajador } from '../lib/types'
 import UploadZone from '../components/UploadZone'
 import MisNominas from '../components/MisNominas'
+import { PedirCambioIrpf } from '../components/SolicitudIrpf'
 import DescargaFichajes from '../components/DescargaFichajes'
 import { enDemo } from '../lib/demoFichaje'
 import { Badge, Card, Empty, Loading, confirmar, cx, notify } from '../components/ui'
@@ -230,29 +231,45 @@ export default function MiEspacio() {
         (!fichaVer ? (
           sinVincular
         ) : (
-          <Card className="max-w-2xl p-5 sm:p-6">
-            <h2 className="flex items-center gap-2 font-semibold">
-              <IdCard className="size-4" /> Datos de tu contrato
-            </h2>
-            <dl className="mt-3 divide-y divide-line text-[15px]">
-              {[
-                ['Puesto', fichaVer.puesto],
-                ['Desde', fecha(fichaVer.fecha_inicio)],
-                ['Jornada', fichaVer.jornada === 'completa' ? 'Completa' : `Parcial${fichaVer.horas_semana ? ` · ${fichaVer.horas_semana} h/semana` : ''}`],
-                ['Salario bruto mensual', eur(Number(fichaVer.salario_bruto_mensual))],
-                ['Pagas', String(fichaVer.pagas)],
-              ]
-                .filter(([, v]) => v)
-                .map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 py-2.5">
-                    <dt className="text-muted">{k}</dt>
-                    <dd className="text-right">{v}</dd>
-                  </div>
-                ))}
-            </dl>
-            <p className="mt-4 text-xs text-muted">¿Algún dato no es correcto? Avisa a la empresa.</p>
-          </Card>
+          <>
+            <FichaContrato ficha={fichaVer} />
+            <PedirCambioIrpf trabajador={fichaVer} demo={ejemplo} />
+          </>
         ))}
     </>
+  )
+}
+
+/** Tarjeta «Datos de tu contrato» que ve el trabajador */
+export function FichaContrato({ ficha }: { ficha: Trabajador }) {
+  return (
+    <Card className="max-w-2xl p-5 sm:p-6">
+      <h2 className="flex items-center gap-2 font-semibold">
+        <IdCard className="size-4" /> Datos de tu contrato
+      </h2>
+      <dl className="mt-3 divide-y divide-line text-[15px]">
+        {[
+          ['Puesto', ficha.puesto],
+          ['Contrato', ficha.tipo_contrato ? nombreContrato(ficha.tipo_contrato) : null],
+          ['Desde', fecha(ficha.fecha_inicio)],
+          ['Convenio', ficha.convenio],
+          ['Categoría', ficha.clasificacion],
+          ['Periodo de prueba', textoPrueba(ficha.fecha_inicio, ficha.prueba_meses)],
+          ['Vacaciones', textoVacaciones(ficha.vacaciones_dias, ficha.vacaciones_nota)],
+          ['Jornada', ficha.jornada === 'completa' ? 'Completa' : `Parcial${ficha.horas_semana ? ` · ${ficha.horas_semana} h/semana` : ''}`],
+          ['Salario bruto anual', eur(Math.round(Number(ficha.salario_bruto_mensual) * Number(ficha.pagas || 12)))],
+          [`Bruto por paga (${ficha.pagas} pagas)`, eur(Number(ficha.salario_bruto_mensual))],
+          ['Retención IRPF', ficha.irpf_pct != null ? `${num(Number(ficha.irpf_pct))}%` : null],
+        ]
+          .filter(([, v]) => v)
+          .map(([k, v]) => (
+            <div key={k} className="flex justify-between gap-3 py-2.5">
+              <dt className="text-muted">{k}</dt>
+              <dd className="text-right">{v}</dd>
+            </div>
+          ))}
+      </dl>
+      <p className="mt-4 text-xs text-muted">¿Algún dato no es correcto? Avisa a la empresa.</p>
+    </Card>
   )
 }

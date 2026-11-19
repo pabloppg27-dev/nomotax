@@ -30,6 +30,7 @@ import MiEspacio from './pages/MiEspacio'
 import { enDemo } from './lib/demoFichaje'
 import Fichar from './pages/Fichar'
 import Fichajes from './pages/laboral/Fichajes'
+import VistaPreviaTrabajadores from './pages/VistaPreviaTrabajadores'
 import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
 import { SubidasProvider } from './lib/subidas'
@@ -137,6 +138,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          {import.meta.env.DEV && <Route path="/vista-previa-trabajadores" element={<VistaPreviaTrabajadores />} />}
           <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
           <Route
             element={
