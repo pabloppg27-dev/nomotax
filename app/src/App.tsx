@@ -27,6 +27,9 @@ import TarjetasProximamente from './pages/TarjetasProximamente'
 import MiTarjeta from './pages/MiTarjeta'
 import VistaSocio from './pages/VistaSocio'
 import MiEspacio from './pages/MiEspacio'
+import { enDemo } from './lib/demoFichaje'
+import Fichar from './pages/Fichar'
+import Fichajes from './pages/laboral/Fichajes'
 import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
 import { SubidasProvider } from './lib/subidas'
@@ -61,7 +64,8 @@ function Inicio() {
 /** Mi espacio: el empleado, y cualquiera que además tenga su ficha de trabajador (admin, socio, comercial) */
 function ConFicha({ children }: { children: ReactNode }) {
   const { rol, miembro } = useAuth()
-  return rol === 'empleado' || miembro?.trabajador_id ? <>{children}</> : <Navigate to="/" replace />
+  const demo = enDemo()
+  return demo || rol === 'empleado' || miembro?.trabajador_id ? <>{children}</> : <Navigate to="/" replace />
 }
 
 function SinAcceso() {
@@ -164,6 +168,8 @@ export default function App() {
             <Route path="laboral/alta/:id" element={<Requiere permiso="laboral"><NuevaAlta /></Requiere>} />
             <Route path="laboral/trabajadores/:id" element={<Requiere permiso="laboral"><FichaTrabajador /></Requiere>} />
             <Route path="laboral/nominas" element={<Requiere permiso="nominas"><Nominas /></Requiere>} />
+            <Route path="laboral/fichajes" element={<Requiere permiso="laboral"><Fichajes /></Requiere>} />
+            <Route path="fichar" element={<ConFicha><Fichar /></ConFicha>} />
             <Route path="laboral/empresa" element={<Requiere permiso="laboral"><Empresa /></Requiere>} />
             <Route path="usuarios" element={<AbrirConfiguracion seccion="usuarios" />} />
             <Route path="configuracion/:seccion?" element={<AbrirConfiguracion />} />

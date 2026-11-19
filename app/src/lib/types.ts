@@ -19,6 +19,8 @@ export interface Miembro {
   rol: RolMiembro
   permisos: Partial<Record<Modulo, boolean>>
   trabajador_id: string | null
+  /** Ficha la jornada en la app (supabase/fichajes.sql) */
+  fichaje?: boolean
   activo: boolean
   invitado_por: string | null
   created_at: string

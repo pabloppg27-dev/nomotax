@@ -10,6 +10,8 @@ import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
 import type { Expense, Nomina, Trabajador } from '../lib/types'
 import UploadZone from '../components/UploadZone'
 import MisNominas from '../components/MisNominas'
+import DescargaFichajes from '../components/DescargaFichajes'
+import { enDemo } from '../lib/demoFichaje'
 import { Badge, Card, Empty, Loading, confirmar, cx, notify } from '../components/ui'
 
 export const SECCIONES = ['tickets', 'nominas', 'documentos', 'ficha']
@@ -156,6 +158,14 @@ export default function MiEspacio() {
         ) : (
           <MisNominas nominas={nominasVer} ejemplo={ejemplo} />
         ))}
+
+      {seccion === 'documentos' && (enDemo() || (trabajadorId && miembro?.fichaje)) && (
+        <DescargaFichajes
+          trabajadorId={trabajadorId ?? 'd1'}
+          nombre={enDemo() ? 'Laura Gómez' : fichaVer?.nombre ?? ''}
+          dni={enDemo() ? '12345678Z' : fichaVer?.dni ?? null}
+        />
+      )}
 
       {seccion === 'documentos' &&
         (!trabajadorId && !ejemplo ? (

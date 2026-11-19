@@ -18,6 +18,7 @@ interface Borrador {
   rol: RolMiembro
   permisos: Record<Modulo, boolean>
   trabajador_id: string
+  fichaje: boolean
   activo: boolean
   bienvenida: boolean
 }
@@ -28,6 +29,7 @@ const nuevo = (): Borrador => ({
   rol: 'admin',
   permisos: { ...PERMISOS_ADMIN_DEFECTO },
   trabajador_id: '',
+  fichaje: false,
   activo: true,
   bienvenida: true,
 })
@@ -303,6 +305,7 @@ function aBorrador(m: Miembro): Borrador {
     rol: m.rol,
     permisos: { ...PERMISOS_ADMIN_DEFECTO, ...(m.rol === 'admin' ? m.permisos : {}) } as Record<Modulo, boolean>,
     trabajador_id: m.trabajador_id ?? '',
+    fichaje: Boolean(m.fichaje),
     activo: m.activo,
     bienvenida: false,
   }
@@ -385,6 +388,8 @@ function EditorAcceso({
           trabajador_id: b.trabajador_id || null,
           bienvenida: b.bienvenida,
         })
+        if (b.fichaje && b.trabajador_id)
+          await supabase.from('miembros').update({ fichaje: true }).eq('cuenta_id', cuentaId).eq('email', b.email.trim().toLowerCase())
         notify(r.nuevo ? 'Acceso creado' : 'Acceso dado. Ya tenía usuario en NomoTax: entra con su contraseña de siempre.')
         onGuardado(r.password ? { email: b.email.trim().toLowerCase(), password: r.password, enviado: r.bienvenida === 'enviada' } : undefined)
       } else {
@@ -395,6 +400,7 @@ function EditorAcceso({
             rol: b.rol,
             permisos: b.rol === 'admin' ? b.permisos : {},
             trabajador_id: b.trabajador_id || null,
+            fichaje: Boolean(b.trabajador_id) && b.fichaje,
             activo: b.activo,
           })
           .eq('id', b.id!)
@@ -523,6 +529,16 @@ function EditorAcceso({
             ))}
           </Select>
         </Field>
+
+        {b.trabajador_id && (
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" className="mt-0.5 size-4 accent-ink" checked={b.fichaje} onChange={(e) => setB({ ...b, fichaje: e.target.checked })} />
+            <span>
+              Ficha la jornada en la app
+              <span className="block text-muted">Registro horario obligatorio (art. 34.9 ET): entrada, pausas y salida. Se guarda 4 años y no se puede editar.</span>
+            </span>
+          </label>
+        )}
 
         {b.rol === 'comercial' && (
           <p className="rounded-xl bg-paper p-3 text-sm text-muted">

@@ -8,6 +8,7 @@ import type { Permiso } from '../../lib/types'
 const TABS: { to: string; label: string; end?: boolean; permiso: Permiso }[] = [
   { to: '/laboral', label: 'Trabajadores', end: true, permiso: 'laboral' },
   { to: '/laboral/nominas', label: 'Nóminas', permiso: 'nominas' },
+  { to: '/laboral/fichajes', label: 'Fichajes', permiso: 'laboral' },
   { to: '/laboral/empresa', label: 'Empresa', permiso: 'laboral' },
 ]
 

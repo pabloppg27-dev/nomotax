@@ -21,7 +21,7 @@ create role authenticated;
 await db.exec(prelude)
 
 const files = ['schema', 'laboral', 'rectificativas', 'asesor', 'contabilidad', 'divisas', 'bienvenida', 'impuestos', 'bancos',
-  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios', 'trabajador-cualquier-rol', 'trabajador-cualquier-rol']
+  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios', 'trabajador-cualquier-rol', 'trabajador-cualquier-rol', 'fichajes', 'fichajes']
 for (const f of files) {
   let sql = readFileSync(`${DIR}/${f}.sql`, 'utf8').replace(/create extension[^;]*;/i, '')
   try {
@@ -210,6 +210,24 @@ ok((await como(U.C, () => n(`select 1 from storage.objects where bucket_id = 'do
 ok((await como(U.C, () => n(`select 1 from storage.objects where bucket_id = 'documentos' and name like '%/laboral/nominas/2026-01/e.pdf'`))) === 0, 'comercial con ficha: NO abre la nómina de otro')
 ok((await como(U.T, () => intenta(`update public.miembros set trabajador_id = '${W1}' where user_id = '${U.A}'`))) === 1, 'admin: se le puede vincular una ficha')
 ok((await como(U.A, () => n(`select 1 from public.nominas`))) === 1, 'admin con ficha y sin «nóminas»: ve solo su nómina')
+
+// Registro de jornada (fichajes.sql)
+ok(String(await como(U.E, () => intenta(`select public.fichar('${U.T}', 'entrada')`))).startsWith('error'), 'fichaje: sin activarlo no se puede fichar')
+await db.exec(`update public.miembros set trabajador_id = null where trabajador_id = '${W1}'; update public.miembros set fichaje = true, activo = true, trabajador_id = '${W1}' where user_id = '${U.E}'`)
+const bien = (r) => !String(r).startsWith('error')
+ok(bien(await como(U.E, () => intenta(`select public.fichar('${U.T}', 'entrada')`))), 'fichaje: el empleado ficha la entrada')
+ok(String(await como(U.E, () => intenta(`select public.fichar('${U.T}', 'entrada')`))).startsWith('error'), 'fichaje: no puede fichar dos entradas seguidas')
+ok(String(await como(U.E, () => intenta(`insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen) values ('${U.T}', '${W1}', 'salida', now(), 'app')`))).startsWith('error'), 'fichaje: no se puede insertar a mano')
+ok(String(await intenta(`update public.fichajes set momento = now() - interval '2 hours'`)).startsWith('error'), 'fichaje: no se puede cambiar la hora (ni siendo superusuario)')
+ok(String(await intenta(`delete from public.fichajes`)).startsWith('error'), 'fichaje: no se puede borrar')
+ok(bien(await como(U.E, () => intenta(`select public.corregir_fichaje('${U.T}', '${W1}', 'salida', now() - interval '1 minute', 'olvido')`))), 'fichaje: el empleado pide una corrección')
+ok((await n(`select 1 from public.fichajes where estado = 'pendiente'`)) === 1, 'fichaje: la corrección del empleado queda pendiente')
+ok(String(await como(U.E, () => intenta(`select public.resolver_fichaje(id, true) from public.fichajes where estado = 'pendiente'`))).startsWith('error'), 'fichaje: el empleado NO aprueba su corrección')
+ok(bien(await como(U.A, () => intenta(`select public.resolver_fichaje(id, true) from public.fichajes where estado = 'pendiente'`))), 'fichaje: admin con laboral la aprueba')
+ok(String(await intenta(`update public.fichajes set estado = 'rechazado' where origen = 'correccion'`)).startsWith('error'), 'fichaje: una corrección resuelta ya no cambia')
+ok((await como(U.E, () => n(`select 1 from public.fichajes`))) === 2, 'fichaje: el empleado ve sus fichajes')
+ok((await como(U.S, () => n(`select 1 from public.fichajes`))) === 0, 'fichaje: el socio no los ve')
+ok(String(await intenta(`delete from public.trabajadores where id = '${W1}'`)).startsWith('error'), 'fichaje: no se borra un trabajador con fichajes')
 
 console.log(fallos ? `\n${fallos} FALLO(S)` : '\nTodo OK')
 process.exit(fallos ? 1 : 0)

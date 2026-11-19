@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { enDemo } from '../lib/demoFichaje'
 import {
   Briefcase,
   FolderOpen,
@@ -22,6 +23,7 @@ import {
   Settings,
   CreditCard,
   type LucideIcon,
+  Clock,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
@@ -140,9 +142,10 @@ export default function Layout() {
       .then((r) => setConTarjeta(r.tarjetas.length > 0))
       .catch(() => setConTarjeta(false))
   }, [ownerId, me, location.pathname])
-  const NAV = [...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
+  const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Fichar', icon: Clock }] : []
+  const NAV = [...(rol === 'empleado' ? FICHAR : []), ...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
   // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
-  const ESP = rol !== 'empleado' && miembro?.trabajador_id ? ESPACIO : []
+  const ESP = rol !== 'empleado' && miembro?.trabajador_id ? [...FICHAR, ...ESPACIO] : []
   /** En el móvil: 4 fijas abajo y el resto en «Más» */
   const FIJAS = NAV.slice(0, 4).map((n) => n.to)
   const enMas = !FIJAS.includes(location.pathname) && !FIJAS.filter((r) => r !== '/').some((r) => location.pathname.startsWith(r + '/'))
