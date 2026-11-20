@@ -138,21 +138,21 @@ function crearPasosComercial(nombre: string): Paso[] {
     {
       id: 'presupuestos',
       ruta: '/presupuestos',
-      objetivo: ['nav-presupuestos', 'nav-mas'],
+      objetivo: ['nav-presupuestos', 'titulo-pagina', 'nav-mas'],
       titulo: 'Presupuestos',
       texto: 'Haz el presupuesto y envíaselo al cliente por email desde aquí, con el logo de la empresa.',
     },
     {
       id: 'clientes',
       ruta: '/clientes',
-      objetivo: ['nav-clientes', 'nav-mas'],
+      objetivo: ['nav-clientes', 'titulo-pagina', 'nav-mas'],
       titulo: 'Clientes',
       texto: 'Guarda aquí los datos de cada cliente y no tendrás que escribirlos cada vez.',
     },
     {
       id: 'facturas',
       ruta: '/facturas',
-      objetivo: ['nav-facturas', 'nav-mas'],
+      objetivo: ['nav-facturas', 'titulo-pagina', 'nav-mas'],
       titulo: 'Facturas',
       texto: 'Cuando el cliente acepte, prepara la factura en borrador. La revisa y la emite la empresa.',
     },
@@ -189,7 +189,7 @@ function crearPasosGestion(nombre: string, puede: (p: Permiso) => boolean): Paso
     p.push({
       id: 'gastos',
       ruta: '/gastos',
-      objetivo: ['nav-gastos', 'nav-mas'],
+      objetivo: ['nav-gastos', 'titulo-pagina', 'nav-mas'],
       titulo: 'Gastos',
       texto: 'Sube una foto o el PDF de tus facturas de proveedores y tickets: lo leemos solo y tú solo revisas. Aquí también llegan los tickets de los empleados para aprobar.',
     })
@@ -197,7 +197,7 @@ function crearPasosGestion(nombre: string, puede: (p: Permiso) => boolean): Paso
     p.push({
       id: 'facturas',
       ruta: '/facturas',
-      objetivo: ['nav-facturas', 'nav-mas'],
+      objetivo: ['nav-facturas', 'titulo-pagina', 'nav-mas'],
       titulo: 'Facturas, presupuestos y clientes',
       texto: 'Crea tus facturas y envíalas por email. Si facturas con otro programa, súbelas aquí igualmente.',
     })
@@ -205,7 +205,7 @@ function crearPasosGestion(nombre: string, puede: (p: Permiso) => boolean): Paso
     p.push({
       id: 'contabilidad',
       ruta: '/contabilidad',
-      objetivo: ['nav-contabilidad', 'nav-mas'],
+      objetivo: ['nav-contabilidad', 'titulo-pagina', 'nav-mas'],
       titulo: 'Contabilidad',
       texto: 'Se hace sola con lo que subes: libros, pérdidas y ganancias y balance. No tienes que tocar nada.',
     })
@@ -226,7 +226,7 @@ function crearPasosGestion(nombre: string, puede: (p: Permiso) => boolean): Paso
     p.push({
       id: 'impuestos',
       ruta: '/impuestos',
-      objetivo: ['nav-impuestos', 'nav-mas'],
+      objetivo: ['nav-impuestos', 'titulo-pagina', 'nav-mas'],
       titulo: 'Impuestos',
       texto: 'Las declaraciones que te presentamos y las notificaciones de Hacienda.',
     })
@@ -234,7 +234,7 @@ function crearPasosGestion(nombre: string, puede: (p: Permiso) => boolean): Paso
     p.push({
       id: 'laboral',
       ruta: puede('laboral') ? '/laboral' : '/laboral/nominas',
-      objetivo: ['nav-laboral', 'nav-nominas', 'nav-mas'],
+      objetivo: ['nav-laboral', 'nav-nominas', 'titulo-pagina', 'nav-mas'],
       titulo: 'Laboral',
       texto: 'Trabajadores, nóminas y registro de jornada. Aquí apruebas las correcciones de fichaje de tu equipo.',
     })
@@ -405,11 +405,20 @@ export function GuiaProvider({ children }: { children: ReactNode }) {
 /** El primero de esos data-guia que esté a la vista */
 function encontrar(ids: string[]): { el: HTMLElement; id: string } | null {
   for (const id of ids)
-    for (const el of document.querySelectorAll<HTMLElement>(`[data-guia="${id}"]`)) {
+    // titulo-pagina: en el móvil, si el apartado no está en la barra de abajo, se marca el título de la página ya abierta
+    for (const el of document.querySelectorAll<HTMLElement>(id === 'titulo-pagina' ? 'main h1' : `[data-guia="${id}"]`)) {
       const r = el.getBoundingClientRect()
       if (r.width > 0 && r.height > 0) return { el, id }
     }
   return null
+}
+
+/** El título de la página ocupa todo el ancho: se mide solo el texto */
+function medir(el: HTMLElement, id: string): DOMRect {
+  if (id !== 'titulo-pagina') return el.getBoundingClientRect()
+  const rango = document.createRange()
+  rango.selectNodeContents(el)
+  return rango.getBoundingClientRect()
 }
 
 type Hueco = { x: number; y: number; w: number; h: number }
@@ -435,11 +444,18 @@ function useHueco(ids: string[] | undefined) {
           const r = el.getBoundingClientRect()
           if (r.top < 64 || r.bottom > window.innerHeight - 90) el.scrollIntoView({ block: 'center', behavior: 'smooth' })
         }
-        const r = el.getBoundingClientRect()
-        const k = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`
+        const r = medir(el, id)
+        const k = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)},${window.innerWidth},${window.innerHeight}`
         if (k !== ultimo) {
           ultimo = k
-          setHueco({ x: r.left - MARGEN, y: r.top - MARGEN, w: r.width + MARGEN * 2, h: r.height + MARGEN * 2 })
+          // En la barra de abajo del móvil, margen mínimo para no pisar los botones de al lado;
+          // y el recuadro nunca se sale de la pantalla
+          const m = el.closest('nav') ? 2 : id === 'titulo-pagina' ? 10 : MARGEN
+          const x0 = Math.max(4, r.left - m)
+          const y0 = Math.max(4, r.top - m)
+          const x1 = Math.min(window.innerWidth - 4, r.right + m)
+          const y1 = Math.min(window.innerHeight - 4, r.bottom + m)
+          setHueco({ x: x0, y: y0, w: Math.max(0, x1 - x0), h: Math.max(0, y1 - y0) })
           setPerdido(false)
           setVisto(id)
         }
@@ -454,7 +470,7 @@ function useHueco(ids: string[] | undefined) {
     raf = requestAnimationFrame(mirar)
     return () => cancelAnimationFrame(raf)
   }, [ids])
-  return { hueco, perdido, enMas: visto === 'nav-mas' }
+  return { hueco, perdido, enMas: visto === 'nav-mas' || visto === 'titulo-pagina' }
 }
 
 function Capa({ paso, n, total, onSiguiente, onSaltar }: { paso: Paso; n: number; total: number; onSiguiente: () => void; onSaltar: () => void }) {
@@ -519,6 +535,9 @@ function Capa({ paso, n, total, onSiguiente, onSaltar }: { paso: Paso; n: number
     if (vw >= 1024 && hueco.w < 400 && vw - (hueco.x + hueco.w) > ancho + 28) {
       // Menú lateral o secciones de Configuración (escritorio): a la derecha
       pos = { left: hueco.x + hueco.w + 14, top: Math.min(Math.max(12, hueco.y + hueco.h / 2 - 70), vh - 240) }
+    } else if (hueco.h > vh * 0.6) {
+      // Lo resaltado ocupa casi toda la pantalla (p. ej. Configuración en el móvil): la tarjeta, abajo del todo
+      pos = { left: izq, bottom: 12 }
     } else if (abajo >= 200 && abajo >= arriba) pos = { left: izq, top: hueco.y + hueco.h + 12 }
     else if (arriba >= 200) pos = { left: izq, bottom: vh - hueco.y + 12 }
     else pos = { left: izq, bottom: 84 } // lo resaltado ocupa casi toda la pantalla
@@ -590,7 +609,7 @@ function Tarjeta({
       <p className="mt-3 text-[17px] font-semibold leading-snug">{paso.titulo}</p>
       <p className="mt-1 text-[15px] leading-relaxed text-muted">
         {enMas && paso.esperarRuta ? String(paso.texto).replace(' Pulsa para entrar.', '') : paso.texto}
-        {enMas && <> Lo tienes en «Más».</>}
+        {enMas && <> Lo tienes en «Más», abajo a la derecha.</>}
       </p>
 
       {esperando ? (

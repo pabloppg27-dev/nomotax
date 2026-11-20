@@ -39,25 +39,27 @@ interface ItemNav {
   label: string
   icon: LucideIcon
   end?: boolean
+  /** Nombre corto para la barra de abajo del móvil */
+  corto?: string
 }
 
 /** Mi espacio: lo personal de quien es trabajador (nóminas, documentos, ficha y tickets) */
 const ESPACIO: ItemNav[] = [
-  { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt },
-  { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet },
-  { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen },
-  { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard },
+  { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet, corto: 'Nóminas' },
+  { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard, corto: 'Ficha' },
+  { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt, corto: 'Tickets' },
+  { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen, corto: 'Documentos' },
 ]
 
 /** Menú según lo que eres en la empresa que estás viendo */
 function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[] {
-  if (rol === 'socio') return [{ to: '/socio', label: 'Vista de socio', icon: PieChart }]
+  if (rol === 'socio') return [{ to: '/socio', label: 'Vista de socio', icon: PieChart, corto: 'Socio' }]
   if (rol === 'empleado') return ESPACIO
   const items: (ItemNav & { si: boolean })[] = [
     { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true, si: true },
     { to: '/gastos', label: 'Gastos', icon: Receipt, si: puede('gastos') },
     { to: '/facturas', label: 'Facturas', icon: FileText, si: puede('ventas') },
-    { to: '/presupuestos', label: 'Presupuestos', icon: ClipboardList, si: puede('ventas') },
+    { to: '/presupuestos', label: 'Presupuestos', icon: ClipboardList, corto: 'Presup.', si: puede('ventas') },
     { to: '/clientes', label: 'Clientes', icon: Users, si: puede('ventas') },
     { to: '/contabilidad', label: 'Contabilidad', icon: BookOpen, si: puede('contabilidad') },
     { to: '/impuestos', label: 'Impuestos', icon: Landmark, si: puede('impuestos') },
@@ -66,6 +68,9 @@ function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[
   ]
   return items.filter((i) => i.si)
 }
+
+/** Botón de la barra de abajo del móvil: zona de toque alta y texto legible en una línea */
+const BOTON_ABAJO = 'flex min-w-0 flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 text-center text-xs leading-tight'
 
 /** Para que la guía rápida encuentre cada apartado del menú: nav-nominas, nav-ficha… */
 const guiaDe = (to: string) => `nav-${to.split('/').pop() || 'inicio'}`
@@ -145,7 +150,7 @@ export default function Layout() {
       .then((r) => setConTarjeta(r.tarjetas.length > 0))
       .catch(() => setConTarjeta(false))
   }, [ownerId, me, location.pathname])
-  const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Registro de jornada', icon: Clock }] : []
+  const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Registro de jornada', icon: Clock, corto: 'Fichar' }] : []
   const NAV = [...(rol === 'empleado' ? FICHAR : []), ...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
   // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
   const ESP = rol !== 'empleado' && miembro?.trabajador_id ? [...FICHAR, ...ESPACIO] : []
@@ -316,33 +321,34 @@ export default function Layout() {
         {/* Navegación inferior (móvil): 4 fijas + «Más» */}
         <nav
           className={cx(
-            'fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-white/95 backdrop-blur safe-bottom lg:hidden',
+            'fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-white/95 shadow-[0_-4px_16px_rgb(17_17_16/0.05)] backdrop-blur safe-bottom lg:hidden',
             ['grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5'][Math.min(FIJAS.length, 4) - 1],
           )}
         >
-          {NAV.filter((n) => FIJAS.includes(n.to)).map(({ to, label, icon: Icon, end }) => (
+          {NAV.filter((n) => FIJAS.includes(n.to)).map(({ to, label, corto, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               data-guia={guiaDe(to)}
-              className={({ isActive }) => cx('flex flex-col items-center gap-1 py-2 text-[11px]', isActive ? 'font-medium text-ink' : 'text-muted')}
+              aria-label={label}
+              className={({ isActive }) => cx(BOTON_ABAJO, isActive ? 'font-semibold text-ink' : 'text-ink/60')}
             >
               {({ isActive }) => (
                 <>
-                  <span className={cx('grid h-7 w-12 place-items-center rounded-full', isActive && 'bg-lima')}>
-                    <Icon className="size-[19px]" />
+                  <span className={cx('grid h-8 w-14 place-items-center rounded-full transition-colors', isActive && 'bg-lima')}>
+                    <Icon className="size-5" />
                   </span>
-                  {label}
+                  <span className="w-full truncate px-0.5">{corto ?? label}</span>
                 </>
               )}
             </NavLink>
           ))}
-          <button onClick={() => setMas(true)} data-guia="nav-mas" className={cx('flex flex-col items-center gap-1 py-2 text-[11px]', enMas ? 'font-medium text-ink' : 'text-muted')}>
-            <span className={cx('grid h-7 w-12 place-items-center rounded-full', enMas && 'bg-lima')}>
-              <LayoutGrid className="size-[19px]" />
+          <button onClick={() => setMas(true)} data-guia="nav-mas" className={cx(BOTON_ABAJO, enMas ? 'font-semibold text-ink' : 'text-ink/60')}>
+            <span className={cx('grid h-8 w-14 place-items-center rounded-full transition-colors', enMas && 'bg-lima')}>
+              <LayoutGrid className="size-5" />
             </span>
-            Más
+            <span className="w-full truncate px-0.5">Más</span>
           </button>
         </nav>
 
