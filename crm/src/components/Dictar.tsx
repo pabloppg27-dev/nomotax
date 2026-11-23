@@ -26,9 +26,18 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
     parar.current = escuchar((t) => { setTexto(t); textoRef.current = t }, () => setOyendo(false), (m) => { setError(m); setOyendo(false) })
     setOyendo(true)
   }
+  /** Vuelve a escuchar y añade lo nuevo detrás de lo que ya hay (sin borrar lo editado) */
+  function seguir() {
+    setError(null)
+    if (!hayVoz()) { setError('Este navegador no permite dictar. Usa Chrome o escríbelo.'); return }
+    const previo = textoRef.current.trim()
+    parar.current = escuchar((t) => { const v = previo ? `${previo} ${t}` : t; setTexto(v); textoRef.current = v },
+      () => setOyendo(false), (m) => { setError(m); setOyendo(false) })
+    setOyendo(true)
+  }
   useEffect(() => { empezar(); return () => parar.current?.() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function procesar(t = texto) {
+  async function procesar(t = textoRef.current) {
     parar.current?.(); setOyendo(false)
     if (!t.trim() || pensando) return
     setPensando(true); setError(null)
@@ -91,12 +100,12 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
       ) : (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <button onClick={oyendo ? () => procesar(textoRef.current) : empezar} disabled={pensando}
+            <button onClick={oyendo ? () => { parar.current?.(); setOyendo(false) } : seguir} disabled={pensando}
               className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${oyendo ? 'animate-pulse bg-rojo text-white' : 'bg-lima text-ink'}`}>
               {oyendo ? <Square size={20} /> : <Mic size={24} />}
             </button>
             <p className="text-sm text-muted">
-              {pensando ? 'Claude está organizándolo…' : oyendo ? 'Te escucho. Habla con naturalidad; pulsa el botón rojo cuando acabes.' : 'Pulsa para hablar, o escríbelo abajo.'}
+              {pensando ? 'Claude está organizándolo…' : oyendo ? 'Te escucho. Pulsa el botón rojo para parar.' : texto ? 'Revisa o corrige el texto y pulsa «Crear». El micro añade más.' : 'Pulsa para hablar, o escríbelo abajo.'}
             </p>
           </div>
           <textarea rows={4} className={entrada} value={texto} onChange={(e) => { setTexto(e.target.value); textoRef.current = e.target.value }}
