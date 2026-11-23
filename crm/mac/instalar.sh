@@ -1,8 +1,8 @@
 #!/bin/zsh
-# Compila la app de Mac del CRM y la instala en ~/Applications/CRM NomoTax.app
+# Compila la app de Mac del CRM y la instala en /Applications/CRM NomoTax.app
 set -e
 cd "${0:A:h}"
-A="$HOME/Applications/CRM NomoTax.app"
+A="/Applications/CRM NomoTax.app"
 rm -rf "$A"; mkdir -p "$A/Contents/MacOS" "$A/Contents/Resources"
 swiftc -O main.swift -o "$A/Contents/MacOS/CRM NomoTax" -framework Cocoa -framework WebKit
 cp Info.plist "$A/Contents/Info.plist"
