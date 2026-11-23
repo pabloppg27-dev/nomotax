@@ -69,8 +69,10 @@ function almacenCarpeta(raiz: Dir, tipo: 'mac' | 'navegador'): Almacen {
 // ---------- nube (Supabase Storage) ----------
 const BUCKET = 'crm'
 // Las claves de Storage no admiten bien tildes/espacios raros: cada tramo va codificado.
-const cod = (ruta: Ruta) => ruta.map((p) => encodeURIComponent(limpio(p))).join('/')
-const dec = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
+// Storage no admite «%» en las claves: se codifica y el «%» se cambia por «+» (permitido; un «+» real queda como %2B → +2B).
+const enc = (s: string) => encodeURIComponent(limpio(s)).replace(/%/g, '+')
+const cod = (ruta: Ruta) => ruta.map(enc).join('/')
+const dec = (s: string) => { try { return decodeURIComponent(s.replace(/\+/g, '%')) } catch { return s } }
 const almacenNube: Almacen = {
   tipo: 'nube',
   async listar(ruta, recursivo) {
@@ -99,7 +101,7 @@ const almacenNube: Almacen = {
     const hay = new Set((data ?? []).map((o) => dec(o.name)))
     for (const f of archivos) {
       const n = nombreLibre((x) => hay.has(x), f.name); hay.add(n)
-      const { error } = await supabase.storage.from(BUCKET).upload(`${pref}/${encodeURIComponent(limpio(n))}`, f, { contentType: f.type || undefined })
+      const { error } = await supabase.storage.from(BUCKET).upload(`${pref}/${enc(n)}`, f, { contentType: f.type || undefined })
       if (error) throw error
     }
   },
