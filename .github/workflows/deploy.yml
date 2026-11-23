@@ -29,6 +29,7 @@ jobs:
             tools/**
             marketing/**
             app/**
+            crm/**
 
   # Área de clientes (app/) → clientes.nomotax.io
   deploy-app:
@@ -59,3 +60,33 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./app/dist/
           server-dir: /domains/nomotax.io/public_html/clientes/
+
+  # CRM interno (crm/) → crm.nomotax.io
+  deploy-crm:
+    needs: deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: crm/package-lock.json
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./crm/dist/
+          server-dir: /domains/nomotax.io/public_html/crm/
