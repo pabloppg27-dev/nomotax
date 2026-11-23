@@ -53,7 +53,14 @@ export default function App() {
         {MODO === 'demo' && <p className="mt-auto px-2 text-xs text-white/40">Modo demo · datos solo en este navegador</p>}
       </aside>
 
-      <main className="min-w-0 flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-10 md:pt-8">
+      {/* Móvil: cabecera con el logo */}
+      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-line bg-paper/90 px-4 pb-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] backdrop-blur md:hidden">
+        <img src="/logo.png" alt="" className="size-7" />
+        <span className="text-[15px] font-bold tracking-tight">NomoTax</span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-muted">CRM</span>
+      </header>
+
+      <main className="min-w-0 flex-1 px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 md:px-8 md:pb-10 md:pt-8">
         <div className="mx-auto max-w-5xl">
           <Routes>
             <Route path="/" element={<Tareas />} />
@@ -68,7 +75,7 @@ export default function App() {
 
       {/* Móvil: barra inferior + botón de dictar */}
       <button onClick={() => setDictando(true)} aria-label="Dictar"
-        className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-lima text-ink shadow-lg md:hidden">
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-lima text-ink shadow-lg md:hidden">
         <Mic size={24} />
       </button>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden">

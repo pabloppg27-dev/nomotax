@@ -5,7 +5,7 @@ import type { Prioridad } from '../lib/tipos'
 export function Modal({ titulo, onClose, children, ancho = 'max-w-lg' }: { titulo: string; onClose: () => void; children: ReactNode; ancho?: string }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`flex max-h-[92vh] w-full ${ancho} flex-col rounded-t-2xl bg-white shadow-xl sm:rounded-2xl`}>
+      <div className={`flex max-h-[92dvh] w-full ${ancho} flex-col rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-xl sm:rounded-2xl sm:pb-0`}>
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <h2 className="font-semibold">{titulo}</h2>
           <button onClick={onClose} className="rounded-lg p-1 text-muted hover:bg-paper" aria-label="Cerrar"><X size={20} /></button>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Loader2, Mic, Square, Undo2, UserPlus } from 'lucide-react'
+import { Check, Keyboard, Loader2, Mic, Square, Undo2, UserPlus } from 'lucide-react'
 import * as db from '../lib/datos'
 import { escuchar, hayVoz, interpretar } from '../lib/dictado'
 import { corta } from '../lib/fechas'
@@ -19,23 +19,30 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
   const [editar, setEditar] = useState<Tarea | null>(null)
   const parar = useRef<(() => void) | null>(null)
   const textoRef = useRef('')
+  const area = useRef<HTMLTextAreaElement>(null)
+  const [teclado, setTeclado] = useState(false) // dictar con el micro del teclado (iPhone)
+
+  /** Sin micro del navegador (o falla): se dicta con el micro del teclado */
+  function usarTeclado() { setOyendo(false); setTeclado(true); area.current?.focus() }
+  const errorVoz = (m: string) => { if (/not-allowed|service-not-allowed|audio-capture|permiso/.test(m)) usarTeclado(); else { setError(m); setOyendo(false) } }
 
   function empezar() {
     setError(null); setHecho(null); setTexto(''); textoRef.current = ''
-    if (!hayVoz()) { setError('Este navegador no permite dictar. Usa Chrome o escríbelo.'); return }
-    parar.current = escuchar((t) => { setTexto(t); textoRef.current = t }, () => setOyendo(false), (m) => { setError(m); setOyendo(false) })
+    if (!hayVoz()) return usarTeclado()
+    parar.current = escuchar((t) => { setTexto(t); textoRef.current = t }, () => setOyendo(false), errorVoz)
     setOyendo(true)
   }
   /** Vuelve a escuchar y añade lo nuevo detrás de lo que ya hay (sin borrar lo editado) */
   function seguir() {
     setError(null)
-    if (!hayVoz()) { setError('Este navegador no permite dictar. Usa Chrome o escríbelo.'); return }
+    if (!hayVoz()) return usarTeclado()
     const previo = textoRef.current.trim()
     parar.current = escuchar((t) => { const v = previo ? `${previo} ${t}` : t; setTexto(v); textoRef.current = v },
-      () => setOyendo(false), (m) => { setError(m); setOyendo(false) })
+      () => setOyendo(false), errorVoz)
     setOyendo(true)
   }
-  useEffect(() => { empezar(); return () => parar.current?.() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // En iPhone/iPad se abre el teclado (su micro es lo más fiable); en el ordenador, el micro del CRM.
+  useEffect(() => { if (esMovilApple()) usarTeclado(); else empezar(); return () => parar.current?.() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function procesar(t = textoRef.current) {
     parar.current?.(); setOyendo(false)
@@ -105,10 +112,10 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
               {oyendo ? <Square size={20} /> : <Mic size={24} />}
             </button>
             <p className="text-sm text-muted">
-              {pensando ? 'Claude está organizándolo…' : oyendo ? 'Te escucho. Pulsa el botón rojo para parar.' : texto ? 'Revisa o corrige el texto y pulsa «Crear». El micro añade más.' : 'Pulsa para hablar, o escríbelo abajo.'}
+              {teclado && !oyendo && !pensando && !texto ? <span className="flex items-center gap-1.5"><Keyboard size={16} className="shrink-0" /> Pulsa el micrófono 🎤 del teclado y habla. Luego «Crear».</span> : pensando ? 'Claude está organizándolo…' : oyendo ? 'Te escucho. Pulsa el botón rojo para parar.' : texto ? 'Revisa o corrige el texto y pulsa «Crear». El micro añade más.' : 'Pulsa para hablar, o escríbelo abajo.'}
             </p>
           </div>
-          <textarea rows={4} className={entrada} value={texto} onChange={(e) => { setTexto(e.target.value); textoRef.current = e.target.value }}
+          <textarea ref={area} rows={4} className={entrada} value={texto} onChange={(e) => { setTexto(e.target.value); textoRef.current = e.target.value }}
             placeholder="Ej.: Oye, agéndame una llamada con Diego Fernández para arreglar lo de su Airwallex, a ser posible esta semana…"
             onKeyDown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && procesar()} />
           {error && <p className="text-sm text-rojo">{error}</p>}
@@ -119,4 +126,8 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
       )}
     </Modal>
   )
+}
+
+function esMovilApple() {
+  return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }

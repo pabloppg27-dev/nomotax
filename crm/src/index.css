@@ -13,3 +13,8 @@
 html, body { background: var(--color-paper); color: var(--color-ink); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 body { font-family: var(--font-sans); }
 input, textarea, select { font-size: 16px; }
+
+/* iPhone: sin resaltado gris al tocar y sin rebote raro del fondo */
+* { -webkit-tap-highlight-color: transparent; }
+html, body { overscroll-behavior-y: none; }
+button, a { touch-action: manipulation; }

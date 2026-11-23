@@ -24,7 +24,7 @@ export default function Tareas() {
     <>
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h1 className="mr-auto text-2xl font-semibold">Tareas</h1>
-        <div className="w-full sm:w-56"><SelCliente value={cliente} onChange={setCliente} /></div>
+        <div className="order-last w-full sm:order-none sm:w-56"><SelCliente value={cliente} onChange={setCliente} /></div>
         <Boton onClick={() => setAbierta({ cliente_id: cliente })}><Plus size={16} /> Nueva</Boton>
       </div>
       {cargando ? null : pendientes.length === 0 ? <Vacio>Nada pendiente. Pulsa «Dictar» para crear una tarea.</Vacio> : (
