@@ -64,7 +64,7 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
       const reuniones: BorradorReunion[] = (r.reuniones ?? []).map((x) => {
         const proyecto_id = x.proyecto_id ?? contexto?.proyecto_id ?? null
         const cliente_id = x.cliente_id ?? idNuevo(x.cliente_nuevo) ?? contexto?.cliente_id ?? proyectos.find((p) => p.id === proyecto_id)?.cliente_id ?? null
-        return { titulo: x.titulo, descripcion: x.detalle, cliente_id, proyecto_id, fecha: x.fecha, hora: x.hora ?? '10:00', duracion: x.duracion, meet: x.meet }
+        return { titulo: x.titulo, descripcion: x.detalle, cliente_id, proyecto_id, fecha: x.fecha, hora: x.hora ?? '10:00', duracion: x.duracion, meet: x.meet, email: x.email ?? undefined }
       })
       await recargar()
       setHecho({ tareas, clientes: nuevos, reuniones, resumen: r.resumen, sinClaude: r.sinClaude })

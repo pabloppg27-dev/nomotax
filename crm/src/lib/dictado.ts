@@ -93,6 +93,7 @@ export function interpretarLocal(texto: string, clientes: Cliente[], proyectos: 
     return { tareas: [], clientes_nuevos: [], resumen: 'Reunión preparada', reuniones: [{
       titulo: `Reunión${c ? ' con ' + c : ''}`, detalle: texto, cliente_id: cli?.id ?? null, cliente_nuevo: null,
       proyecto_id: proy?.id ?? null, fecha: fecha ?? iso(new Date()), hora: `${String(h).padStart(2, '0')}:${hora[2] ?? '00'}`,
+      email: texto.match(/[\w.+-]+@[\w-]+\.[\w.]+/)?.[0]?.toLowerCase() ?? null,
       duracion: /media hora/.test(t) ? 30 : 60, meet: !/presencial|telefono/.test(t) }] }
   }
   const titulo = texto

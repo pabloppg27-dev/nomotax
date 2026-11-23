@@ -80,7 +80,7 @@ export const ESQUEMA = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['titulo', 'detalle', 'cliente_id', 'cliente_nuevo', 'proyecto_id', 'fecha', 'hora', 'duracion', 'meet'],
+        required: ['titulo', 'detalle', 'cliente_id', 'cliente_nuevo', 'proyecto_id', 'fecha', 'hora', 'duracion', 'meet', 'email'],
         properties: {
           titulo: { type: 'string', description: 'Asunto de la reunión, p. ej. «Revisión del IVA · Nova Hiring»' },
           detalle: { type: 'string', description: 'Orden del día o contexto, bien redactado (va en la invitación)' },
@@ -91,6 +91,7 @@ export const ESQUEMA = {
           hora: nulo('HH:MM en 24 h, hora de España'),
           duracion: { type: 'integer', description: 'Minutos; 60 si no lo dice' },
           meet: { type: 'boolean', description: 'true salvo que diga presencial o por teléfono' },
+          email: nulo('email del invitado si lo dice, bien escrito (p. ej. jorge@empresa.com); si no, null'),
         },
       },
     },
@@ -127,6 +128,7 @@ Reuniones (van a «reuniones», NO a tareas):
 - Si pide agendar/programar/fijar una reunión, sesión, llamada o videollamada con día y hora (aunque la hora sea aproximada: «a las 5 de la tarde» = 17:00, «por la mañana» = 10:00), crea una reunión. Si no dice día ni hora («tengo que agendar una llamada con X»), es una tarea.
 - titulo: asunto corto; incluye el cliente. detalle: qué se va a tratar, redactado para que lo lea el cliente en la invitación (sin notas internas).
 - fecha y hora: deduce «mañana», «el jueves» (el próximo), «el lunes que viene»… duracion: la que diga («media hora» = 30), si no 60. meet: true salvo presencial o teléfono.
+- email: si dice un correo, ponlo bien escrito. El reconocedor de voz lo transcribe raro: «arroba» = @, «punto» = ., «guion» = -, «guion bajo» = _, sin espacios y en minúsculas (p. ej. «jorge arroba nova hiring punto com» = jorge@novahiring.com). Si no dice correo, null.
 - cliente_id / proyecto_id: igual que en las tareas.
 
 resumen: una frase corta tipo «2 tareas creadas para Nova Hiring» o «Reunión preparada con Xapa el jueves a las 11».`
@@ -164,6 +166,8 @@ export async function pensar(anthropic: any, e: EntradaDictado) {
     if (r.hora && !/^\d{1,2}:\d{2}$/.test(r.hora)) r.hora = null
     if (r.hora) r.hora = r.hora.padStart(5, '0')
     if (!(r.duracion > 0)) r.duracion = 60
+    r.email = typeof r.email === 'string' ? r.email.replace(/\s+/g, '').toLowerCase() : null
+    if (r.email && !/^[^@]+@[^@]+\.[a-z]{2,}$/.test(r.email)) r.email = null
   }
   return out as Resultado
 }
@@ -174,7 +178,7 @@ export interface TareaDictada {
 }
 export interface ReunionDictada {
   titulo: string; detalle: string; cliente_id: string | null; cliente_nuevo: string | null; proyecto_id: string | null
-  fecha: string | null; hora: string | null; duracion: number; meet: boolean
+  fecha: string | null; hora: string | null; duracion: number; meet: boolean; email: string | null
 }
 export interface Resultado {
   tareas: TareaDictada[]
