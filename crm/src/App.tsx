@@ -15,9 +15,9 @@ import Acceso from './pages/Acceso'
 
 const MENU = [
   { a: '/', t: 'Tareas', i: CheckSquare },
+  { a: '/reuniones', t: 'Reuniones', i: Video },
   { a: '/proyectos', t: 'Proyectos', i: FolderKanban },
   { a: '/clientes', t: 'Clientes', i: Users },
-  { a: '/reuniones', t: 'Reuniones', i: Video },
   { a: '/calendario', t: 'Calendario', i: CalendarDays },
 ]
 
