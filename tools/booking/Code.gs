@@ -59,6 +59,7 @@ function doPost(e) {
   if (datos.accion === 'llamame') return responder(llamame(datos));
   if (datos.accion === 'crm_agendar') return responder(crmAgendar(datos));
   if (datos.accion === 'crm_cancelar') return responder(crmCancelar(datos));
+  if (datos.accion === 'crm_listar') return responder(crmListar(datos));
   return responder({ ok: false, error: 'accion' });
 }
 
@@ -331,4 +332,35 @@ function crmCancelar(datos) {
   }
   CacheService.getScriptCache().remove('huecos');
   return { ok: true };
+}
+
+/* Reuniones del calendario (con invitados o Meet) para traerlas al CRM.
+ * datos: { secreto, dias_atras?, dias_adelante? } */
+function crmListar(datos) {
+  if (!crmAutorizado(datos)) return { ok: false, error: 'no-autorizado' };
+  var ahora = Date.now();
+  var desde = new Date(ahora - (Number(datos.dias_atras) || 30) * 86400000);
+  var hasta = new Date(ahora + (Number(datos.dias_adelante) || 90) * 86400000);
+  var yo = Session.getEffectiveUser().getEmail().toLowerCase();
+  var lista = [], token;
+  do {
+    var r = Calendar.Events.list(CONFIG.calendario, {
+      timeMin: desde.toISOString(), timeMax: hasta.toISOString(), singleEvents: true,
+      orderBy: 'startTime', maxResults: 250, pageToken: token
+    });
+    (r.items || []).forEach(function (ev) {
+      if (!ev.start || !ev.start.dateTime || ev.status === 'cancelled') return; // fuera los de día completo
+      var invitados = (ev.attendees || []).filter(function (a) { return !a.self && !a.resource && a.email.toLowerCase() !== yo; });
+      if (!invitados.length && !ev.hangoutLink) return; // solo reuniones, no bloques personales
+      lista.push({
+        evento_id: ev.id, titulo: ev.summary || 'Reunión', descripcion: ev.description || '',
+        inicio: new Date(ev.start.dateTime).toISOString(),
+        duracion: Math.round((new Date(ev.end.dateTime) - new Date(ev.start.dateTime)) / 60000),
+        emails: invitados.map(function (a) { return a.email.toLowerCase(); }),
+        meet: ev.hangoutLink || '', evento_url: ev.htmlLink || ''
+      });
+    });
+    token = r.nextPageToken;
+  } while (token);
+  return { ok: true, eventos: lista };
 }

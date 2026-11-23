@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
   const { data: esAsesor } = await supabase.rpc('is_advisor')
   if (!esAsesor) return json({ error: 'Solo para el asesor' }, 403)
   const b = await req.json().catch(() => null) as (EntradaDictado & { accion?: string }) | null
-  if (b?.accion === 'crm_agendar' || b?.accion === 'crm_cancelar') {
+  if (b?.accion === 'crm_agendar' || b?.accion === 'crm_cancelar' || b?.accion === 'crm_listar') {
     try { return json(await agenda(Deno.env.get('CRM_AGENDA_SECRETO') ?? '', b as unknown as Record<string, unknown>)) }
     catch (e) { return json({ ok: false, error: (e as Error).message }, 502) }
   }
