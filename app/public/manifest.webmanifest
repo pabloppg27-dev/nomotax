@@ -1,0 +1,13 @@
+{
+  "id": "/",
+  "name": "NomoTax · Área de clientes",
+  "short_name": "NomoTax",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f5",
+  "theme_color": "#111110",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
