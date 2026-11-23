@@ -100,7 +100,25 @@ export default function Calendario() {
       })()}
 
       {vista === 'semana' && (
-        <div className="grid grid-cols-5 gap-px overflow-hidden rounded-xl border border-line bg-line">
+        // Móvil: la semana en lista (un día debajo de otro) para que se lea todo
+        <ul className="space-y-2 sm:hidden">
+          {Array.from({ length: 5 }, (_, i) => sumar(lunesDe(ref), i)).map((d) => {
+            const k = iso(d); const reus = rs(k); const tars = ts(k)
+            return (
+              <li key={k} className={`rounded-xl border border-line bg-white p-3 ${k === marcado ? 'ring-2 ring-ink' : ''}`}>
+                <button onClick={() => irDia(k)} className="mb-1 flex w-full items-center gap-2 text-left">
+                  <span className={`rounded-full px-2 text-sm font-semibold ${k === hoy() ? 'bg-ink text-lima' : ''}`}>{d.getDate()}</span>
+                  <span className="text-sm capitalize text-muted">{d.toLocaleDateString('es-ES', { weekday: 'long' })}</span>
+                </button>
+                {reus.length + tars.length === 0 ? <p className="pl-2 text-xs text-muted">Libre</p>
+                  : <div className="space-y-1">{reus.map((r) => <div key={r.id} className="text-sm">{chipReunion(r, true)}</div>)}{tars.map((t) => <div key={t.id} className="text-sm">{chipTarea(t, true)}</div>)}</div>}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {vista === 'semana' && (
+        <div className="hidden grid-cols-5 gap-px sm:grid overflow-hidden rounded-xl border border-line bg-line">
           {Array.from({ length: 5 }, (_, i) => sumar(lunesDe(ref), i)).map((d) => {
             const k = iso(d)
             return (
