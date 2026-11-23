@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { StoreProvider } from './lib/store'
 import './index.css'
+import { autoActualizar } from './lib/actualizar'
+
+autoActualizar()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
