@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { CalendarDays, CheckSquare, FolderKanban, Mic, Users } from 'lucide-react'
+import { CalendarDays, CheckSquare, FolderKanban, Mic, Users, Video } from 'lucide-react'
 import Dictar from './components/Dictar'
 import { MODO } from './lib/supabase'
 import { useStore } from './lib/store'
 import Tareas from './pages/Tareas'
 import Calendario from './pages/Calendario'
+import Reuniones from './pages/Reuniones'
 import Clientes from './pages/Clientes'
 import ClienteFicha from './pages/ClienteFicha'
 import Proyectos from './pages/Proyectos'
@@ -16,6 +17,7 @@ const MENU = [
   { a: '/', t: 'Tareas', i: CheckSquare },
   { a: '/proyectos', t: 'Proyectos', i: FolderKanban },
   { a: '/clientes', t: 'Clientes', i: Users },
+  { a: '/reuniones', t: 'Reuniones', i: Video },
   { a: '/calendario', t: 'Calendario', i: CalendarDays },
 ]
 
@@ -68,6 +70,7 @@ export default function App() {
             <Route path="/proyectos/:id" element={<ProyectoPagina />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/clientes/:id" element={<ClienteFicha />} />
+            <Route path="/reuniones" element={<Reuniones />} />
             <Route path="/calendario" element={<Calendario />} />
           </Routes>
         </div>
@@ -78,7 +81,7 @@ export default function App() {
         className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-lima text-ink shadow-lg md:hidden">
         <Mic size={24} />
       </button>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
         {MENU.map(({ a, t, i: I }) => (
           <NavLink key={a} to={a} end={a === '/'} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] ${isActive ? 'text-ink font-semibold' : 'text-muted'}`}>
             <I size={20} /> {t}

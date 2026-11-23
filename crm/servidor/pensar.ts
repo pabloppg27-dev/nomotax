@@ -1,4 +1,4 @@
-// Cerebro del dictado: recibe lo que dice Pablo y devuelve tareas (y clientes nuevos) bien redactadas.
+// Cerebro del dictado: recibe lo que dice Pablo y devuelve tareas, reuniones (y clientes nuevos) bien redactadas.
 // Lo usan la función de Supabase crm-dictado (publicada) y el servidor local de `npm run dev`.
 // Sin imports: recibe el cliente de Anthropic ya creado.
 
@@ -14,7 +14,7 @@ const nulo = (t: string) => ({ type: ['string', 'null'], description: t })
 export const ESQUEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['tareas', 'clientes_nuevos', 'resumen'],
+  required: ['tareas', 'reuniones', 'clientes_nuevos', 'resumen'],
   properties: {
     tareas: {
       type: 'array',
@@ -30,6 +30,25 @@ export const ESQUEMA = {
           cliente_nuevo: nulo('nombre exacto de un cliente de clientes_nuevos, si la tarea es de uno de ellos'),
           proyecto_id: nulo('id de la lista de proyectos, o null'),
           fecha: nulo('YYYY-MM-DD o null'),
+        },
+      },
+    },
+    reuniones: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['titulo', 'detalle', 'cliente_id', 'cliente_nuevo', 'proyecto_id', 'fecha', 'hora', 'duracion', 'meet'],
+        properties: {
+          titulo: { type: 'string', description: 'Asunto de la reunión, p. ej. «Revisión del IVA · Nova Hiring»' },
+          detalle: { type: 'string', description: 'Orden del día o contexto, bien redactado (va en la invitación)' },
+          cliente_id: nulo('id de la lista de clientes, o null'),
+          cliente_nuevo: nulo('nombre exacto de un cliente de clientes_nuevos'),
+          proyecto_id: nulo('id de la lista de proyectos, o null'),
+          fecha: nulo('YYYY-MM-DD'),
+          hora: nulo('HH:MM en 24 h, hora de España'),
+          duracion: { type: 'integer', description: 'Minutos; 60 si no lo dice' },
+          meet: { type: 'boolean', description: 'true salvo que diga presencial o por teléfono' },
         },
       },
     },
@@ -62,7 +81,13 @@ Cómo crear cada tarea:
 - Si en un mismo dictado pide varias cosas distintas, crea varias tareas. Si solo pide dar de alta un cliente, tareas puede ir vacía.
 - El reconocedor de voz comete errores: «nomotags» = NomoTax, «airwallex», «LLC», «EIN», «IRS», «modelo 303», etc. Corrígelos.
 
-resumen: una frase corta tipo «2 tareas creadas para Nova Hiring».`
+Reuniones (van a «reuniones», NO a tareas):
+- Si pide agendar/programar/fijar una reunión, sesión, llamada o videollamada con día y hora (aunque la hora sea aproximada: «a las 5 de la tarde» = 17:00, «por la mañana» = 10:00), crea una reunión. Si no dice día ni hora («tengo que agendar una llamada con X»), es una tarea.
+- titulo: asunto corto; incluye el cliente. detalle: qué se va a tratar, redactado para que lo lea el cliente en la invitación (sin notas internas).
+- fecha y hora: deduce «mañana», «el jueves» (el próximo), «el lunes que viene»… duracion: la que diga («media hora» = 30), si no 60. meet: true salvo presencial o teléfono.
+- cliente_id / proyecto_id: igual que en las tareas.
+
+resumen: una frase corta tipo «2 tareas creadas para Nova Hiring» o «Reunión preparada con Xapa el jueves a las 11».`
 }
 
 // deno-lint-ignore no-explicit-any
@@ -89,6 +114,15 @@ export async function pensar(anthropic: any, e: EntradaDictado) {
     if (t.proyecto_id && !ps.has(t.proyecto_id)) t.proyecto_id = null
     if (t.fecha && !/^\d{4}-\d{2}-\d{2}$/.test(t.fecha)) t.fecha = null
   }
+  out.reuniones ??= []
+  for (const r of out.reuniones) {
+    if (r.cliente_id && !cs.has(r.cliente_id)) r.cliente_id = null
+    if (r.proyecto_id && !ps.has(r.proyecto_id)) r.proyecto_id = null
+    if (r.fecha && !/^\d{4}-\d{2}-\d{2}$/.test(r.fecha)) r.fecha = null
+    if (r.hora && !/^\d{1,2}:\d{2}$/.test(r.hora)) r.hora = null
+    if (r.hora) r.hora = r.hora.padStart(5, '0')
+    if (!(r.duracion > 0)) r.duracion = 60
+  }
   return out as Resultado
 }
 
@@ -96,8 +130,24 @@ export interface TareaDictada {
   titulo: string; detalle: string; prioridad: 'alta' | 'media' | 'baja'
   cliente_id: string | null; cliente_nuevo: string | null; proyecto_id: string | null; fecha: string | null
 }
+export interface ReunionDictada {
+  titulo: string; detalle: string; cliente_id: string | null; cliente_nuevo: string | null; proyecto_id: string | null
+  fecha: string | null; hora: string | null; duracion: number; meet: boolean
+}
 export interface Resultado {
   tareas: TareaDictada[]
+  reuniones: ReunionDictada[]
   clientes_nuevos: { nombre: string; tipo: string | null; pais: string | null; notas: string | null }[]
   resumen: string
+}
+
+// ---------- Google Calendar (vía el Apps Script de reservas) ----------
+export const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l8Xh8duZxgbzydO1ZdTsa6qtKR_sRxtNiZjF07rqmnIUyzjSmzAKQ/exec'
+
+/** accion: 'crm_agendar' | 'crm_cancelar'. Devuelve lo que responda el Apps Script ({ ok, evento_id, meet… }). */
+export async function agenda(secreto: string, datos: Record<string, unknown>) {
+  if (!secreto) throw new Error('Falta CRM_AGENDA_SECRETO')
+  const r = await fetch(AGENDA_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ ...datos, secreto }) })
+  const t = await r.text()
+  try { return JSON.parse(t) } catch { throw new Error('Google Calendar no responde bien') }
 }

@@ -4,6 +4,7 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
 import Documentos from '../components/Documentos'
 import FilaTarea, { ordenar } from '../components/FilaTarea'
 import TareaDetalle from '../components/TareaDetalle'
+import SeccionReuniones from '../components/SeccionReuniones'
 import { Boton, entrada, Vacio } from '../components/ui'
 import * as db from '../lib/datos'
 import { useStore } from '../lib/store'
@@ -43,6 +44,7 @@ export default function ClienteFicha() {
           {ts.length === 0 ? <Vacio>Sin tareas.</Vacio> : <ul className="overflow-hidden rounded-xl border border-line">{ts.map((t) => <FilaTarea key={t.id} t={t} onAbrir={() => setAbierta(t)} />)}</ul>}
         </section>
         <div className="space-y-6">
+          <SeccionReuniones filtro={(r) => r.cliente_id === c.id} nueva={{ cliente_id: c.id }} />
           <section>
             <h2 className="mb-2 font-semibold">Proyectos</h2>
             {ps.length === 0 ? <Vacio>Sin proyectos.</Vacio> : (

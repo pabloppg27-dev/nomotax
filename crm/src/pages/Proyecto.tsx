@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Copy, Minus, Plus, Trash2, X } from 'lucide-react'
 import Documentos, { rutaBase } from '../components/Documentos'
 import FilaTarea, { ordenar } from '../components/FilaTarea'
 import TareaDetalle from '../components/TareaDetalle'
+import SeccionReuniones from '../components/SeccionReuniones'
 import { Boton, entrada, Vacio } from '../components/ui'
 import * as db from '../lib/datos'
 import { useStore } from '../lib/store'
@@ -43,10 +44,13 @@ export default function ProyectoPagina() {
             <Boton variante="suave" onClick={() => setAbierta({ proyecto_id: p.id, cliente_id: p.cliente_id })}><Plus size={16} /> Tarea</Boton></div>
           {ts.length === 0 ? <Vacio>Sin tareas en este proyecto.</Vacio> : <ul className="overflow-hidden rounded-xl border border-line">{ts.map((t) => <FilaTarea key={t.id} t={t} sinProyecto onAbrir={() => setAbierta(t)} />)}</ul>}
         </section>
+        <div className="space-y-6">
+        <SeccionReuniones filtro={(r) => r.proyecto_id === p.id} nueva={{ proyecto_id: p.id, cliente_id: p.cliente_id }} />
         <section>
           <h2 className="mb-2 font-semibold">Documentos</h2>
           <Documentos clave={p.id + (c?.id ?? '')} recursivo destino={() => rutaBase(c?.nombre, p.nombre)} />
         </section>
+        </div>
       </div>
       {abierta && <TareaDetalle tarea={abierta} onClose={() => setAbierta(null)} />}
       {duplicar && <NuevoProyecto base={p} onClose={() => setDuplicar(false)} />}

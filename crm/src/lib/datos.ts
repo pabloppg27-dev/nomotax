@@ -1,8 +1,8 @@
 // Acceso a datos: mismo interfaz en modo demo (localStorage) y real (Supabase).
 import { MODO, supabase } from './supabase'
-import type { Cliente, FilaImpuestos, Proyecto, Tarea } from './tipos'
+import type { Cliente, FilaImpuestos, Proyecto, Reunion, Tarea } from './tipos'
 
-type Tabla = 'crm_clientes' | 'crm_proyectos' | 'crm_impuestos' | 'crm_tareas'
+type Tabla = 'crm_clientes' | 'crm_proyectos' | 'crm_impuestos' | 'crm_tareas' | 'crm_reuniones'
 type Fila = { id: string } & Record<string, unknown>
 
 const uid = () => crypto.randomUUID()
@@ -34,6 +34,7 @@ function semilla(): Demo {
     crm_clientes: [ext],
     crm_proyectos: [proy, proy2],
     crm_impuestos: filas,
+    crm_reuniones: [],
     crm_tareas: [
       t('Presentar 303 de Vilasans', 'alta', { cliente_id: nomotax[1].id, proyecto_id: proy.id, fecha: en(2) }),
       t('Pedir EIN al IRS', 'alta', { cliente_id: ext.id, proyecto_id: proy2.id, fecha: en(5), descripcion: 'Formulario SS-4 por fax.' }),
@@ -44,7 +45,7 @@ function semilla(): Demo {
 }
 function leer(): Demo {
   const raw = localStorage.getItem(CLAVE)
-  if (raw) return JSON.parse(raw)
+  if (raw) { const d = JSON.parse(raw); d.crm_reuniones ??= []; return d }
   const d = semilla(); localStorage.setItem(CLAVE, JSON.stringify(d)); return d
 }
 const guardar = (d: Demo) => localStorage.setItem(CLAVE, JSON.stringify(d))
@@ -78,6 +79,7 @@ async function borrar(tabla: Tabla, id: string) {
     if (tabla === 'crm_proyectos') {
       d.crm_impuestos = d.crm_impuestos.filter((f) => f.proyecto_id !== id)
       d.crm_tareas = d.crm_tareas.map((t) => (t.proyecto_id === id ? { ...t, proyecto_id: null } : t))
+      d.crm_reuniones = d.crm_reuniones.map((t) => (t.proyecto_id === id ? { ...t, proyecto_id: null } : t))
     }
     guardar(d); return
   }
@@ -136,3 +138,9 @@ export const tareas = () => listar<Tarea>('crm_tareas')
 export const crearTarea = (t: Partial<Tarea>) => crear<Tarea>('crm_tareas', { enlaces: [], hecha: false, prioridad: 'media', ...t })
 export const cambiarTarea = (id: string, c: Partial<Tarea>) => cambiar('crm_tareas', id, c)
 export const borrarTarea = (id: string) => borrar('crm_tareas', id)
+
+// ---------- reuniones ----------
+export const reuniones = async () => (await listar<Reunion>('crm_reuniones')).sort((a, b) => a.inicio.localeCompare(b.inicio))
+export const crearReunion = (r: Partial<Reunion>) => crear<Reunion>('crm_reuniones', { duracion: 60, meet: true, ...r })
+export const cambiarReunion = (id: string, c: Partial<Reunion>) => cambiar('crm_reuniones', id, c)
+export const borrarReunion = (id: string) => borrar('crm_reuniones', id)

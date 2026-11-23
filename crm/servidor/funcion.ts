@@ -1,6 +1,7 @@
 // CRM NomoTax · función crm-dictado (Supabase). NO editar index.ts: se genera con
 // `node scripts/empaquetar.mjs` a partir de este archivo + servidor/pensar.ts.
-// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secreto: ANTHROPIC_API_KEY. Solo el asesor.
+// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secretos: ANTHROPIC_API_KEY, CRM_AGENDA_SECRETO. Solo el asesor.
+// { accion: 'crm_agendar' | 'crm_cancelar', … } → crea/borra la reunión en Google Calendar (Apps Script).
 import Anthropic from 'npm:@anthropic-ai/sdk@^1.8.0'
 import { createClient } from 'npm:@supabase/supabase-js@^2.119.0'
 
@@ -25,7 +26,11 @@ Deno.serve(async (req) => {
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, clavePublica(req), { global: { headers: { Authorization: auth } } })
   const { data: esAsesor } = await supabase.rpc('is_advisor')
   if (!esAsesor) return json({ error: 'Solo para el asesor' }, 403)
-  const b = await req.json().catch(() => null) as EntradaDictado | null
+  const b = await req.json().catch(() => null) as (EntradaDictado & { accion?: string }) | null
+  if (b?.accion === 'crm_agendar' || b?.accion === 'crm_cancelar') {
+    try { return json(await agenda(Deno.env.get('CRM_AGENDA_SECRETO') ?? '', b as unknown as Record<string, unknown>)) }
+    catch (e) { return json({ ok: false, error: (e as Error).message }, 502) }
+  }
   if (!b?.texto?.trim()) return json({ error: 'No hay texto' }, 400)
   try {
     return json(await pensar(new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY') }), b))

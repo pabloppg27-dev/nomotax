@@ -9,6 +9,15 @@ function dictadoLocal(): Plugin {
     name: 'dictado-local',
     configureServer(server) {
       const env = loadEnv('development', process.cwd(), '')
+      server.middlewares.use('/api/agenda', async (req, res) => {
+        const enviar = (s: number, b: unknown) => { res.statusCode = s; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(b)) }
+        if (!env.CRM_AGENDA_SECRETO) return enviar(503, { error: 'sin-clave' })
+        let cuerpo = ''; for await (const c of req) cuerpo += c
+        try {
+          const { agenda } = await server.ssrLoadModule('/servidor/pensar.ts')
+          enviar(200, await agenda(env.CRM_AGENDA_SECRETO, JSON.parse(cuerpo)))
+        } catch (e) { enviar(502, { error: (e as Error).message }) }
+      })
       server.middlewares.use('/api/dictado', async (req, res) => {
         const enviar = (s: number, b: unknown) => { res.statusCode = s; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(b)) }
         if (!env.ANTHROPIC_API_KEY) return enviar(503, { error: 'sin-clave' })

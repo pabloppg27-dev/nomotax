@@ -57,6 +57,8 @@ function doPost(e) {
   }
   if (datos.accion === 'reservar') return responder(reservar(datos));
   if (datos.accion === 'llamame') return responder(llamame(datos));
+  if (datos.accion === 'crm_agendar') return responder(crmAgendar(datos));
+  if (datos.accion === 'crm_cancelar') return responder(crmCancelar(datos));
   return responder({ ok: false, error: 'accion' });
 }
 
@@ -282,4 +284,54 @@ function autorizar() {
   var r = huecosLibres();
   console.log('Huecos libres: ' + r.huecos.length + ' · primero: ' + (r.huecos[0] || '—'));
   console.log('Cuenta: ' + Session.getEffectiveUser().getEmail());
+}
+
+
+/* ---------- CRM NomoTax: reuniones dictadas ----------
+ * Las llama la función crm-dictado de Supabase (nunca el navegador).
+ * Clave compartida: Propiedades del proyecto → CRM_SECRETO (= secreto CRM_AGENDA_SECRETO de Supabase).
+ * datos: { secreto, titulo, descripcion, inicio (ISO), duracion (min), email?, nombre?, meet (bool), forzar? }
+ */
+function crmAutorizado(datos) {
+  var clave = PropertiesService.getScriptProperties().getProperty('CRM_SECRETO');
+  return !!clave && datos.secreto === clave;
+}
+
+function crmAgendar(datos) {
+  if (!crmAutorizado(datos)) return { ok: false, error: 'no-autorizado' };
+  var inicio = new Date(datos.inicio);
+  if (isNaN(inicio.getTime())) return { ok: false, error: 'fecha' };
+  var fin = new Date(inicio.getTime() + (Number(datos.duracion) || 60) * 60000);
+  if (!datos.forzar) {
+    var ocupado = Calendar.Freebusy.query({
+      timeMin: inicio.toISOString(), timeMax: fin.toISOString(), timeZone: CONFIG.zona,
+      items: [{ id: CONFIG.calendario }]
+    }).calendars[CONFIG.calendario].busy || [];
+    if (ocupado.length) return { ok: false, error: 'ocupado', ocupado: ocupado };
+  }
+  var evento = {
+    summary: datos.titulo || 'Reunión NomoTax',
+    description: datos.descripcion || '',
+    start: { dateTime: inicio.toISOString(), timeZone: CONFIG.zona },
+    end: { dateTime: fin.toISOString(), timeZone: CONFIG.zona },
+    attendees: datos.email ? [{ email: datos.email, displayName: datos.nombre || '' }] : [],
+    reminders: { useDefault: true }
+  };
+  if (datos.meet) {
+    evento.conferenceData = { createRequest: { requestId: Utilities.getUuid(), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
+  }
+  var creado = Calendar.Events.insert(evento, CONFIG.calendario, { conferenceDataVersion: 1, sendUpdates: datos.email ? 'all' : 'none' });
+  CacheService.getScriptCache().remove('huecos');
+  return { ok: true, evento_id: creado.id, evento_url: creado.htmlLink || '', meet: creado.hangoutLink || '' };
+}
+
+function crmCancelar(datos) {
+  if (!crmAutorizado(datos)) return { ok: false, error: 'no-autorizado' };
+  try {
+    Calendar.Events.remove(CONFIG.calendario, datos.evento_id, { sendUpdates: 'all' });
+  } catch (err) {
+    if (!/deleted|Not Found|410|404/i.test(String(err))) return { ok: false, error: String(err) };
+  }
+  CacheService.getScriptCache().remove('huecos');
+  return { ok: true };
 }

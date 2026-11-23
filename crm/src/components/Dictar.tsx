@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Keyboard, Loader2, Mic, Square, Undo2, UserPlus } from 'lucide-react'
+import { CalendarClock, Check, Keyboard, Loader2, Mic, Square, Undo2, UserPlus } from 'lucide-react'
 import * as db from '../lib/datos'
 import { escuchar, hayVoz, interpretar } from '../lib/dictado'
 import { corta } from '../lib/fechas'
 import { useStore } from '../lib/store'
 import type { Cliente, Tarea } from '../lib/tipos'
 import TareaDetalle from './TareaDetalle'
+import ReunionDetalle, { type BorradorReunion } from './ReunionDetalle'
 import { Boton, entrada, Modal, NOMBRE_PRIORIDAD, Punto } from './ui'
 
 /** Dictas → Claude piensa, redacta y asocia → se guarda solo. Puedes editar o deshacer. */
@@ -15,7 +16,8 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
   const [oyendo, setOyendo] = useState(false)
   const [pensando, setPensando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hecho, setHecho] = useState<{ tareas: Tarea[]; clientes: Cliente[]; resumen: string; sinClaude?: boolean } | null>(null)
+  const [hecho, setHecho] = useState<{ tareas: Tarea[]; clientes: Cliente[]; reuniones: (BorradorReunion & { enviada?: boolean })[]; resumen: string; sinClaude?: boolean } | null>(null)
+  const [revisar, setRevisar] = useState<number | null>(null) // reunión dictada que se está revisando
   const [editar, setEditar] = useState<Tarea | null>(null)
   const parar = useRef<(() => void) | null>(null)
   const textoRef = useRef('')
@@ -59,8 +61,14 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
         const cliente_id = x.cliente_id ?? idNuevo(x.cliente_nuevo) ?? contexto?.cliente_id ?? proyectos.find((p) => p.id === proyecto_id)?.cliente_id ?? null
         tareas.push(await db.crearTarea({ titulo: x.titulo, descripcion: x.detalle, prioridad: x.prioridad, cliente_id, proyecto_id, fecha: x.fecha }))
       }
+      const reuniones: BorradorReunion[] = (r.reuniones ?? []).map((x) => {
+        const proyecto_id = x.proyecto_id ?? contexto?.proyecto_id ?? null
+        const cliente_id = x.cliente_id ?? idNuevo(x.cliente_nuevo) ?? contexto?.cliente_id ?? proyectos.find((p) => p.id === proyecto_id)?.cliente_id ?? null
+        return { titulo: x.titulo, descripcion: x.detalle, cliente_id, proyecto_id, fecha: x.fecha, hora: x.hora ?? '10:00', duracion: x.duracion, meet: x.meet }
+      })
       await recargar()
-      setHecho({ tareas, clientes: nuevos, resumen: r.resumen, sinClaude: r.sinClaude })
+      setHecho({ tareas, clientes: nuevos, reuniones, resumen: r.resumen, sinClaude: r.sinClaude })
+      if (reuniones.length === 1 && !tareas.length) setRevisar(0) // una reunión sola: directo a confirmar
     } catch (e) { setError((e as Error).message) } finally { setPensando(false) }
   }
 
@@ -71,6 +79,11 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
     await recargar(); setHecho(null)
   }
 
+  if (hecho && revisar !== null) {
+    const i = revisar
+    return <ReunionDetalle reunion={hecho.reuniones[i]} onClose={() => setRevisar(null)}
+      onGuardada={() => setHecho({ ...hecho, reuniones: hecho.reuniones.map((x, j) => (j === i ? { ...x, enviada: true } : x)) })} />
+  }
   if (editar) return <TareaDetalle tarea={editar} onClose={() => { setEditar(null); onClose() }} />
 
   return (
@@ -82,6 +95,19 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
           {hecho.clientes.map((c) => (
             <p key={c.id} className="flex items-center gap-2 rounded-lg border border-line p-3 text-sm"><UserPlus size={16} /> Cliente nuevo: <b>{c.nombre}</b> {c.tipo && <span className="text-muted">· {c.tipo}</span>}</p>
           ))}
+          {hecho.reuniones.map((m, i) => {
+            const c = cliente(m.cliente_id); const p = proyecto(m.proyecto_id)
+            return (
+              <div key={i} className={`rounded-xl border p-3 ${m.enviada ? 'border-line' : 'border-ink'}`}>
+                <p className="flex items-center gap-2 font-medium"><CalendarClock size={16} /> {m.titulo}</p>
+                <p className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
+                  <span>📅 {corta(m.fecha)} · {m.hora} · {m.duracion} min</span>{c && <span>👤 {c.nombre}</span>}{p && <span>📁 {p.nombre}</span>}{m.meet && <span>🎥 Meet</span>}
+                </p>
+                {m.enviada ? <p className="mt-2 flex items-center gap-1 text-sm"><Check size={14} /> Agendada en Google Calendar</p>
+                  : <Boton className="mt-2 w-full" onClick={() => setRevisar(i)}>Revisar y agendar</Boton>}
+              </div>
+            )
+          })}
           <ul className="space-y-2">
             {hecho.tareas.map((t) => {
               const c = cliente(t.cliente_id); const p = proyecto(t.proyecto_id)
@@ -97,7 +123,7 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
               )
             })}
           </ul>
-          <p className="text-xs text-muted">Toca una tarea para cambiar algo.</p>
+          {hecho.tareas.length > 0 && <p className="text-xs text-muted">Toca una tarea para cambiar algo.</p>}
           <div className="flex gap-2 border-t border-line pt-4">
             <Boton variante="peligro" onClick={deshacer}><Undo2 size={16} /> Deshacer</Boton>
             <Boton variante="suave" className="ml-auto" onClick={empezar}><Mic size={16} /> Dictar otra</Boton>

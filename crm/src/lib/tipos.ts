@@ -47,3 +47,20 @@ export interface Tarea {
   hecha_at?: string | null
   created_at: string
 }
+
+export interface Reunion {
+  id: string
+  titulo: string
+  descripcion?: string | null
+  cliente_id?: string | null
+  proyecto_id?: string | null
+  inicio: string // ISO
+  duracion: number // minutos
+  email?: string | null
+  meet: boolean
+  meet_url?: string | null
+  evento_id?: string | null
+  evento_url?: string | null
+  notas?: string | null
+  created_at: string
+}

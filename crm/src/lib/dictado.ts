@@ -4,7 +4,7 @@ import { MODO, supabase } from './supabase'
 import { iso } from './fechas'
 import type { Cliente, Prioridad, Proyecto } from './tipos'
 
-export type { Resultado, TareaDictada } from '../../servidor/pensar'
+export type { Resultado, ReunionDictada, TareaDictada } from '../../servidor/pensar'
 import type { Resultado } from '../../servidor/pensar'
 
 type SR = { lang: string; continuous: boolean; interimResults: boolean; start(): void; stop(): void;
@@ -70,7 +70,7 @@ export function interpretarLocal(texto: string, clientes: Cliente[], proyectos: 
   const t = sinTildes(texto)
   if (/^(crea(r)?|nuevo|alta( de)?)( un)? cliente/.test(t)) {
     const nombre = texto.replace(/^.*?cliente( externo)?[:,]?\s*/i, '').split(/[,.]/)[0].trim()
-    return { tareas: [], clientes_nuevos: [{ nombre, tipo: /llc/i.test(texto) ? 'LLC' : null, pais: null, notas: texto }], resumen: 'Cliente creado' }
+    return { tareas: [], reuniones: [], clientes_nuevos: [{ nombre, tipo: /llc/i.test(texto) ? 'LLC' : null, pais: null, notas: texto }], resumen: 'Cliente creado' }
   }
   const prioridad: Prioridad = /prioridad alta|urgente/.test(t) ? 'alta' : /prioridad baja/.test(t) ? 'baja' : 'media'
   const cli = mejorCoincidencia(t, clientes)
@@ -86,6 +86,15 @@ export function interpretarLocal(texto: string, clientes: Cliente[], proyectos: 
     const m = t.match(/\bel (\d{1,2})\b/)
     if (m) { const n = new Date(d.getFullYear(), d.getMonth(), +m[1]); if (n < new Date()) n.setMonth(n.getMonth() + 1); fecha = iso(n) }
   }
+  const hora = t.match(/a las (\d{1,2})(?:[:.](\d{2}))?( de la tarde| de la noche)?/)
+  if (/reunion|sesion|videollamada|llamada|meet/.test(t) && hora) {
+    let h = +hora[1]; if (hora[3] && h < 12) h += 12
+    const c = cli?.nombre ?? ''
+    return { tareas: [], clientes_nuevos: [], resumen: 'Reunión preparada', reuniones: [{
+      titulo: `Reunión${c ? ' con ' + c : ''}`, detalle: texto, cliente_id: cli?.id ?? null, cliente_nuevo: null,
+      proyecto_id: proy?.id ?? null, fecha: fecha ?? iso(new Date()), hora: `${String(h).padStart(2, '0')}:${hora[2] ?? '00'}`,
+      duracion: /media hora/.test(t) ? 30 : 60, meet: !/presencial|telefono/.test(t) }] }
+  }
   const titulo = texto
     .replace(/^(crea(r)?( una)? tarea|nueva tarea|tarea)[:,]?\s*/i, '')
     .replace(/,?\s*(con )?prioridad (alta|media|baja)/i, '')
@@ -94,6 +103,6 @@ export function interpretarLocal(texto: string, clientes: Cliente[], proyectos: 
   return {
     tareas: [{ titulo: titulo.charAt(0).toUpperCase() + titulo.slice(1), detalle: texto, prioridad,
       cliente_id: cli?.id ?? null, cliente_nuevo: null, proyecto_id: proy?.id ?? null, fecha }],
-    clientes_nuevos: [], resumen: 'Tarea creada',
+    reuniones: [], clientes_nuevos: [], resumen: 'Tarea creada',
   }
 }

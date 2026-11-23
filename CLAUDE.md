@@ -5,7 +5,7 @@ Pablo Pérez del Pulgar dirige NomoTax (asesoría fiscal). Habla español y dict
 ## Qué hay
 - Raíz: web estática nomotax.io (HTML/CSS/JS, 38 páginas ES/EN). Al cambiar `css/style.css`, subir el `?v=` en todas las páginas.
 - `app/`: **Área de clientes** (clientes.nomotax.io). React 19 + Vite + Tailwind 4 + TypeScript. Supabase (ref `oepixesrcjbpsqsjroam`).
-- `crm/`: **CRM interno de Pablo** (crm.nomotax.io, solo asesor). Vite+React; tablas `crm_*` y bucket `crm` en `crm/supabase/crm.sql`; dictado con Claude en la función `crm-dictado` (se edita `crm/servidor/pensar.ts` y se regenera con `node scripts/empaquetar.mjs` dentro de crm/). `npm run dev` en crm/ → http://localhost:5180.
+- `crm/`: **CRM interno de Pablo** (crm.nomotax.io, solo asesor). Vite+React; tablas `crm_*` y bucket `crm` en `crm/supabase/crm.sql`; dictado con Claude en la función `crm-dictado` (se edita `crm/servidor/pensar.ts` y se regenera con `node scripts/empaquetar.mjs` dentro de crm/). `npm run dev` en crm/ → http://localhost:5180. Reuniones (`/reuniones`, tabla en `crm/supabase/reuniones.sql`): dictadas o a mano, se crean en Google Calendar con Meet vía el Apps Script de reservas (acciones crm_agendar/crm_cancelar), llamado desde crm-dictado con el secreto `CRM_AGENDA_SECRETO` (= propiedad `CRM_SECRETO` del Apps Script; copia en ~/.nomotax-agenda-secret y crm/.env.local).
 - Despliegue: `git push` a `main` → GitHub Actions sube por FTP a Hostinger (job `deploy-app` compila `app/`). Comprobar con `gh run watch`.
 
 ## Trabajar
