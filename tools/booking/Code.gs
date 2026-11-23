@@ -303,10 +303,7 @@ function crmAgendar(datos) {
   if (isNaN(inicio.getTime())) return { ok: false, error: 'fecha' };
   var fin = new Date(inicio.getTime() + (Number(datos.duracion) || 60) * 60000);
   if (!datos.forzar) {
-    var ocupado = Calendar.Freebusy.query({
-      timeMin: inicio.toISOString(), timeMax: fin.toISOString(), timeZone: CONFIG.zona,
-      items: [{ id: CONFIG.calendario }]
-    }).calendars[CONFIG.calendario].busy || [];
+    var ocupado = ocupados(inicio, fin);
     if (ocupado.length) return { ok: false, error: 'ocupado', ocupado: ocupado };
   }
   var evento = {
