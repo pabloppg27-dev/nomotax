@@ -38,9 +38,13 @@ export default function MiEspacio() {
   const cargar = useCallback(async () => {
     if (!ownerId || !me) return
     // «Ver lo que ve X» (cuenta demo): sus tickets son los que subió su usuario, no el tuyo
-    const autor = viendoComo
-      ? ((await supabase.from('miembros').select('user_id').eq('cuenta_id', ownerId).eq('nombre', viendoComo.nombre).limit(1).maybeSingle()).data?.user_id ?? null)
-      : me.id
+    let autor: string | null = me.id
+    if (viendoComo) {
+      const m = supabase.from('miembros').select('user_id').eq('cuenta_id', ownerId).limit(1)
+      // Por su ficha; si su rol no la guarda (comercial), por el nombre
+      autor = (await m.eq('trabajador_id', viendoComo.id).maybeSingle()).data?.user_id ?? null
+      if (!autor) autor = (await supabase.from('miembros').select('user_id').eq('cuenta_id', ownerId).ilike('nombre', `${viendoComo.nombre} %`).limit(1).maybeSingle()).data?.user_id ?? null
+    }
     const [t, n, d, f] = await Promise.all([
       autor
         ? supabase.from('expenses').select('*').eq('owner_id', ownerId).eq('subido_por', autor).order('created_at', { ascending: false })
