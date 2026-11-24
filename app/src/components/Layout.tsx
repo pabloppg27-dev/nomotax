@@ -329,6 +329,10 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* iOS 26+: Safari ya no usa theme-color y tiñe la zona de la hora con lo que haya fijo arriba
+            (si no hay nada, con el fondo claro de la página → velo blanco). Esta franja negra fija, del alto
+            de esa zona, hace que salga negra. Queda encima del padding de la cabecera, no tapa nada. */}
+        <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[max(env(safe-area-inset-top),1px)] bg-ink lg:hidden" />
         {/* Cabecera (móvil) */}
         <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 lg:hidden">
           {cuentas ? (
