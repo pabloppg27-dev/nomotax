@@ -30,7 +30,24 @@ declare
   centro uuid;
   c1 uuid; c2 uuid; c3 uuid; c4 uuid; c5 uuid; c6 uuid; c7 uuid; c8 uuid; c9 uuid; c10 uuid; t1 uuid; t2 uuid; t3 uuid; t4 uuid; t5 uuid;
   marca jsonb := '{"carga":"demo-nomotax"}';
+  falta text := '';
 begin
+  -- Antes de nada: ¿están creadas las tablas que usa la demo?
+  if to_regclass('public.inmovilizados') is null then falta := falta || ' contabilidad.sql'; end if;
+  if to_regclass('public.asientos_manuales') is null then falta := falta || ' contabilidad.sql'; end if;
+  if to_regclass('public.impuestos') is null then falta := falta || ' impuestos.sql'; end if;
+  if to_regclass('public.archivo') is null then falta := falta || ' impuestos.sql'; end if;
+  if to_regclass('public.trabajadores') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.nominas') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.centros_trabajo') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.perfil_laboral') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.categorias_convenio') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.trabajador_documentos') is null then falta := falta || ' laboral.sql'; end if;
+  if to_regclass('public.miembros') is null then falta := falta || ' usuarios.sql'; end if;
+  if falta <> '' then
+    raise exception 'Faltan tablas. Ejecuta antes en el SQL Editor estos archivos de app/supabase:%', (select string_agg(distinct x, ' ') from unnest(string_to_array(trim(falta), ' ')) x);
+  end if;
+
   -- La empresa demo es una cuenta propia (demo@nomotax.io) que sale en el panel del asesor.
   -- Si ya existe (es_demo), se reutiliza; si no, se crea. No toca ninguna otra cuenta.
   select id into o from public.profiles where coalesce(es_demo, false) order by created_at limit 1;
@@ -81,8 +98,12 @@ begin
   delete from public.expenses where owner_id = o;
   delete from public.contacts where owner_id = o;
   delete from public.impuestos where owner_id = o;
-  delete from public.archivo where owner_id = o;
-  delete from public.extractos_bancarios where owner_id = o;
+  if to_regclass('public.archivo') is not null then
+    execute 'delete from public.archivo where owner_id = $1' using o;
+  end if;
+  if to_regclass('public.extractos_bancarios') is not null then
+    execute 'delete from public.extractos_bancarios where owner_id = $1' using o;
+  end if;
 
   -- ---------------------------------------------------------- Datos de la empresa
   update public.profiles set
