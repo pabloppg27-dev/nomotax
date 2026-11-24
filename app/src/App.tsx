@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { configured } from './lib/supabase'
 import Layout from './components/Layout'
 import { ConfirmHost, Loading, ToastHost } from './components/ui'
+import { VisorHost } from './components/VisorDocumento'
 import Login from './pages/Login'
 import NuevaContrasena from './pages/NuevaContrasena'
 import Resumen from './pages/Resumen'
@@ -195,6 +196,7 @@ export default function App() {
         </Routes>
         <ToastHost />
         <ConfirmHost />
+        <VisorHost />
       </AuthProvider>
     </BrowserRouter>
   )

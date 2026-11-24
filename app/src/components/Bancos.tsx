@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { CheckCircle2, FileSpreadsheet, FileText, Landmark, Trash2, Upload, X } from 'lucide-react'
 import { BUCKET, errorMessage, supabase } from '../lib/supabase'
 import { nuevoId } from '../lib/id'
+import { verDocumento } from '../lib/visor'
 import { fecha, MESES_CORTOS } from '../lib/format'
 import {
   ACCEPT_EXTRACTO,
@@ -40,6 +41,7 @@ async function abrirExtracto(e: ExtractoBancario) {
     return notify('No se ha podido abrir el extracto', 'error')
   }
   if (w) w.location.href = data.signedUrl
+  else if (e.formato === 'pdf') verDocumento(data.signedUrl, e.nombre_archivo || 'Extracto', 'pdf')
   else window.location.href = data.signedUrl
 }
 

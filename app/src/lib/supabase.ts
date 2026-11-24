@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { tipoDocumento, verDocumento } from './visor'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -52,16 +53,20 @@ export async function signedUrl(path: string, seconds = 600): Promise<string | n
   return data?.signedUrl ?? null
 }
 
-/** Abre un archivo privado en otra pestaña (la ventana se abre ya, para que Safari no la bloquee) */
-export async function abrirDocumento(path: string) {
+/**
+ * Abre un archivo privado en otra pestaña (la ventana se abre ya, para que Safari no la bloquee).
+ * Si no se puede abrir otra pestaña (app de Mac, ventanas emergentes bloqueadas), se ve en el visor
+ * de la app, que se cierra: nunca se navega fuera de la app (antes se quedaba el documento sin forma de volver).
+ */
+export async function abrirDocumento(path: string, nombre = path.split('/').pop() || 'Documento') {
   const w = window.open('', '_blank')
-  const url = await signedUrl(path, 300)
+  const url = await signedUrl(path, 900)
   if (!url) {
     w?.close()
     return
   }
   if (w) w.location.href = url
-  else window.location.href = url
+  else verDocumento(url, nombre, tipoDocumento(path))
 }
 
 /** Llama a una Edge Function. Si la sesión ya no es válida, cierra sesión aquí y lo explica. */
