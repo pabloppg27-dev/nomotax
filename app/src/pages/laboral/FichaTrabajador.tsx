@@ -21,6 +21,9 @@ import type {
 import MonthlyChart from '../../components/MonthlyChart'
 import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, confirmar, notify } from '../../components/ui'
 
+/** En la cuenta demo: quien tiene puesto de comercial entra como comercial; el resto, como empleado */
+const rolDemo = (puesto: string | null | undefined): 'empleado' | 'comercial' => (/comercial|ventas/i.test(puesto ?? '') ? 'comercial' : 'empleado')
+
 export default function FichaTrabajador() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -140,11 +143,11 @@ export default function FichaTrabajador() {
             variant="secondary"
             icon={<Eye className="size-4" />}
             onClick={() => {
-              verComoTrabajador({ id: t.id, nombre: t.nombre.split(' ')[0] })
-              navigate('/mi-espacio/nominas')
+              verComoTrabajador({ id: t.id, nombre: t.nombre.split(' ')[0], rol: rolDemo(t.puesto) })
+              navigate(rolDemo(t.puesto) === 'comercial' ? '/presupuestos' : '/mi-espacio/nominas')
             }}
           >
-            Ver lo que ve {t.nombre.split(' ')[0]}
+            Ver lo que ve {t.nombre.split(' ')[0]}{rolDemo(t.puesto) === 'comercial' ? ' (comercial)' : ''}
           </Button>
         )}
         {editableCliente && (

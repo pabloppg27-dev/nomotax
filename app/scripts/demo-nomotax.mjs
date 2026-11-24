@@ -2,6 +2,7 @@
 //   supabase/carga-demo-nomotax.sql   → pegar en Supabase → SQL Editor
 //   test-data/demo-extractos/*.csv    → extractos del banco, para subirlos en Contabilidad → Bancos
 // Todo sale de los mismos datos: el IVA de los 303, las retenciones de los 111/115 y el saldo del banco cuadran.
+// En la app, la ficha de cada trabajador tiene «Ver lo que ve X»: Pau (puesto «Comercial») entra como comercial; el resto, como empleado.
 // Uso: node scripts/demo-nomotax.mjs
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -228,7 +229,7 @@ const TRAB = [
   { v: 't1', nombre: 'Marta Soler Vidal', dni: dni(46812937), nss: nss(8, 51239876), nac: '1986-05-14', domicilio: 'Carrer de Provença 214, 3.º 1.ª, 08036 Barcelona', telefono: '600 100 201', estudios: 'Máster universitario', inicio: '2021-09-01', puesto: 'Directora de proyectos', bruto: 4200, irpf: 22, clas: 'Área 2 · Grupo A · Nivel 1 (Jefa de proyecto)', iban: iban('21000813610123456789') },
   { v: 't2', nombre: 'Javier Ortega Prats', dni: dni(38955120), nss: nss(8, 44718203), nac: '1990-11-02', domicilio: 'Carrer de Verdi 31, 2.º, 08012 Barcelona', telefono: '600 100 202', estudios: 'Grado universitario', inicio: '2022-09-15', puesto: 'Desarrollador sénior', bruto: 3600, irpf: 19, clas: 'Área 3 · Grupo B · Nivel 1 (Analista programador)', iban: iban('00810200250001234567') },
   { v: 't3', nombre: 'Lucía Fernández Gil', dni: dni(53318764), nss: nss(28, 60224417), nac: '1995-03-27', domicilio: 'Avinguda de Mistral 18, 5.º 3.ª, 08015 Barcelona', telefono: '600 100 203', estudios: 'Grado universitario', inicio: '2024-02-01', puesto: 'Desarrolladora full stack', bruto: 2900, irpf: 16, clas: 'Área 3 · Grupo C · Nivel 1 (Programadora)', iban: iban('01825322110201502220') },
-  { v: 't4', nombre: 'Pau Ribas Comas', dni: dni(47790311), nss: nss(17, 30958162), nac: '1997-08-09', domicilio: 'Carrer del Torrent de l’Olla 77, 08012 Barcelona', telefono: '600 100 204', estudios: 'Ciclo formativo de grado superior', inicio: '2025-01-13', puesto: 'Diseñador UX/UI', bruto: 2700, irpf: 15, clas: 'Área 3 · Grupo C · Nivel 2 (Diseñador)', iban: iban('21000418450200051398') },
+  { v: 't4', nombre: 'Pau Ribas Comas', dni: dni(47790311), nss: nss(17, 30958162), nac: '1997-08-09', domicilio: 'Carrer del Torrent de l’Olla 77, 08012 Barcelona', telefono: '600 100 204', estudios: 'Grado universitario', inicio: '2025-01-13', puesto: 'Comercial · cuentas clave', bruto: 2700, irpf: 15, clas: 'Área 3 · Grupo B · Nivel 2 (Técnico comercial)', comision: true, iban: iban('21000418450200051398') },
   { v: 't5', nombre: 'Sara El Amrani Torres', dni: dni(49127705), nss: nss(8, 72510334), nac: '1999-12-03', domicilio: 'Carrer de Sants 120, 1.º 4.ª, 08014 Barcelona', telefono: '600 100 205', estudios: 'Grado universitario', inicio: '2026-04-06', puesto: 'Administración y RR. HH.', bruto: 2200, irpf: 12, clas: 'Área 4 · Grupo C · Nivel 1 (Técnica administrativa)', iban: iban('00490001502110001234') },
 ]
 const SS_TRAB = 6.5 // contingencias comunes 4,70 + desempleo 1,55 + FP 0,10 + MEI 0,15
@@ -241,8 +242,10 @@ for (const t of TRAB) {
     if (ini > finMes) continue
     const empieza = ini.startsWith(`2026-${pad(m)}`) ? Number(ini.slice(8, 10)) : 1
     const factor = (30 - Math.min(empieza, 30) + 1) / 30
-    const bruto = r2(t.bruto * factor)
-    nominas.push(nomina(t, m, 'mensual', bruto, r2(bruto * 14 / 12)))
+    const fijo = r2(t.bruto * factor)
+    // Comercial: comisiones por ventas del mes anterior (cotizan enteras en el mes, no se prorratean)
+    const comision = t.comision ? 250 + entre(0, 12) * 50 : 0
+    nominas.push(nomina(t, m, 'mensual', r2(fijo + comision), r2(fijo * 14 / 12 + comision), comision))
     if (m === 6) {
       // Paga extra de verano: proporcional a lo trabajado en el semestre (la Seguridad Social ya va prorrateada)
       const desde = ini > '2026-01-01' ? ini : '2026-01-01'
@@ -251,7 +254,7 @@ for (const t of TRAB) {
     }
   }
 }
-function nomina(t, mes, tipo, bruto, baseSS) {
+function nomina(t, mes, tipo, bruto, baseSS, comision = 0) {
   const irpf = r2((bruto * t.irpf) / 100)
   const ss_trabajador = r2((baseSS * SS_TRAB) / 100)
   const ss_empresa = r2((baseSS * SS_EMP) / 100)
@@ -259,12 +262,13 @@ function nomina(t, mes, tipo, bruto, baseSS) {
   const conceptos = tipo === 'extra'
     ? [{ concepto: 'Paga extraordinaria de verano', importe: bruto }]
     : [
-        { concepto: 'Salario base', importe: r2(bruto * 0.82) },
-        { concepto: 'Plus de convenio', importe: r2(bruto - r2(bruto * 0.82)) },
+        { concepto: 'Salario base', importe: r2((bruto - comision) * 0.82) },
+        { concepto: 'Plus de convenio', importe: r2(bruto - comision - r2((bruto - comision) * 0.82)) },
+        ...(comision ? [{ concepto: 'Comisiones por ventas', importe: comision }] : []),
         { concepto: `Retención IRPF (${t.irpf}%)`, importe: -irpf },
         { concepto: `Seguridad Social trabajador (${String(SS_TRAB).replace('.', ',')}%)`, importe: -ss_trabajador },
       ]
-  return { t, anio: 2026, mes, tipo, bruto, irpf, irpf_pct: t.irpf, ss_trabajador, ss_empresa, neto, coste_total: r2(bruto + ss_empresa), conceptos }
+  return { t, anio: 2026, mes, tipo, bruto, irpf, irpf_pct: t.irpf, ss_trabajador, ss_empresa, neto, variables: comision, coste_total: r2(bruto + ss_empresa), conceptos }
 }
 
 // ------------------------------------------------------------------ impuestos (calculados con los datos)
@@ -530,8 +534,8 @@ for (const t of TRAB) {
 }
 out('\n  -- Nóminas (sin PDF: al abrirlas, la app avisa de que son de ejemplo)')
 for (const n of nominas) {
-  out(`  insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, coste_total, conceptos, publicada_at, ocr) values
-    (o, ${n.t.v}, ${n.anio}, ${n.mes}, '${n.tipo}', 'publicada', '', ${q(n.t.nombre)}, '${n.t.dni}', ${n.bruto}, ${n.neto}, ${n.irpf}, ${n.irpf_pct}, ${n.ss_trabajador}, ${n.ss_empresa}, ${n.coste_total}, ${j(n.conceptos)}, '${fechaDe(2026, n.mes, diasMes(2026, n.mes))} 18:00+01', marca);`)
+  out(`  insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
+    (o, ${n.t.v}, ${n.anio}, ${n.mes}, '${n.tipo}', 'publicada', '', ${q(n.t.nombre)}, '${n.t.dni}', ${n.bruto}, ${n.neto}, ${n.irpf}, ${n.irpf_pct}, ${n.ss_trabajador}, ${n.ss_empresa}, ${n.variables}, ${n.coste_total}, ${j(n.conceptos)}, '${fechaDe(2026, n.mes, diasMes(2026, n.mes))} 18:00+01', marca);`)
 }
 
 out('\n  -- ---------------------------------------------------------- Impuestos')

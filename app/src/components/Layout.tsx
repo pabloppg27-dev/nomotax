@@ -306,7 +306,7 @@ export default function Layout() {
         {viendoComo && (
           <div className="flex flex-wrap items-center justify-between gap-2 bg-ink px-4 py-2 text-sm text-white lg:px-10">
             <span>
-              Estás viendo lo que ve <strong>{viendoComo.nombre}</strong> al entrar con su usuario
+              Estás viendo lo que ve <strong>{viendoComo.nombre}</strong> ({viendoComo.rol}) al entrar con su usuario
             </span>
             <button
               onClick={() => {
