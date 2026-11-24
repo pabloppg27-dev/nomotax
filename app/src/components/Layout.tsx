@@ -86,10 +86,10 @@ function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
   if (!me || !owner || me.role === 'advisor') return null
   const propia = me.role !== 'member'
   if (accesos.length === 0 && propias.length === 0) return null
-  // Tus cuentas (la tuya y las vinculadas: autónomo + SL…) y luego las empresas en las que eres miembro
+  // Tus cuentas (la tuya y las vinculadas: autónomo + SL…), solo con su nombre; luego las empresas en las que eres miembro, con tu rol
   const opciones: { id: string; texto: string }[] = [
-    ...(propia ? [{ id: me.id, texto: `${nombreDe(me)} · Tu cuenta` }] : []),
-    ...propias.map((c) => ({ id: c.id, texto: `${nombreDe(c)} · Tu cuenta` })),
+    ...(propia ? [{ id: me.id, texto: nombreDe(me) }] : []),
+    ...propias.map((c) => ({ id: c.id, texto: nombreDe(c) })),
     ...accesos
       .filter((a: Acceso) => !propias.some((c) => c.id === a.cuenta_id))
       .map((a: Acceso) => ({ id: a.cuenta_id, texto: `${nombreDe(a.empresa)} · ${NOMBRE_ROL[a.rol]}` })),
