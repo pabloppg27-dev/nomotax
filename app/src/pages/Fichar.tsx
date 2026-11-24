@@ -10,9 +10,11 @@ import { Badge, Button, Card, Field, Input, Loading, Modal, Select, Textarea, no
 
 /** Página del trabajador: fichar entrada, pausas y salida, y ver su registro */
 export default function Fichar() {
-  const { ownerId, miembro } = useAuth()
-  const demo = enDemo()
-  const trabajadorId = demo ? 'd1' : miembro?.trabajador_id && miembro.trabajador_id !== 'demo' ? miembro.trabajador_id : null
+  const { ownerId, miembro, viendoComo } = useAuth()
+  const local = enDemo()
+  // Cuenta demo con «Ver lo que ve X»: el fichaje se simula (no se guarda nada)
+  const demo = local || Boolean(viendoComo)
+  const trabajadorId = local ? 'd1' : miembro?.trabajador_id && miembro.trabajador_id !== 'demo' ? miembro.trabajador_id : null
   const [fs, setFs] = useState<Fichaje[] | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [, setTick] = useState(0)
@@ -83,7 +85,7 @@ export default function Fichar() {
     <>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">Registro de jornada</h1>
-        {demo && <p className="mb-2 inline-block rounded-xl bg-lima/40 px-3 py-1 text-sm">Modo demo: así lo ve Laura, una trabajadora</p>}
+        {local && <p className="mb-2 inline-block rounded-xl bg-lima/40 px-3 py-1 text-sm">Modo demo: así lo ve Laura, una trabajadora</p>}
         <p className="mt-1 text-[15px] text-muted">Pulsa al empezar y al acabar. La hora la pone el servidor.</p>
       </div>
 

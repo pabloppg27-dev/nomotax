@@ -227,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       rol = viendoComo.rol
       miembro = {
         id: 'demo', cuenta_id: owner.id, user_id: me?.id ?? '', email: '', nombre: viendoComo.nombre, rol: viendoComo.rol,
-        permisos: {}, trabajador_id: viendoComo.id, fichaje: false, activo: true, invitado_por: null, created_at: '', updated_at: '',
+        permisos: {}, trabajador_id: viendoComo.id, fichaje: true, activo: true, invitado_por: null, created_at: '', updated_at: '',
         empresa: { id: owner.id, nombre: owner.nombre, email: owner.email, nombre_comercial: owner.nombre_comercial },
       }
     }

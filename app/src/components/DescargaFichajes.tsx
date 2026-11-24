@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { MESES } from '../lib/laboral'
 import { csvRegistro, descargar, resumenDias, type Fichaje } from '../lib/fichaje'
 import { enDemo, fichajesDemo } from '../lib/demoFichaje'
+import { useAuth } from '../lib/auth'
 import { Button, Card, Select, notify } from './ui'
 
 /** En «Mis documentos»: el trabajador se descarga su registro de jornada de cualquier mes */
@@ -13,6 +14,7 @@ export default function DescargaFichajes({ trabajadorId, nombre, dni }: { trabaj
     const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
+  const { viendoComo } = useAuth()
   const [mes, setMes] = useState(meses[0])
   const [cargando, setCargando] = useState(false)
 
@@ -22,7 +24,7 @@ export default function DescargaFichajes({ trabajadorId, nombre, dni }: { trabaj
     const hasta = new Date(a, m, 1)
     setCargando(true)
     let fs: Fichaje[]
-    if (enDemo()) fs = fichajesDemo().filter((f) => f.trabajador_id === 'd1')
+    if (enDemo() || viendoComo) fs = fichajesDemo().filter((f) => f.trabajador_id === 'd1')
     else {
       const { data, error } = await supabase
         .from('fichajes')
