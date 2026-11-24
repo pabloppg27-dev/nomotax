@@ -191,6 +191,8 @@ export interface DisenoPlantilla {
 
 const FONT = 'Helvetica,Arial,sans-serif'
 export const APP_URL = 'https://clientes.nomotax.io'
+/** Guía para poner el Área de clientes como app (iPhone, Android, Mac, Windows) */
+export const GUIA_APP = 'https://nomotax.io/instalar-app'
 
 const ETIQUETA: Record<Exclude<TipoPlantilla, 'factura'>, string> = { acceso: 'ACCESO', nomina: 'NÓMINA', presupuesto: 'PRESUPUESTO' }
 
@@ -267,7 +269,7 @@ export function htmlCorreoPlantilla(
     .join(' &nbsp;·&nbsp; ')
   const boton =
     tipo === 'acceso'
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0"><tr><td style="background:${colorBoton};border-radius:999px"><a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px ${FONT};color:${textoSobre(colorBoton)};text-decoration:none">Entrar en el Área de clientes →</a></td></tr></table>${v.contrasena ? `<p style="margin:0 0 16px 0;font-size:13px;color:#6b6b66">Al entrar, cambia la contraseña en «Mi perfil».</p>` : ''}`
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0"><tr><td style="background:${colorBoton};border-radius:999px"><a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px ${FONT};color:${textoSobre(colorBoton)};text-decoration:none">Entrar en el Área de clientes →</a></td></tr></table>${v.contrasena ? `<p style="margin:0 0 10px 0;font-size:13px;color:#6b6b66">Al entrar, cambia la contraseña en «Mi perfil».</p>` : ''}<p style="margin:0 0 16px 0;font-size:13px;color:#6b6b66">📱 Tenla como app en tu móvil u ordenador: <a href="${GUIA_APP}" style="color:#111110;font-weight:600">así se hace, en 1 minuto</a>.</p>`
       : ''
 
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
@@ -307,7 +309,7 @@ export function textoCorreoPlantilla(
   const F = FRASES[tipo === 'presupuesto' && diseno.lengua === 'en' ? 'en' : 'es']
   const extra =
     tipo === 'acceso'
-      ? [`Entra en: ${APP_URL}`, `Usuario: ${v.usuario ?? ''}`, v.contrasena ? `Contraseña provisional: ${v.contrasena}` : 'Contraseña: la que ya usas en NomoTax.']
+      ? [`Entra en: ${APP_URL}`, `Usuario: ${v.usuario ?? ''}`, v.contrasena ? `Contraseña provisional: ${v.contrasena}` : 'Contraseña: la que ya usas en NomoTax.', '', `Tenla como app en tu móvil u ordenador: ${GUIA_APP}`]
       : tipo === 'nomina'
         ? [`Nómina: ${v.mes ?? ''}`, `Adjunto: ${v.archivo ?? ''}`]
         : [`${F.etiqueta.charAt(0) + F.etiqueta.slice(1).toLowerCase()} ${v.numero ?? ''} · ${v.fecha ?? ''}`, `${F.total}: ${v.total ?? ''}`, F.valido(v.validez ?? '')]

@@ -215,6 +215,8 @@ function texto(d: { nombre: string | null; email: string; password: string }) {
     "",
     "Al entrar, cámbiala en «Mi perfil».",
     "",
+    `Tenla como app en tu móvil u ordenador: ${GUIA_APP}`,
+    "",
     `¿Dudas? WhatsApp ${WHATSAPP} · ${TELEFONO} · info@nomotax.io`,
     "",
     "Pablo Pérez del Pulgar · NomoTax",
@@ -225,6 +227,7 @@ const APP_URL = "https://clientes.nomotax.io";
 const LOGO = "https://clientes.nomotax.io/logo.png";
 const WHATSAPP = "https://wa.me/34642757633";
 const TELEFONO = "+34 642 75 76 33";
+const GUIA_APP = "https://nomotax.io/instalar-app";
 
 function esc(s: unknown) {
   return String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[c]);
@@ -261,6 +264,7 @@ function html(d: { nombre: string | null; email: string; password: string }) {
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0"><tr><td style="background:#111110;border-radius:999px">
       <a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none">Entrar en el Área de clientes →</a>
     </td></tr></table>
+    <p style="margin:-6px 0 26px 0;font:14px/1.6 Helvetica,Arial,sans-serif;color:#6b6b66">📱 Tenla como app en tu móvil u ordenador: <a href="${GUIA_APP}" style="color:#111110;font-weight:600">así se hace, en 1 minuto</a>.</p>
     <p style="margin:0 0 16px 0;font-weight:600">Para empezar</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       ${paso(1, 'Cambia tu contraseña', 'En «Mi perfil», nada más entrar.')}

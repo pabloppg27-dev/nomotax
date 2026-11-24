@@ -9,6 +9,7 @@ import type { EstadoTrabajador, Profile } from '../lib/types'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, notify } from '../components/ui'
 import { cuotaCliente, importe, proximoCobro } from '../lib/planes'
 import { EditorPlan, OpcionesPlan } from '../components/Planes'
+import { GUIA_APP } from '../lib/plantillasCorreo'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
 type LlamadaPend = { id: string; owner_id: string; tipo: 'llamame' | 'cita'; inicio: string | null; modalidad: string | null; telefono: string | null; tema: string | null; franja: string | null; meet_link: string | null; created_at: string }
@@ -517,7 +518,8 @@ function MensajeAcceso({ resultado, nombre, aviso }: { resultado: Acceso; nombre
   const mensaje =
     `Hola${nombre.trim() ? ` ${nombre.trim()}` : ''}, ya tienes acceso al área de clientes de NomoTax.\n\n` +
     `Entra en ${window.location.origin}\nUsuario: ${resultado.email}\nContraseña provisional: ${resultado.password}\n\n` +
-    'Al entrar, cámbiala en «Mi perfil».'
+    'Al entrar, cámbiala en «Mi perfil».\n\n' +
+    `Tenla como app en tu móvil u ordenador: ${GUIA_APP}`
 
   return (
     <div className="space-y-3">

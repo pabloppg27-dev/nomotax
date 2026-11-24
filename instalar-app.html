@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="img/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" sizes="192x192" href="img/favicon-192.png?v=3" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=3" />
+  <title>Pon el Área de clientes como app | NomoTax</title>
+  <meta name="description" content="Cómo poner el Área de clientes de NomoTax como una app en tu iPhone, Android, Mac o Windows, paso a paso y sin descargar nada." />
+  <!-- Página de ayuda para clientes (se enlaza desde el correo de bienvenida): fuera de Google -->
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://nomotax.io/instalar-app" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NomoTax" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:url" content="https://nomotax.io/instalar-app" />
+  <meta property="og:title" content="Pon el Área de clientes como app | NomoTax" />
+  <meta property="og:description" content="En un minuto, en tu iPhone, Android, Mac o Windows. Sin descargar nada." />
+  <meta property="og:image" content="https://nomotax.io/img/og-es.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="css/style.css?v=20261112a" />
+  <link rel="stylesheet" href="css/legal.css?v=20261116" />
+  <link rel="stylesheet" href="css/instalar-app.css?v=20261124" />
+</head>
+<body class="page-legal page-app">
+
+  <header class="site-header">
+    <div class="container">
+      <a href="./" class="logo" aria-label="NomoTax — inicio">
+        <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
+        <span class="logo-text">Nomo<span class="accent">Tax</span></span>
+      </a>
+      <nav class="nav">
+        <div class="nav-item">
+          <button class="mega-trigger" data-menu="nacional">Nacional <span class="chevron">&#9662;</span></button>
+          <div class="mega-menu" id="mega-nacional">
+            <span class="mega-eyebrow">Optimización fiscal España</span>
+            <div class="mega-featured">
+              <a href="asesoria-fiscal-mercantil-laboral">Asesoría fiscal, mercantil y laboral</a>
+              <a href="asesoria-fiscal-mercantil-laboral" class="chip">Contratar</a>
+            </div>
+            <ul class="mega-list">
+              <li><a href="holding">Estructuras holding <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ley-beckham">Ley Beckham (impatriados) <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="ganancias-patrimoniales">Ganancias patrimoniales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="deducciones-id-cultura">Deducciones I+D y Cultura <span class="chevron-hover">&rsaquo;</span></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="nav-item">
+          <button class="mega-trigger" data-menu="internacional">Internacional <span class="chevron">&#9662;</span></button>
+          <div class="mega-menu" id="mega-internacional">
+            <span class="mega-eyebrow">Fiscalidad internacional</span>
+            <ul class="mega-list">
+              <li><a href="llc-usa">LLC en EE.UU. <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="cambio-residencia-fiscal">Cambio de residencia fiscal <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="estructuras-internacionales">Estructuras internacionales <span class="chevron-hover">&rsaquo;</span></a></li>
+              <li><a href="nomadas-digitales">Nómadas digitales <span class="chevron-hover">&rsaquo;</span></a></li>
+            </ul>
+          </div>
+        </div>
+        <a href="asesoria-fiscal-mercantil-laboral">Gestoría</a>
+        <a href="consultoria">Consultoría</a>
+        <a href="https://clientes.nomotax.io" class="nav-login">Área de clientes</a>
+        <a href="asesoria" class="btn">Asesoría gratis</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ CABECERA ═══ -->
+  <section class="legal-hero">
+    <div class="legal-inner">
+      <p class="hero-fc-eyebrow"><span class="dot"></span> Área de clientes</p>
+      <h1 class="legal-h1">Pon NomoTax como app</h1>
+      <p class="app-hero-sub">En un minuto y sin descargar nada de la App Store ni de Google Play. Elige tu dispositivo y sigue los pasos.</p>
+    </div>
+  </section>
+
+  <!-- Iconos que se repiten en los pasos -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-compartir" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M8 10H6v11h12V10h-2"/></symbol>
+    <symbol id="i-vertical" viewBox="0 0 24 24"><circle class="lleno" cx="12" cy="5" r="2"/><circle class="lleno" cx="12" cy="12" r="2"/><circle class="lleno" cx="12" cy="19" r="2"/></symbol>
+    <symbol id="i-horizontal" viewBox="0 0 24 24"><circle class="lleno" cx="5" cy="12" r="2"/><circle class="lleno" cx="12" cy="12" r="2"/><circle class="lleno" cx="19" cy="12" r="2"/></symbol>
+    <symbol id="i-anadir" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></symbol>
+    <symbol id="i-lineas" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-instalar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 8v5M9.5 10.5L12 13l2.5-2.5M8 21h8"/></symbol>
+  </svg>
+
+  <!-- ═══ CONTENIDO ═══ -->
+  <section class="app-body">
+    <div class="app-inner" id="instalar">
+
+      <div class="app-tabs" role="tablist" aria-label="Elige tu dispositivo">
+        <button class="app-tab" role="tab" id="tab-iphone" aria-controls="iphone" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg>iPhone
+        </button>
+        <button class="app-tab" role="tab" id="tab-android" aria-controls="android" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2"/><circle cx="12" cy="5.5" r="0.6"/></svg>Android
+        </button>
+        <button class="app-tab" role="tab" id="tab-mac" aria-controls="mac" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>Mac
+        </button>
+        <button class="app-tab" role="tab" id="tab-windows" aria-controls="windows" aria-selected="false">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>Windows
+        </button>
+      </div>
+
+      <!-- iPhone / iPad -->
+      <article class="app-panel" id="iphone" role="tabpanel" aria-labelledby="tab-iphone">
+        <div class="app-panel-head">
+          <h2>iPhone y iPad</h2>
+          <span class="app-browser">Safari</span>
+        </div>
+        <p class="app-panel-intro">Quedará en tu pantalla de inicio, junto al resto de apps.</p>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Safari</strong>.<br>
+            <a class="app-open" href="https://clientes.nomotax.io">Abrir clientes.nomotax.io →</a></li>
+          <li>Pulsa el botón <strong>Compartir</strong> <span class="app-ico"><svg><use href="#i-compartir"/></svg></span>, en la barra de abajo.
+            <small>Si no lo ves, pulsa antes en <span class="app-ico"><svg><use href="#i-horizontal"/></svg></span> abajo a la derecha.</small></li>
+          <li>Desliza hacia abajo y elige <strong>Añadir a pantalla de inicio</strong> <span class="app-ico"><svg><use href="#i-anadir"/></svg></span>.
+            <small>Si no aparece, pulsa «Ver más» al final de la lista.</small></li>
+          <li>Deja activado <strong>Abrir como app web</strong> (si te sale) y pulsa <strong>Añadir</strong>.</li>
+        </ol>
+        <p class="app-tip"><strong>¿Usas Chrome en el iPhone?</strong> También vale: botón Compartir <span class="app-ico"><svg><use href="#i-compartir"/></svg></span> arriba a la derecha → «Añadir a pantalla de inicio».</p>
+      </article>
+
+      <!-- Android -->
+      <article class="app-panel" id="android" role="tabpanel" aria-labelledby="tab-android">
+        <div class="app-panel-head">
+          <h2>Móvil Android</h2>
+          <span class="app-browser">Chrome</span>
+        </div>
+        <p class="app-panel-intro">Quedará en tu pantalla de inicio y en el cajón de aplicaciones.</p>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Chrome</strong>.<br>
+            <a class="app-open" href="https://clientes.nomotax.io">Abrir clientes.nomotax.io →</a></li>
+          <li>Pulsa el menú <span class="app-ico"><svg><use href="#i-vertical"/></svg></span>, arriba a la derecha.</li>
+          <li>Elige <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong>.
+            <small>El nombre cambia según el móvil; cualquiera de los dos sirve.</small></li>
+          <li>Pulsa <strong>Instalar</strong>.</li>
+        </ol>
+        <p class="app-tip"><strong>¿Tienes Samsung y usas Samsung Internet?</strong> Menú <span class="app-ico"><svg><use href="#i-lineas"/></svg></span> abajo a la derecha → «Añadir página a» → «Pantalla de inicio».</p>
+      </article>
+
+      <!-- Mac -->
+      <article class="app-panel" id="mac" role="tabpanel" aria-labelledby="tab-mac">
+        <div class="app-panel-head">
+          <h2>Mac</h2>
+          <span class="app-browser">Safari o Chrome</span>
+        </div>
+        <p class="app-panel-intro">Tendrás el icono en el Dock y en la carpeta Aplicaciones, y se abrirá en su propia ventana.</p>
+
+        <h3>Con Safari</h3>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Safari</strong>.<br>
+            <a class="app-open" href="https://clientes.nomotax.io">Abrir clientes.nomotax.io →</a></li>
+          <li>En la barra de menús de arriba, pulsa <strong>Archivo → Añadir al Dock…</strong>
+            <small>También está en el botón Compartir <span class="app-ico"><svg><use href="#i-compartir"/></svg></span> → «Añadir al Dock».</small></li>
+          <li>Pulsa <strong>Añadir</strong>.</li>
+        </ol>
+
+        <h3>Con Google Chrome</h3>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Chrome</strong>.</li>
+          <li>Pulsa el menú <span class="app-ico"><svg><use href="#i-vertical"/></svg></span> arriba a la derecha → <strong>Enviar, guardar y compartir</strong> → <strong>Instalar página como aplicación…</strong>
+            <small>O pulsa el icono <span class="app-ico"><svg><use href="#i-instalar"/></svg></span> que aparece a la derecha de la barra de direcciones.</small></li>
+          <li>Pulsa <strong>Instalar</strong>.
+            <small>Para dejarla fija: clic derecho en su icono del Dock → Opciones → Mantener en el Dock.</small></li>
+        </ol>
+
+        <p class="app-tip"><strong>¿No te sale «Añadir al Dock» en Safari?</strong> Necesitas macOS Sonoma o posterior. Hazlo con Chrome o actualiza el Mac.</p>
+      </article>
+
+      <!-- Windows -->
+      <article class="app-panel" id="windows" role="tabpanel" aria-labelledby="tab-windows">
+        <div class="app-panel-head">
+          <h2>Ordenador Windows</h2>
+          <span class="app-browser">Edge o Chrome</span>
+        </div>
+        <p class="app-panel-intro">Tendrás el icono en el menú Inicio y, si quieres, en la barra de tareas.</p>
+
+        <h3>Con Microsoft Edge</h3>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Edge</strong>.<br>
+            <a class="app-open" href="https://clientes.nomotax.io">Abrir clientes.nomotax.io →</a></li>
+          <li>Pulsa el menú <span class="app-ico"><svg><use href="#i-horizontal"/></svg></span> arriba a la derecha → <strong>Aplicaciones</strong> → <strong>Instalar este sitio como una aplicación</strong>.</li>
+          <li>Pulsa <strong>Instalar</strong>.
+            <small>Marca «Anclar a la barra de tareas» para tenerla siempre a mano.</small></li>
+        </ol>
+
+        <h3>Con Google Chrome</h3>
+        <ol class="app-steps">
+          <li>Abre el Área de clientes en <strong>Chrome</strong>.</li>
+          <li>Pulsa el menú <span class="app-ico"><svg><use href="#i-vertical"/></svg></span> arriba a la derecha → <strong>Enviar, guardar y compartir</strong> → <strong>Instalar página como aplicación…</strong>
+            <small>O pulsa el icono <span class="app-ico"><svg><use href="#i-instalar"/></svg></span> que aparece a la derecha de la barra de direcciones.</small></li>
+          <li>Pulsa <strong>Instalar</strong>.
+            <small>Para anclarla: clic derecho en su icono de la barra de tareas → «Anclar a la barra de tareas».</small></li>
+        </ol>
+      </article>
+
+      <div class="app-done">
+        <h2>Y listo</h2>
+        <ul>
+          <li>Tendrás el icono de <strong>NomoTax</strong> como cualquier otra app. Se abre en su propia ventana, sin la barra del navegador.</li>
+          <li>La primera vez puede pedirte <strong>iniciar sesión de nuevo</strong> con tu usuario y contraseña. Es normal.</li>
+          <li>Siempre está al día: no hay actualizaciones que descargar.</li>
+        </ul>
+      </div>
+
+      <p class="app-help">¿Te has atascado? Escríbenos por <a href="https://wa.me/34642757633" target="_blank" rel="noopener noreferrer">WhatsApp</a> o a <a href="mailto:info@nomotax.io">info@nomotax.io</a> y te ayudamos.</p>
+    </div>
+  </section>
+
+  <script>
+    // Pestañas por dispositivo: abre la del dispositivo del cliente (o la del #enlace).
+    // Sin JavaScript se ven las cuatro guías seguidas.
+    (function () {
+      var caja = document.getElementById('instalar');
+      var tabs = [].slice.call(caja.querySelectorAll('.app-tab'));
+      var ids = tabs.map(function (t) { return t.getAttribute('aria-controls'); });
+
+      function detectar() {
+        var ua = navigator.userAgent;
+        if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'iphone';
+        if (/Android/.test(ua)) return 'android';
+        if (/Windows/.test(ua)) return 'windows';
+        if (/Macintosh/.test(ua)) return 'mac';
+        return 'iphone';
+      }
+
+      function mostrar(id, foco) {
+        tabs.forEach(function (t) {
+          var activa = t.getAttribute('aria-controls') === id;
+          t.setAttribute('aria-selected', activa ? 'true' : 'false');
+          t.tabIndex = activa ? 0 : -1;
+          document.getElementById(t.getAttribute('aria-controls')).hidden = !activa;
+          if (activa && foco) t.focus();
+        });
+      }
+
+      caja.classList.add('js-tabs');
+      tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () {
+          var id = t.getAttribute('aria-controls');
+          mostrar(id);
+          history.replaceState(null, '', '#' + id);
+        });
+        t.addEventListener('keydown', function (e) {
+          var paso = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (!paso) return;
+          var id = ids[(i + paso + ids.length) % ids.length];
+          mostrar(id, true);
+          history.replaceState(null, '', '#' + id);
+        });
+      });
+
+      var pedido = location.hash.slice(1);
+      mostrar(ids.indexOf(pedido) >= 0 ? pedido : detectar());
+      window.addEventListener('hashchange', function () {
+        var id = location.hash.slice(1);
+        if (ids.indexOf(id) >= 0) mostrar(id);
+      });
+    })();
+  </script>
+
+  <footer class="site-footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a href="./" class="footer-logo" aria-label="NomoTax — inicio">
+          <img src="img/logo.png" alt="NomoTax" class="logo-mark" onerror="this.style.display='none'" />
+          <span class="logo-text">Nomo<span class="accent">Tax</span></span>
+        </a>
+        <p class="footer-desc">Despacho especializado en fiscalidad internacional para empresarios y autónomos.</p>
+        <div class="footer-social" aria-hidden="true"></div>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <h4 class="footer-heading">Navegación</h4>
+        <ul>
+          <li><a href="nacional">Fiscalidad en España</a></li>
+          <li><a href="internacional">Fiscalidad internacional</a></li>
+          <li><a href="asesoria-fiscal-mercantil-laboral">Gestoría</a></li>
+          <li><a href="consultoria">Consultoría</a></li>
+        </ul>
+      </nav>
+      <div class="footer-legal">
+        <h4 class="footer-heading">Legal</h4>
+        <ul>
+          <li><a href="aviso-legal">Aviso legal</a></li>
+          <li><a href="privacidad">Privacidad</a></li>
+          <li><a href="cookies">Cookies</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4 class="footer-heading">Contacto</h4>
+        <ul>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 4 12 13 22 4"/></svg></span>
+            <a href="mailto:info@nomotax.io">info@nomotax.io</a>
+          </li>
+          <li class="footer-contact-item">
+            <span class="footer-contact-icon footer-wa-icon"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
+            <a href="https://wa.me/34642757633" target="_blank" rel="noopener noreferrer">+34 642 75 76 33</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copyright">&copy; 2026 NomoTax &mdash; Todos los derechos reservados</span>
+      <span class="footer-tagline">Fiscalidad sin fronteras.</span>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/34642757633" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span class="whatsapp-tooltip">¿Tienes dudas? Escríbenos</span>
+  </a>
+
+  <script src="js/main.js?v=20260927l"></script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+/* =============================================
+   INSTALAR LA APP — nomotax.io/instalar-app
+   =============================================
+   Guía para poner el Área de clientes como app en
+   iPhone, Android, Mac y Windows. Usa la cabecera de
+   legal.css (.legal-hero) y style.css.
+   ============================================= */
+
+.app-hero-sub {
+  max-width: 560px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.app-body {
+  padding: 48px 0 96px;
+  background: #f7f7f5;
+}
+
+.app-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Selector de dispositivo ── */
+
+.app-tabs {
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 28px;
+  padding: 6px;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.js-tabs .app-tabs {
+  display: grid;
+}
+
+.app-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.app-tab svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-tab:hover {
+  background: #f2f2ee;
+  color: #111110;
+}
+
+.app-tab[aria-selected="true"] {
+  background: #111110;
+  color: #CDF564;
+}
+
+/* ── Paneles ── */
+
+.app-panel {
+  margin-bottom: 28px;
+  padding: 30px 28px;
+  border: 1px solid rgba(17, 17, 16, 0.08);
+  border-radius: 18px;
+  background: #fff;
+  scroll-margin-top: 100px;
+}
+
+.js-tabs .app-panel[hidden] {
+  display: none;
+}
+
+.app-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.app-panel h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111110;
+}
+
+.app-browser {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #efefeb;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #555;
+}
+
+.app-panel-intro {
+  margin-bottom: 22px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #777;
+}
+
+.app-panel h3 {
+  margin: 30px 0 14px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(17, 17, 16, 0.07);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #111110;
+}
+
+.app-panel h3:first-of-type {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Pasos numerados */
+.app-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+.app-steps li {
+  position: relative;
+  min-height: 28px;
+  padding-left: 44px;
+  font-size: 0.97rem;
+  line-height: 1.6;
+  color: #333;
+  counter-increment: paso;
+}
+
+.app-steps li::before {
+  content: counter(paso);
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #CDF564;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 28px;
+  text-align: center;
+  color: #111110;
+}
+
+.app-steps strong {
+  color: #111110;
+  font-weight: 700;
+}
+
+.app-steps small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Icono del navegador dentro del texto (compartir, ⋮, ⋯) */
+.app-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin: 0 2px;
+  border: 1px solid rgba(17, 17, 16, 0.14);
+  border-radius: 7px;
+  background: #f7f7f5;
+  vertical-align: -7px;
+}
+
+.app-ico svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #111110;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-ico svg .lleno {
+  fill: #111110;
+  stroke: none;
+}
+
+.app-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #111110;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  transition: transform 0.2s;
+}
+
+.app-open:hover {
+  transform: translateY(-1px);
+}
+
+.app-tip {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f7f7f5;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.app-tip strong {
+  color: #111110;
+}
+
+/* ── Después de instalar / ayuda ── */
+
+.app-done {
+  margin-bottom: 28px;
+  padding: 28px;
+  border-radius: 18px;
+  background: #111110;
+  color: #fff;
+}
+
+.app-done h2 {
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #CDF564;
+}
+
+.app-done ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-done li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.app-done li::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #CDF564;
+}
+
+.app-done strong {
+  color: #fff;
+}
+
+.app-help {
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: #555;
+}
+
+.app-help a {
+  color: #111110;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #B3E04D;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .app-body {
+    padding-top: 28px;
+  }
+
+  .app-inner {
+    padding: 0 16px;
+  }
+
+  .app-tabs {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .app-tab {
+    padding: 10px 2px;
+    font-size: 0.8rem;
+  }
+
+  .app-panel {
+    padding: 24px 18px;
+  }
+
+  .app-done {
+    padding: 24px 20px;
+  }
+}
