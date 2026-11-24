@@ -374,19 +374,13 @@ out(`-- =====================================================================
 -- CUENTA DEMO: «NomoTax Demo, S.L.» (datos ficticios para enseñar a clientes)
 -- Generado con: node scripts/demo-nomotax.mjs  (no editar a mano)
 --
--- Convierte la cuenta de pruebas en la empresa demo y la llena con 2026
+-- Crea la empresa demo (cliente demo@nomotax.io, sale en el panel del asesor) y la llena con 2026
 -- hasta noviembre: ${facturas.length} facturas (${ventas.toLocaleString('es-ES')}€ sin IVA), ${gastos.length} gastos,
 -- 6 inmovilizados con amortización, 5 trabajadores con ${nominas.length} nóminas, presupuestos,
 -- impuestos (303, 111, 115, 202, 200, informativas), documentos y apertura.
 --
--- Qué cuenta usa: la que tenga «prueba» en el nombre o en el email (o que ya
--- sea la demo). Si hay más de una o ninguna, se para sin tocar nada: entonces
--- escribe el email de la cuenta en email_cuenta, aquí abajo.
--- Nunca toca info@nomotax.io (la que emite las facturas reales de NomoTax).
---
--- OJO: BORRA todo lo que tenga esa cuenta (facturas, gastos, trabajadores,
--- nóminas, impuestos…) y lo sustituye por los datos demo. Los usuarios con
--- acceso y el email de entrada no se tocan. Se puede volver a ejecutar.
+-- Solo toca la cuenta demo (es_demo): ninguna otra cuenta cambia.
+-- Se puede volver a ejecutar: vacía la demo y la vuelve a llenar.
 --
 -- Extractos del banco: después, sube los CSV de test-data/demo-extractos/
 -- en Contabilidad → Bancos (CaixaBank).
@@ -402,7 +396,6 @@ alter table public.trabajadores add column if not exists vacaciones_nota text;
 
 do $$
 declare
-  email_cuenta text := null;   -- p. ej. 'pruebas@nomotax.io' si no la encuentra sola
   o uuid;
   n int;
   x uuid;
@@ -410,20 +403,23 @@ declare
   ${[...CLIENTES.map((c) => C[c.k].v), ...TRAB.map((t) => t.v)].map((v) => `${v} uuid;`).join(' ')}
   marca jsonb := '{"carga":"demo-nomotax"}';
 begin
-  if email_cuenta is not null then
-    select count(*), min(id::text)::uuid into n, o from public.profiles where lower(email) = lower(email_cuenta);
-  else
-    select count(*), min(id::text)::uuid into n, o from public.profiles
-     where coalesce(es_demo, false)
-        or nombre ilike '%prueba%' or nombre_comercial ilike '%prueba%' or email ilike '%prueba%';
+  -- La empresa demo es una cuenta propia (demo@nomotax.io) que sale en el panel del asesor.
+  -- Si ya existe (es_demo), se reutiliza; si no, se crea. No toca ninguna otra cuenta.
+  select id into o from public.profiles where coalesce(es_demo, false) order by created_at limit 1;
+  if o is null then
+    o := 'de300000-0000-4000-8000-000000000001';
+    if not exists (select 1 from auth.users where id = o) then
+      insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+        raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+        confirmation_token, recovery_token, email_change_token_new, email_change)
+      values (o, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'demo@nomotax.io', '', now(),
+        '{"provider":"email","providers":["email"]}', ${q(JSON.stringify({ nombre: EMPRESA.nombre }))}, now(), now(), '', '', '', '');
+    end if;
+    insert into public.profiles (id, email, nombre) values (o, 'demo@nomotax.io', ${q(EMPRESA.nombre)}) on conflict (id) do nothing;
+    update public.profiles set es_demo = true where id = o;
   end if;
-  if n <> 1 then
-    raise exception 'Se esperaba 1 cuenta de pruebas y hay %: %. Escribe su email en email_cuenta.', n,
-      (select string_agg(coalesce(nombre, '-') || ' <' || coalesce(email, '-') || '>', ', ') from public.profiles
-        where coalesce(es_demo, false) or nombre ilike '%prueba%' or nombre_comercial ilike '%prueba%' or email ilike '%prueba%');
-  end if;
-  if (select lower(coalesce(email, '')) = 'info@nomotax.io' or role = 'advisor' from public.profiles where id = o) then
-    raise exception 'Esa cuenta es la emisora de NomoTax o la del asesor: no se convierte en demo';
+  if (select lower(coalesce(email, '')) = 'info@nomotax.io' or role <> 'client' from public.profiles where id = o) then
+    raise exception 'La cuenta demo no puede ser la emisora de NomoTax ni la del asesor';
   end if;
 
   -- ---------------------------------------------------------- Borrar lo que había
