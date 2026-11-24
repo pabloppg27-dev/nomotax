@@ -171,7 +171,7 @@ export default function Layout() {
   return (
     <div className="min-h-dvh lg:flex">
       {/* Barra lateral (escritorio) */}
-      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-ink px-4 py-6 text-white lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto overscroll-contain bg-ink px-4 py-6 text-white [scrollbar-color:rgb(255_255_255/0.2)_transparent] [scrollbar-width:thin] lg:flex">
         <div className="px-2">
           <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
             <Logo dark />
@@ -355,7 +355,7 @@ export default function Layout() {
         {mas && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]" onClick={() => setMas(false)} />
-            <div className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl">
+            <div className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-white px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl">
               <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
               <div className="mb-3 flex items-center justify-between px-1">
                 <p className="font-semibold">Más opciones</p>
