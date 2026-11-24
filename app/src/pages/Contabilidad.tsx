@@ -23,6 +23,7 @@ import {
 import { XLSX, cargarDatosContables, descargar } from '../lib/datosContables.ts'
 import NumInput from '../components/NumInput'
 import PeriodPicker from '../components/PeriodPicker'
+import SelectBuscable from '../components/SelectBuscable'
 import { ExtractosVista, SubirExtracto } from '../components/Bancos'
 import type { ExtractoBancario } from '../lib/bancos'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, Select, confirmar, cx, notify } from '../components/ui'
@@ -396,13 +397,12 @@ function Mayor({ calc }: { calc: Calc }) {
   return (
     <>
       <Field label="Cuenta" className="mb-4 max-w-xl">
-        <Select value={cuenta} onChange={(e) => setCuenta(e.target.value)}>
-          {cuentas.map((c) => (
-            <option key={c.cuenta} value={c.cuenta}>
-              {c.cuenta} · {c.nombre}
-            </option>
-          ))}
-        </Select>
+        <SelectBuscable
+          value={cuenta}
+          onChange={setCuenta}
+          opciones={cuentas.map((c) => ({ value: c.cuenta, label: `${c.cuenta} · ${c.nombre}` }))}
+          buscarPlaceholder="Buscar por número o nombre de cuenta…"
+        />
       </Field>
       <Card className="overflow-x-auto">
         <table className="num w-full min-w-[680px] text-left text-sm">

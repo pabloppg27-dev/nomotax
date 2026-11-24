@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase'
 import { direccionCompleta } from '../lib/format'
 import type { ClienteSnapshot, Contact } from '../lib/types'
 import ContactForm from './ContactForm'
-import { Button, Select } from './ui'
+import SelectBuscable from './SelectBuscable'
+import { Button } from './ui'
 
 export default function ContactPicker({
   ownerId,
@@ -37,23 +38,17 @@ export default function ContactPicker({
     <div>
       {!disabled && (
         <div className="flex gap-2">
-          <Select
+          <SelectBuscable
             value={contactId ?? ''}
-            onChange={(e) => {
-              const c = contactos.find((x) => x.id === e.target.value)
+            onChange={(id) => {
+              const c = contactos.find((x) => x.id === id)
               if (c) onPick(c)
             }}
-          >
-            <option value="" disabled>
-              {contactos.length ? 'Elige un cliente…' : 'Aún no tienes clientes'}
-            </option>
-            {contactos.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-                {c.nif ? ` · ${c.nif}` : ''}
-              </option>
-            ))}
-          </Select>
+            opciones={contactos.map((c) => ({ value: c.id, label: c.nombre, detalle: c.nif ?? undefined, buscar: [c.email, c.ciudad].filter(Boolean).join(' ') }))}
+            placeholder={contactos.length ? 'Elige un cliente…' : 'Aún no tienes clientes'}
+            buscarPlaceholder="Buscar por nombre, NIF, email o ciudad…"
+            sinResultados="Ningún cliente coincide: créalo con «Nuevo»"
+          />
           <Button type="button" variant="secondary" icon={<Plus className="size-4" />} onClick={() => setNuevo(true)}>
             Nuevo
           </Button>

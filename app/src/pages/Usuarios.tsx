@@ -4,8 +4,9 @@ import { useAuth } from '../lib/auth'
 import { errorMessage, invocar, supabase } from '../lib/supabase'
 import { MODULOS, NOMBRE_ROL, PERMISOS_ADMIN_DEFECTO, ROLES, ajustarPermisos } from '../lib/permisos'
 import type { Miembro, Modulo, RolMiembro } from '../lib/types'
-import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, confirmar, cx, notify } from '../components/ui'
+import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, confirmar, cx, notify } from '../components/ui'
 import TarjetasUsuario from '../components/TarjetasUsuario'
+import SelectBuscable from '../components/SelectBuscable'
 import { useTarjetasDisponibles } from '../lib/tarjetasAcceso'
 
 type Trabajador = { id: string; nombre: string; estado: string }
@@ -520,14 +521,15 @@ function EditorAcceso({
               : 'No hay trabajadores dados de alta en Laboral: no verá nóminas ni documentos de trabajador.'
           }
         >
-          <Select value={b.trabajador_id} onChange={(e) => setB({ ...b, trabajador_id: e.target.value })}>
-            <option value="">{b.rol === 'empleado' ? 'Sin vincular' : 'No, solo con su rol'}</option>
-            {trabajadores.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nombre}
-              </option>
-            ))}
-          </Select>
+          <SelectBuscable
+            value={b.trabajador_id}
+            onChange={(v) => setB({ ...b, trabajador_id: v })}
+            opciones={[
+              { value: '', label: b.rol === 'empleado' ? 'Sin vincular' : 'No, solo con su rol' },
+              ...trabajadores.map((t) => ({ value: t.id, label: t.nombre })),
+            ]}
+            buscarPlaceholder="Buscar trabajador…"
+          />
         </Field>
 
         {b.trabajador_id && (

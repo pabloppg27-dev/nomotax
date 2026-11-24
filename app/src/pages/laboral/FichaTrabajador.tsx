@@ -19,6 +19,7 @@ import type {
   Trabajador,
 } from '../../lib/types'
 import MonthlyChart from '../../components/MonthlyChart'
+import SelectBuscable from '../../components/SelectBuscable'
 import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, confirmar, notify } from '../../components/ui'
 
 /** En la cuenta demo: quien tiene puesto de comercial entra como comercial; el resto, como empleado */
@@ -383,15 +384,19 @@ function PanelAsesor({
           </Select>
         </Field>
         <Field label="Categoría (convenio)" className="sm:col-span-2">
-          <Select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}>
-            <option value="">{categorias.length ? 'Sin asignar' : 'Añade categorías en la pestaña Empresa'}</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-                {c.salario_min_mensual ? ` · mín. ${eur(c.salario_min_mensual)}` : ''}
-              </option>
-            ))}
-          </Select>
+          <SelectBuscable
+            value={categoriaId}
+            onChange={setCategoriaId}
+            opciones={[
+              { value: '', label: categorias.length ? 'Sin asignar' : 'Añade categorías en la pestaña Empresa' },
+              ...categorias.map((c) => ({
+                value: c.id,
+                label: c.nombre ?? '',
+                detalle: c.salario_min_mensual ? `mín. ${eur(c.salario_min_mensual)}` : undefined,
+              })),
+            ]}
+            buscarPlaceholder="Buscar categoría…"
+          />
           {check && (
             <span className={`mt-1.5 block text-sm ${check.ok ? 'text-verde' : 'text-rojo'}`}>
               {check.ok

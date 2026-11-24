@@ -10,7 +10,8 @@ import { aEuros, columnasDivisa, importeMoneda } from '../lib/divisas'
 import { CUENTA_CATEGORIA, TIPOS_INMOVILIZADO, necesitaRevision, type Inmovilizado } from '../lib/contabilidad.ts'
 import DocPreview from './DocPreview'
 import NumInput from './NumInput'
-import { Button, Field, Input, Modal, Select, confirmar, notify } from './ui'
+import SelectBuscable from './SelectBuscable'
+import { Button, Field, Input, Modal, confirmar, notify } from './ui'
 
 type Form = Pick<
   Expense,
@@ -293,13 +294,12 @@ export default function ExpenseReview({
               <Input type="date" value={form.fecha ?? ''} onChange={(e) => cambiarFecha(e.target.value || null)} />
             </Field>
             <Field label="Categoría">
-              <Select value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>
-                {CATEGORIAS.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </Select>
+              <SelectBuscable
+                value={form.categoria ?? ''}
+                onChange={(v) => set('categoria', v)}
+                opciones={CATEGORIAS.map((c) => ({ value: c.id, label: c.nombre }))}
+                buscarPlaceholder="Buscar categoría…"
+              />
             </Field>
             <Field label="Concepto" className="sm:col-span-2">
               <Input value={form.concepto ?? ''} onChange={(e) => set('concepto', e.target.value)} />
@@ -410,19 +410,15 @@ export default function ExpenseReview({
                     <Input value={dec.nombre} onChange={(e) => setDec({ ...dec, nombre: e.target.value })} placeholder="Ej.: MacBook Pro 14" />
                   </Field>
                   <Field label="Tipo de bien" className="sm:col-span-2">
-                    <Select
+                    <SelectBuscable
                       value={dec.clase}
-                      onChange={(e) => {
-                        const c = TIPOS_INMOVILIZADO.find((t) => t.id === e.target.value)!
+                      onChange={(v) => {
+                        const c = TIPOS_INMOVILIZADO.find((t) => t.id === v)!
                         setDec({ ...dec, clase: c.id, coeficiente: c.coeficiente })
                       }}
-                    >
-                      {TIPOS_INMOVILIZADO.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.nombre} · {t.cuenta}
-                        </option>
-                      ))}
-                    </Select>
+                      opciones={TIPOS_INMOVILIZADO.map((t) => ({ value: t.id, label: t.nombre, detalle: t.cuenta }))}
+                      buscarPlaceholder="Buscar tipo de bien o cuenta…"
+                    />
                   </Field>
                   <Field label="Coeficiente anual %">
                     <NumInput className="text-right" value={dec.coeficiente} onValue={(n) => setDec({ ...dec, coeficiente: n })} />

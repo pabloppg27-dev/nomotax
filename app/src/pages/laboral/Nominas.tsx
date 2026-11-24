@@ -7,6 +7,7 @@ import { nuevoId } from '../../lib/id'
 import { MESES, limpiarDni } from '../../lib/laboral'
 import type { Nomina, NominaOcr, Trabajador } from '../../lib/types'
 import NumInput from '../../components/NumInput'
+import SelectBuscable from '../../components/SelectBuscable'
 import UploadZone from '../../components/UploadZone'
 import { Badge, Button, Card, Empty, Field, Loading, Modal, Select, confirmar, notify } from '../../components/ui'
 import LaboralTabs from './LaboralTabs'
@@ -438,18 +439,14 @@ function SubirNominas({
                     {n.ocr?.notas && <p className="mb-2 text-sm text-ink/70">{n.ocr.notas}</p>}
                     <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
                       <Field label="Trabajador" className="sm:col-span-3 lg:col-span-2">
-                        <Select
+                        <SelectBuscable
                           value={n.trabajador_id ?? ''}
                           className={!n.trabajador_id ? '!border-ambar' : ''}
-                          onChange={(e) => guardarNomina(f.key, n, { trabajador_id: e.target.value || null })}
-                        >
-                          <option value="">Elige trabajador…</option>
-                          {trabajadores.map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.nombre}
-                            </option>
-                          ))}
-                        </Select>
+                          onChange={(v) => guardarNomina(f.key, n, { trabajador_id: v || null })}
+                          opciones={trabajadores.map((t) => ({ value: t.id, label: t.nombre, detalle: t.dni ?? undefined }))}
+                          placeholder="Elige trabajador…"
+                          buscarPlaceholder="Buscar por nombre o DNI…"
+                        />
                       </Field>
                       <Field label="Bruto">
                         <NumInput className="text-right" value={Number(n.bruto)} onValue={(v) => guardarNomina(f.key, n, { bruto: v })} />

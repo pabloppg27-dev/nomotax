@@ -11,7 +11,8 @@ import {
   provinciaDe,
   provinciaPorCp,
 } from '../lib/paises'
-import { Field, Input, Select, cx } from './ui'
+import SelectBuscable from './SelectBuscable'
+import { Field, Input, cx } from './ui'
 
 /**
  * Campo de dirección con sugerencias: al elegir una, `onElegir` recibe calle, CP, ciudad, provincia y país.
@@ -172,23 +173,27 @@ export function SelectPais({ value, onChange }: { value: string | null | undefin
   const codigo = codigoPais(value)
   const desconocido = !codigo && value?.trim() ? value.trim() : null
   const todos = listaPaises()
+  const opcion = (c: string, nombre: string) => ({ value: c, label: nombre, buscar: c })
   return (
-    <Select value={codigo ?? (desconocido ? '__otro' : '')} onChange={(e) => e.target.value !== '__otro' && onChange(e.target.value ? nombrePais(e.target.value) : '')}>
-      <option value="">—</option>
-      {desconocido && <option value="__otro">{desconocido}</option>}
-      {PAISES_ARRIBA.map((c) => (
-        <option key={`arriba-${c}`} value={c}>
-          {nombrePais(c)}
-        </option>
-      ))}
-      <option disabled>──────────</option>
-      {todos.map((p) => (
-        <option key={p.codigo} value={p.codigo}>
-          {p.nombre}
-        </option>
-      ))}
-    </Select>
+    <SelectBuscable
+      value={codigo ?? (desconocido ? '__otro' : '')}
+      onChange={(v) => v !== '__otro' && onChange(v ? nombrePais(v) : '')}
+      destacadas={[
+        { value: '', label: '—' },
+        ...(desconocido ? [{ value: '__otro', label: desconocido }] : []),
+        ...PAISES_ARRIBA.map((c) => opcion(c, nombrePais(c))),
+      ]}
+      opciones={todos.map((p) => opcion(p.codigo, p.nombre))}
+      buscarPlaceholder="Buscar país…"
+    />
   )
+}
+
+/** Para encontrar la provincia también por su otro nombre */
+const OTROS_NOMBRES: Record<string, string> = {
+  Álava: 'Araba', Alicante: 'Alacant', Castellón: 'Castelló', 'Illes Balears': 'Baleares Islas', 'A Coruña': 'La Coruña',
+  Gipuzkoa: 'Guipúzcoa', Bizkaia: 'Vizcaya', Girona: 'Gerona', Lleida: 'Lérida', Ourense: 'Orense', Valencia: 'València',
+  'Santa Cruz de Tenerife': 'Tenerife Canarias', 'Las Palmas': 'Gran Canaria Canarias',
 }
 
 /** Provincia: desplegable si es España; texto libre en el resto de países */
@@ -205,15 +210,16 @@ export function CampoProvincia({
   const conocida = provinciaDe(value)
   const otra = !conocida && value?.trim() ? value.trim() : null
   return (
-    <Select value={conocida ?? otra ?? ''} onChange={(e) => onChange(e.target.value)}>
-      <option value="">—</option>
-      {otra && <option value={otra}>{otra}</option>}
-      {PROVINCIAS_ORDENADAS.map((p) => (
-        <option key={p} value={p}>
-          {p}
-        </option>
-      ))}
-    </Select>
+    <SelectBuscable
+      value={conocida ?? otra ?? ''}
+      onChange={onChange}
+      opciones={[
+        { value: '', label: '—' },
+        ...(otra ? [{ value: otra, label: otra }] : []),
+        ...PROVINCIAS_ORDENADAS.map((p) => ({ value: p, label: p, buscar: OTROS_NOMBRES[p] })),
+      ]}
+      buscarPlaceholder="Buscar provincia…"
+    />
   )
 }
 
