@@ -123,8 +123,12 @@ Deno.serve(async (req) => {
   if (!rol || !ROLES.includes(rol)) return json({ error: "Elige un rol" }, 400);
   if (!(await puedeGestionar(cuenta))) return json({ error: "No puedes gestionar los usuarios de esta empresa" }, 403);
 
-  const { data: existente } = await admin.from("profiles").select("id, role").eq("email", email).maybeSingle();
-  if (existente?.id === cuenta) return json({ error: "Ese email es el del titular de la empresa: ya tiene acceso a todo" }, 400);
+  // La persona con ese login (las cuentas vinculadas llevan el email de su titular, pero no son una persona)
+  const { data: conEmail } = await admin.from("profiles").select("*").eq("email", email);
+  const existente = (conEmail ?? []).find((p) => !p.titular_id) ?? null;
+  if (existente?.id === cuenta || (conEmail ?? []).some((p) => p.id === cuenta)) {
+    return json({ error: "Ese email es el del titular de la empresa: ya tiene acceso a todo" }, 400);
+  }
   if (existente?.role === "advisor") return json({ error: "Ese email es el del asesor: ya tiene acceso a todo" }, 400);
   if (existente) {
     const { data: ya } = await admin.from("miembros").select("id").eq("cuenta_id", cuenta).eq("user_id", existente.id).maybeSingle();

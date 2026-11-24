@@ -37,6 +37,8 @@ export interface Profile {
   /** Cuenta de demostración (supabase/carga-demo-nomotax.sql): permite «ver como el trabajador» */
   es_demo?: boolean | null
   nif: string | null
+  /** Cuenta vinculada (supabase/cuentas-titular.sql): de quién es; esa persona entra con su email y es su titular */
+  titular_id?: string | null
   direccion: string | null
   cp: string | null
   ciudad: string | null

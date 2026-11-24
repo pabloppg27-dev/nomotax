@@ -372,7 +372,7 @@ export function ComparadorPlanes({
 
 /** Todos los planes (sociedades y autónomos), la comparativa y el botón de solicitar cambio */
 export function TablaPlanes({ planId, tuPrecio }: { planId: string | null; tuPrecio?: string }) {
-  const { isAdvisor, rol } = useAuth()
+  const { isAdvisor, rol, ownerId } = useAuth()
   const actual = planPorId(planId)
   const [familia, setFamilia] = useState<Familia>(actual?.familia ?? 'empresa')
   const [enviando, setEnviando] = useState<PlanId | null>(null)
@@ -384,7 +384,7 @@ export function TablaPlanes({ planId, tuPrecio }: { planId: string | null; tuPre
 
   const solicitar = async (p: Plan) => {
     setEnviando(p.id)
-    const { error } = await supabase.functions.invoke('solicitar-plan', { body: { plan: p.id } })
+    const { error } = await supabase.functions.invoke('solicitar-plan', { body: { plan: p.id, cuenta: ownerId } })
     setEnviando(null)
     if (error) return notify(await errorMessage(error), 'error')
     setSolicitado(p.id)

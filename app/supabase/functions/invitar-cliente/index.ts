@@ -1,6 +1,8 @@
 // Da de alta a un cliente nuevo. Solo lo puede usar el asesor.
 // Entrada (POST JSON): { email, nombre?, nif?, bienvenida? }  → alta nueva
 //                      { reenviar: <id del cliente> }          → contraseña nueva + correo de bienvenida
+//                      { titular: <id del cliente>, nombre, nif? } → otra empresa o actividad del mismo cliente
+//                        (cuenta vinculada sin login propio: entra con el email del titular; supabase/cuentas-titular.sql)
 // Devuelve una contraseña provisional para entregar al cliente
 // (luego la cambia en "Mi perfil").
 
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
   const { data: me } = await asUser.from("profiles").select("role").eq("id", userData.user.id).single();
   if (me?.role !== "advisor") return json({ error: "Solo el asesor puede dar de alta clientes" }, 403);
 
-  let body: { email?: string; nombre?: string; nif?: string; bienvenida?: boolean; reenviar?: string };
+  let body: { email?: string; nombre?: string; nif?: string; bienvenida?: boolean; reenviar?: string; titular?: string };
   try {
     body = await req.json();
   } catch {
@@ -88,8 +90,11 @@ Deno.serve(async (req) => {
   // Reenviar el acceso a un cliente que ya existe: contraseña nueva + correo de bienvenida
   if (body.reenviar) {
     const admin = createClient(url, claveSecreta(), { auth: { autoRefreshToken: false, persistSession: false } });
-    const { data: perfil } = await admin.from("profiles").select("id, email, nombre, role").eq("id", body.reenviar).single();
+    const { data: perfil } = await admin.from("profiles").select("*").eq("id", body.reenviar).single();
     if (!perfil?.email || perfil.role !== "client") return json({ error: "Cliente no encontrado" }, 404);
+    if (perfil.titular_id) {
+      return json({ error: "Esta cuenta no tiene acceso propio: se entra con el email de su titular. Reenvía el acceso al titular." }, 400);
+    }
     const nueva = passwordProvisional();
     const { error: e1 } = await admin.auth.admin.updateUserById(perfil.id, { password: nueva });
     if (e1) return json({ error: "No se ha podido cambiar la contraseña" }, 500);
@@ -97,6 +102,39 @@ Deno.serve(async (req) => {
     if (r === "enviada") await admin.from("profiles").update({ bienvenida_enviada_at: new Date().toISOString() }).eq("id", perfil.id);
     return json({ id: perfil.id, email: perfil.email, password: nueva, bienvenida: r });
   }
+  // Otra empresa o actividad de un cliente que ya existe (autónomo + SL, varias SL…):
+  // una cuenta vinculada, con sus propios datos y contabilidad, a la que se entra con el email del titular.
+  // Por dentro es un usuario con un email técnico que no recibe nada y sin contraseña.
+  if (body.titular) {
+    const admin = createClient(url, claveSecreta(), { auth: { autoRefreshToken: false, persistSession: false } });
+    const nombre = body.nombre?.trim();
+    if (!nombre) return json({ error: "Falta el nombre de la empresa o actividad" }, 400);
+    const { data: titular } = await admin.from("profiles").select("*").eq("id", body.titular).single();
+    if (!titular || titular.role !== "client") return json({ error: "Cliente no encontrado" }, 404);
+    if (!("titular_id" in titular)) return json({ error: "Falta ejecutar supabase/cuentas-titular.sql en Supabase" }, 500);
+    if (titular.titular_id) return json({ error: "Esa cuenta ya es una cuenta vinculada: añade la empresa a su titular" }, 400);
+
+    const tecnico = `empresa-${crypto.randomUUID()}@sin-acceso.nomotax.io`;
+    const { data: creada, error } = await admin.auth.admin.createUser({
+      email: tecnico,
+      email_confirm: true,
+      user_metadata: { nombre, cuenta_vinculada: true },
+    });
+    if (error || !creada.user) return json({ error: "No se ha podido crear la cuenta" }, 500);
+
+    const { error: e2 } = await admin.from("profiles").update({
+      nombre,
+      nif: body.nif?.toUpperCase().replace(/[\s.-]/g, "") || null,
+      email: titular.email,
+      titular_id: titular.id,
+    }).eq("id", creada.user.id);
+    if (e2) {
+      await admin.auth.admin.deleteUser(creada.user.id);
+      return json({ error: `No se ha podido vincular la cuenta: ${e2.message}` }, 500);
+    }
+    return json({ id: creada.user.id, email: titular.email, titular: titular.id, vinculada: true });
+  }
+
   const email = body.email?.trim().toLowerCase();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Email no válido" }, 400);
 

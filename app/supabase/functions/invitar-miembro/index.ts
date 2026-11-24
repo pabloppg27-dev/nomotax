@@ -311,7 +311,7 @@ const PLANTILLAS = [
 			asunto: "Presupuesto {numero} · {empresa}",
 			mensaje: "Estimado cliente:\n\nLe enviamos el presupuesto {numero} por un importe de {total}, válido hasta el {validez}. Encontrará el PDF adjunto.\n\nQuedamos a su disposición para cualquier consulta."
 		},
-		enUso: false
+		enUso: true
 	}
 ];
 const plantillaDe = (tipo) => PLANTILLAS.find((p) => p.tipo === tipo);
@@ -334,15 +334,34 @@ const ETIQUETA = {
 	nomina: "NÓMINA",
 	presupuesto: "PRESUPUESTO"
 };
+/** Textos fijos del correo de presupuestos en cada idioma (accesos y nóminas, siempre en español) */
+const FRASES = {
+	es: {
+		etiqueta: "PRESUPUESTO",
+		titulo: (e) => `Presupuesto de ${e}`,
+		total: "Total",
+		valido: (f) => `Válido hasta el ${f}`,
+		dudas: "Si tienes cualquier duda, responde a este correo o escríbenos a:",
+		enviado: "Enviado con"
+	},
+	en: {
+		etiqueta: "QUOTE",
+		titulo: (e) => `Quote from ${e}`,
+		total: "Total",
+		valido: (f) => `Valid until ${f}`,
+		dudas: "If you have any questions, reply to this email or write to us at:",
+		enviado: "Sent with"
+	}
+};
 /** Cuadro de resumen de cada tipo (accesos, datos de la nómina o del presupuesto) */
-function cuadro(tipo, v, color) {
+function cuadro(tipo, v, color, F = FRASES.es) {
 	const etiqueta = (t) => `<span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${t}</span><br>`;
 	let dentro = "";
 	if (tipo === "acceso") {
 		const clave = v.contrasena ? `Contraseña provisional: <strong style="font-family:Menlo,Consolas,monospace;font-size:16px;background:${color};color:${textoSobre(color)};padding:2px 6px;border-radius:6px">${esc(v.contrasena)}</strong>` : "Contraseña: <strong>la que ya usas en NomoTax</strong><br><span style=\"color:#6b6b66\">Arriba, en la barra lateral, podrás elegir la empresa.</span>";
 		dentro = `${etiqueta("TUS ACCESOS")}Usuario: <strong>${esc(v.usuario ?? "")}</strong><br>${clave}`;
 	} else if (tipo === "nomina") dentro = `${etiqueta("NÓMINA")}<strong style="font-size:17px">${esc(v.mes ?? "")}</strong><br><span style="color:#6b6b66">📎 ${esc(v.archivo ?? "")}</span>`;
-	else dentro = `${etiqueta("PRESUPUESTO")}<strong style="font-size:17px">${esc(v.numero ?? "")}</strong> · <span style="color:#6b6b66">${esc(v.fecha ?? "")}</span><br>Total: <strong style="font-family:Menlo,Consolas,monospace;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(v.total ?? "")}</strong><br><span style="color:#6b6b66">Válido hasta el ${esc(v.validez ?? "")} · 📎 ${esc(v.archivo ?? "")}</span>`;
+	else dentro = `${etiqueta(F.etiqueta)}<strong style="font-size:17px">${esc(v.numero ?? "")}</strong> · <span style="color:#6b6b66">${esc(v.fecha ?? "")}</span><br>${F.total}: <strong style="font-family:Menlo,Consolas,monospace;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(v.total ?? "")}</strong><br><span style="color:#6b6b66">${esc(F.valido(v.validez ?? ""))} · 📎 ${esc(v.archivo ?? "")}</span>`;
 	return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px;margin-top:8px"><tr><td style="padding:18px 20px;font:15px/1.7 ${FONT};color:#111110">${dentro}</td></tr></table>`;
 }
 const TITULO = {
@@ -356,6 +375,9 @@ function htmlCorreoPlantilla(tipo, mensaje, v, diseno) {
 	const cabecera = colorValido(diseno.cabecera, NEGRO_CORREO);
 	const colorBoton = colorValido(diseno.boton, NEGRO_CORREO);
 	const acento = acentoSobre(color, cabecera);
+	const F = FRASES[tipo === "presupuesto" && diseno.lengua === "en" ? "en" : "es"];
+	const etiqueta = tipo === "presupuesto" ? F.etiqueta : ETIQUETA[tipo];
+	const titulo = tipo === "presupuesto" ? F.titulo(v.empresa ?? "") : TITULO[tipo](v);
 	const parrafos = mensaje.trim().split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 	const logo = diseno.logo ? `<td style="padding-right:14px" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#ffffff;border-radius:10px;padding:6px 8px"><img src="${esc(diseno.logo)}" alt="" height="32" style="display:block;height:32px;width:auto;max-width:150px;border:0"></td></tr></table></td>` : "";
 	const contacto = [diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : "", diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ""))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : ""].filter(Boolean).join(" &nbsp;·&nbsp; ");
@@ -367,38 +389,39 @@ function htmlCorreoPlantilla(tipo, mensaje, v, diseno) {
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       ${logo}
       <td valign="middle" style="font:600 18px/1.3 ${FONT};color:${textoSobre(cabecera)}">${esc(diseno.empresa)}<br>
-        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${ETIQUETA[tipo]}</span></td>
+        <span style="font:500 11px ${FONT};letter-spacing:2px;color:${acento}">${etiqueta}</span></td>
     </tr></table>
   </td></tr>
   <tr><td style="height:4px;line-height:4px;font-size:0;background:${color}">&nbsp;</td></tr>
   <tr><td style="padding:30px 32px 8px 32px;font:15px/1.6 ${FONT};color:#111110">
-    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(TITULO[tipo](v))}</h1>
+    <h1 style="margin:0 0 18px 0;font:600 24px/1.25 ${FONT};color:#111110">${esc(titulo)}</h1>
     ${parrafos}
-    ${cuadro(tipo, v, color)}
+    ${cuadro(tipo, v, color, F)}
     ${boton}
     <p style="margin:0 0 22px 0"></p>
   </td></tr>
   <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT};color:#111110;border-top:1px solid #efefea">
-    ${contacto ? `<p style="margin:18px 0 4px 0">Si tienes cualquier duda, responde a este correo o escríbenos a:</p>${contacto}` : ""}
+    ${contacto ? `<p style="margin:18px 0 4px 0">${F.dudas}</p>${contacto}` : ""}
     <p style="margin:18px 0 0 0"><strong>${esc(diseno.empresa)}</strong></p>
   </td></tr>
 </table>
-<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">Enviado con NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviado} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
 </td></tr></table></body></html>`;
 }
 /** Versión en texto plano */
 function textoCorreoPlantilla(tipo, mensaje, v, diseno) {
+	const F = FRASES[tipo === "presupuesto" && diseno.lengua === "en" ? "en" : "es"];
 	const extra = tipo === "acceso" ? [
 		`Entra en: ${APP_URL}`,
 		`Usuario: ${v.usuario ?? ""}`,
 		v.contrasena ? `Contraseña provisional: ${v.contrasena}` : "Contraseña: la que ya usas en NomoTax."
 	] : tipo === "nomina" ? [`Nómina: ${v.mes ?? ""}`, `Adjunto: ${v.archivo ?? ""}`] : [
-		`Presupuesto ${v.numero ?? ""} · ${v.fecha ?? ""}`,
-		`Total: ${v.total ?? ""}`,
-		`Válido hasta el ${v.validez ?? ""}`
+		`${F.etiqueta.charAt(0) + F.etiqueta.slice(1).toLowerCase()} ${v.numero ?? ""} · ${v.fecha ?? ""}`,
+		`${F.total}: ${v.total ?? ""}`,
+		F.valido(v.validez ?? "")
 	];
 	return [
-		TITULO[tipo](v),
+		tipo === "presupuesto" ? F.titulo(v.empresa ?? "") : TITULO[tipo](v),
 		"",
 		mensaje.trim(),
 		"",
@@ -407,7 +430,7 @@ function textoCorreoPlantilla(tipo, mensaje, v, diseno) {
 		[diseno.respuesta, diseno.telefono].filter(Boolean).join(" · "),
 		diseno.empresa,
 		"",
-		"— Enviado con NomoTax · nomotax.io"
+		`— ${F.enviado} NomoTax · nomotax.io`
 	].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
 }
 // supabase/functions/invitar-miembro/fuente.ts
@@ -513,8 +536,9 @@ Deno.serve(async (req) => {
 	if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Email no válido" }, 400);
 	if (!rol || !ROLES.includes(rol)) return json({ error: "Elige un rol" }, 400);
 	if (!await puedeGestionar(cuenta)) return json({ error: "No puedes gestionar los usuarios de esta empresa" }, 403);
-	const { data: existente } = await admin.from("profiles").select("id, role").eq("email", email).maybeSingle();
-	if (existente?.id === cuenta) return json({ error: "Ese email es el del titular de la empresa: ya tiene acceso a todo" }, 400);
+	const { data: conEmail } = await admin.from("profiles").select("*").eq("email", email);
+	const existente = (conEmail ?? []).find((p) => !p.titular_id) ?? null;
+	if (existente?.id === cuenta || (conEmail ?? []).some((p) => p.id === cuenta)) return json({ error: "Ese email es el del titular de la empresa: ya tiene acceso a todo" }, 400);
 	if (existente?.role === "advisor") return json({ error: "Ese email es el del asesor: ya tiene acceso a todo" }, 400);
 	if (existente) {
 		const { data: ya } = await admin.from("miembros").select("id").eq("cuenta_id", cuenta).eq("user_id", existente.id).maybeSingle();

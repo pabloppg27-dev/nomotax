@@ -21,7 +21,7 @@ create role authenticated;
 await db.exec(prelude)
 
 const files = ['schema', 'laboral', 'rectificativas', 'asesor', 'contabilidad', 'divisas', 'bienvenida', 'impuestos', 'bancos',
-  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios', 'trabajador-cualquier-rol', 'trabajador-cualquier-rol', 'fichajes', 'fichajes']
+  'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'usuarios', 'trabajador-cualquier-rol', 'trabajador-cualquier-rol', 'fichajes', 'fichajes', 'cuentas-titular', 'cuentas-titular']
 for (const f of files) {
   let sql = readFileSync(`${DIR}/${f}.sql`, 'utf8').replace(/create extension[^;]*;/i, '')
   try {
@@ -31,7 +31,7 @@ for (const f of files) {
     process.exit(1)
   }
 }
-console.log('✓ SQL aplicado (usuarios.sql y trabajador-cualquier-rol.sql, dos veces cada uno)')
+console.log('✓ SQL aplicado (usuarios.sql, trabajador-cualquier-rol.sql y cuentas-titular.sql, dos veces cada uno)')
 
 await db.exec(`
 grant usage on schema public, storage, auth to authenticated;
@@ -228,6 +228,41 @@ ok(String(await intenta(`update public.fichajes set estado = 'rechazado' where o
 ok((await como(U.E, () => n(`select 1 from public.fichajes`))) === 2, 'fichaje: el empleado ve sus fichajes')
 ok((await como(U.S, () => n(`select 1 from public.fichajes`))) === 0, 'fichaje: el socio no los ve')
 ok(String(await intenta(`delete from public.trabajadores where id = '${W1}'`)).startsWith('error'), 'fichaje: no se borra un trabajador con fichajes')
+
+// ---- Cuentas del mismo titular (cuentas-titular.sql): J entra con su email y tiene además la cuenta L (su SL), sin login
+const J = '00000000-0000-0000-0000-000000000020', L = '00000000-0000-0000-0000-000000000021'
+await db.query(`insert into auth.users (id, email) values ($1, 'j@x.es'), ($2, 'empresa-l@sin-acceso.nomotax.io')`, [J, L])
+ok(String(await como(J, () => intenta(`update public.profiles set titular_id = '${J}' where id = '${L}'`))) !== '1' &&
+   (await n(`select 1 from public.profiles where id = '${L}' and titular_id is not null`)) === 0, 'cuenta vinculada: el cliente NO se vincula cuentas él solo')
+ok(String(await como(J, () => intenta(`update public.profiles set titular_id = '${U.T}' where id = '${J}'`))).startsWith('error'), 'cuenta vinculada: el cliente no puede colgar su cuenta de otro')
+ok(bien(await como(U.ADV, () => intenta(`update public.profiles set titular_id = '${J}', email = 'j@x.es', nombre = 'L SL' where id = '${L}'`))), 'cuenta vinculada: el asesor la vincula')
+ok(String(await como(U.ADV, () => intenta(`update public.profiles set titular_id = '${L}' where id = '${U.T2}'`))).startsWith('error'), 'cuenta vinculada: no se puede colgar de otra cuenta vinculada')
+ok(String(await como(U.ADV, () => intenta(`update public.profiles set titular_id = '${U.T}' where id = '${J}'`))).startsWith('error'), 'cuenta vinculada: quien ya es titular de otras no cuelga de nadie')
+ok(String(await como(U.ADV, () => intenta(`update public.profiles set titular_id = '${U.A}' where id = '${U.T2}'`))).startsWith('error'), 'cuenta vinculada: el titular tiene que ser un cliente (no un «member»)')
+await db.exec(`
+insert into public.invoices (owner_id, estado, fecha, base, total) values ('${L}', 'emitida', '2026-10-01', 1000, 1210);
+insert into public.expenses (owner_id, estado, fecha, base, total, file_path) values ('${L}', 'revisado', '2026-10-01', 10, 12.1, '${L}/gastos/l.pdf');
+insert into public.impuestos (owner_id, modelo, anio, periodo, importe) values ('${L}', '303', 2026, '3T', 210);
+insert into storage.objects (bucket_id, name) values ('documentos', '${L}/gastos/l.pdf'), ('documentos', '${L}/otra-carpeta/x.pdf');
+`)
+ok((await como(J, () => db.query(`select public.mi_rol('${L}') r`))).rows[0].r === 'titular', 'cuenta vinculada: J es «titular» de L')
+ok((await como(J, () => db.query(`select public.mi_rol('${J}') r`))).rows[0].r === 'titular', 'cuenta vinculada: J sigue siendo titular de la suya')
+ok((await como(J, () => n(`select 1 from public.invoices where owner_id = '${L}'`))) === 1, 'cuenta vinculada: J ve las facturas de L')
+ok((await como(J, () => n(`select 1 from public.expenses where owner_id = '${L}'`))) === 1, 'cuenta vinculada: J ve los gastos de L')
+ok((await como(J, () => n(`select 1 from public.impuestos where owner_id = '${L}'`))) === 1, 'cuenta vinculada: J ve los impuestos de L')
+ok((await como(J, () => n(`select 1 from public.profiles where id = '${L}'`))) === 1, 'cuenta vinculada: J ve el perfil de L (para el selector)')
+ok(bien(await como(J, () => intenta(`insert into public.invoices (owner_id, estado, fecha, base, total) values ('${L}', 'emitida', '2026-11-01', 500, 605)`))), 'cuenta vinculada: J emite facturas en L')
+ok((await como(J, () => intenta(`update public.profiles set direccion = 'C/ Nueva' where id = '${L}'`))) === 1, 'cuenta vinculada: J cambia los datos de L')
+ok((await como(J, () => n(`select 1 from storage.objects where name like '${L}/%'`))) === 2, 'cuenta vinculada: J ve todos los archivos de L')
+ok((await como(J, () => n(`select 1 from public.invoices where owner_id = '${U.T}'`))) === 0, 'cuenta vinculada: J no ve otras empresas')
+ok((await como(U.T, () => n(`select 1 from public.invoices where owner_id = '${L}'`))) === 0, 'cuenta vinculada: otro cliente no ve L')
+ok((await como(U.X, () => n(`select 1 from public.profiles where id = '${L}'`))) === 0, 'cuenta vinculada: alguien de fuera no ve L')
+ok((await como(U.ADV, () => n(`select 1 from public.invoices where owner_id = '${L}'`))) === 2, 'cuenta vinculada: el asesor ve L como cualquier cliente')
+ok(String(await intenta(`insert into public.miembros (cuenta_id, user_id, email, rol) values ('${L}', '${J}', 'j@x.es', 'admin')`)).startsWith('error'), 'cuenta vinculada: el titular no se añade como usuario de su propia cuenta')
+ok(bien(await intenta(`insert into public.miembros (cuenta_id, user_id, email, rol) values ('${L}', '${U.S}', 's@x.es', 'socio')`)), 'cuenta vinculada: L puede tener sus propios usuarios')
+ok((await como(J, () => n(`select 1 from public.miembros where cuenta_id = '${L}'`))) === 1, 'cuenta vinculada: J gestiona los usuarios de L')
+ok(bien(await como(U.ADV, () => intenta(`update public.profiles set titular_id = null where id = '${L}'`))) &&
+   (await como(J, () => n(`select 1 from public.invoices where owner_id = '${L}'`))) === 0, 'cuenta vinculada: al desvincularla, J deja de verla')
 
 console.log(fallos ? `\n${fallos} FALLO(S)` : '\nTodo OK')
 process.exit(fallos ? 1 : 0)

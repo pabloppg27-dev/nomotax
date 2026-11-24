@@ -11,6 +11,9 @@ export interface Acceso extends Miembro {
   empresa: Pick<Profile, 'id' | 'nombre' | 'email'> & { nombre_comercial?: string | null }
 }
 
+/** Otra cuenta del mismo titular (supabase/cuentas-titular.sql): su SL, su actividad de autónomo… Entra con su email y es titular */
+export type CuentaPropia = Pick<Profile, 'id' | 'nombre' | 'email' | 'nif'> & { nombre_comercial?: string | null }
+
 interface AuthState {
   session: Session | null
   loading: boolean
@@ -24,6 +27,8 @@ interface AuthState {
   viewingOther: boolean
   /** Empresas en las que eres miembro */
   accesos: Acceso[]
+  /** Tus otras cuentas (vinculadas a ti como titular): autónomo + SL, varias SL… */
+  propias: CuentaPropia[]
   /** Tu acceso en la empresa que estás viendo (si entras como miembro) */
   miembro: Acceso | null
   /** Qué eres en la empresa que estás viendo */
@@ -60,6 +65,17 @@ async function loadAccesos(userId: string): Promise<Acceso[]> {
   return (data as Miembro[])
     .map((m) => ({ ...m, empresa: porId.get(m.cuenta_id) ?? { id: m.cuenta_id, nombre: null, email: null } }))
     .sort((a, b) => (a.empresa.nombre ?? '').localeCompare(b.empresa.nombre ?? ''))
+}
+
+/** Cuentas vinculadas de las que eres titular. Si aún no existe la columna (falta cuentas-titular.sql), ninguna. */
+async function loadPropias(userId: string): Promise<CuentaPropia[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, nombre, nombre_comercial, email, nif')
+    .eq('titular_id', userId)
+    .order('nombre')
+  if (error || !data) return []
+  return data as CuentaPropia[]
 }
 
 function readStoredOwner(): string | null {
@@ -135,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<Profile | null>(null)
   const [other, setOther] = useState<Profile | null>(null)
   const [accesos, setAccesos] = useState<Acceso[]>([])
+  const [propias, setPropias] = useState<CuentaPropia[]>([])
   const [loading, setLoading] = useState(true)
 
   const hydrate = useCallback(async (s: Session | null) => {
@@ -143,17 +160,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setMe(null)
       setOther(null)
       setAccesos([])
+      setPropias([])
       setLoading(false)
       return
     }
     const profile = await loadProfile(s.user.id)
     setMe(profile)
     const lista = profile && profile.role !== 'advisor' ? await loadAccesos(profile.id) : []
+    const mias = profile?.role === 'client' ? await loadPropias(profile.id) : []
     setAccesos(lista)
+    setPropias(mias)
     const stored = readStoredOwner()
     if (profile?.role === 'advisor' && stored && stored !== profile.id) {
       setOther(await loadProfile(stored))
-    } else if (stored && lista.some((a) => a.cuenta_id === stored)) {
+    } else if (stored && (lista.some((a) => a.cuenta_id === stored) || mias.some((c) => c.id === stored))) {
       setOther(await loadProfile(stored))
     } else if (profile?.role === 'member' && lista.length) {
       // Quien no tiene empresa propia entra directamente en la primera a la que tiene acceso
@@ -193,11 +213,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setOther(null)
         return
       }
-      if (me.role !== 'advisor' && !accesos.some((a) => a.cuenta_id === id)) return
+      if (me.role !== 'advisor' && !accesos.some((a) => a.cuenta_id === id) && !propias.some((c) => c.id === id)) return
       storeOwner(id)
       setOther(await loadProfile(id))
     },
-    [me, accesos],
+    [me, accesos, propias],
   )
 
   const refresh = useCallback(async () => {
@@ -205,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const profile = await loadProfile(session.user.id)
     setMe(profile)
     if (profile && profile.role !== 'advisor') setAccesos(await loadAccesos(profile.id))
+    if (profile?.role === 'client') setPropias(await loadPropias(profile.id))
     if (other) setOther(await loadProfile(other.id))
   }, [session, other])
 
@@ -217,10 +238,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthState>(() => {
     const owner = other ?? me
     const isAdvisor = me?.role === 'advisor'
-    let miembro = other && !isAdvisor ? accesos.find((a) => a.cuenta_id === other.id) ?? null : null
+    // Una cuenta vinculada tuya: eres su titular, como en la tuya (aunque además tengas un acceso de miembro)
+    const esPropia = Boolean(other && !isAdvisor && propias.some((c) => c.id === other.id))
+    let miembro = other && !isAdvisor && !esPropia ? accesos.find((a) => a.cuenta_id === other.id) ?? null : null
     let rol: RolEnCuenta | null = null
     if (owner && me) {
       if (owner.id === me.id) rol = me.role === 'member' ? null : 'titular'
+      else if (esPropia) rol = 'titular'
       else if (isAdvisor) rol = 'asesor'
       else rol = miembro?.rol ?? null
     }
@@ -254,6 +278,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ownerId: owner?.id ?? null,
       viewingOther: isAdvisor && Boolean(other),
       accesos,
+      propias,
       miembro,
       rol,
       puede: (p: Permiso) => puedeRol(rol, miembro?.permisos, p),
@@ -266,7 +291,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refresh,
       signOut,
     }
-  }, [session, loading, me, other, accesos, verComo, verComoTrabajador, setOwner, refresh, signOut])
+  }, [session, loading, me, other, accesos, propias, verComo, verComoTrabajador, setOwner, refresh, signOut])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

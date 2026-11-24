@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckCircle2, Copy, Plus, Search, Send, Sparkles, Users } from 'lucide-react'
+import { ArrowRight, Building2, CheckCircle2, Copy, Link2, Plus, Search, Send, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha } from '../lib/format'
@@ -22,6 +22,7 @@ export default function Asesor() {
   const [q, setQ] = useState('')
   const [alta, setAlta] = useState(false)
   const [reenviar, setReenviar] = useState<Fila | null>(null)
+  const [otraCuenta, setOtraCuenta] = useState<Fila | null>(null)
   const [editarPlan, setEditarPlan] = useState<Fila | null>(null)
   const [pendientes, setPendientes] = useState<Pendiente[]>([])
   const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
@@ -66,10 +67,20 @@ export default function Asesor() {
     cargar()
   }, [cargar])
 
+  // Cada cliente seguido de sus cuentas vinculadas (supabase/cuentas-titular.sql: su SL, su actividad de autónomo…)
   const visibles = useMemo(() => {
     const t = q.trim().toLowerCase()
-    return (filas ?? []).filter((c) => !t || [c.nombre, c.email, c.nif].some((v) => v?.toLowerCase().includes(t)))
+    const todas = filas ?? []
+    const titularDe = (c: Fila) => (c.titular_id ? todas.find((x) => x.id === c.titular_id) : undefined)
+    const encaja = (c: Fila) => !t || [c.nombre, c.email, c.nif, titularDe(c)?.nombre].some((v) => v?.toLowerCase().includes(t))
+    const principales = todas.filter((c) => !c.titular_id || !titularDe(c))
+    return principales.flatMap((c) => [c, ...todas.filter((x) => x.titular_id === c.id)]).filter(encaja)
   }, [filas, q])
+
+  const nombreTitular = (c: Fila) => {
+    const t = filas?.find((x) => x.id === c.titular_id)
+    return t?.nombre || t?.email || 'su titular'
+  }
 
   const entrar = async (id: string) => {
     await setOwner(id)
@@ -243,8 +254,9 @@ export default function Asesor() {
                     onClick={() => entrar(c.id)}
                     className="grid cursor-pointer grid-cols-[1fr_auto] gap-x-3 border-b border-line px-4 py-3 last:border-0 hover:bg-paper md:table-row md:p-0"
                   >
-                    <td className="min-w-0 md:px-4 md:py-3">
+                    <td className={`min-w-0 md:px-4 md:py-3 ${c.titular_id ? 'md:pl-10' : ''}`}>
                       <p className="flex min-w-0 items-center gap-2">
+                        {c.titular_id && <Link2 className="size-4 shrink-0 text-muted" />}
                         <span className="truncate font-medium">{c.nombre || 'Sin nombre'}</span>
                         {cuotaCliente(c) && <Badge tono="lima">{cuotaCliente(c)!.plan.nombre}</Badge>}
                       </p>
@@ -253,16 +265,32 @@ export default function Asesor() {
                         {c.bienvenida_enviada_at && (
                           <span className="text-verde">Bienvenida enviada el {fecha(c.bienvenida_enviada_at.slice(0, 10))}</span>
                         )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setReenviar(c)
-                          }}
-                          className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
-                        >
-                          <Send className="size-3" /> Reenviar acceso
-                        </button>
+                        {c.titular_id ? (
+                          <span className="text-muted">Cuenta de {nombreTitular(c)}: entra con su email</span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setReenviar(c)
+                              }}
+                              className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
+                            >
+                              <Send className="size-3" /> Reenviar acceso
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setOtraCuenta(c)
+                              }}
+                              className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
+                            >
+                              <Building2 className="size-3" /> Otra empresa o actividad
+                            </button>
+                          </>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -308,6 +336,7 @@ export default function Asesor() {
 
       <AltaCliente open={alta} onClose={() => setAlta(false)} onCreated={cargar} />
       <ReenviarAcceso cliente={reenviar} onClose={() => setReenviar(null)} onDone={cargar} />
+      <OtraCuenta titular={otraCuenta} onClose={() => setOtraCuenta(null)} onCreated={cargar} />
       <EditorPlan perfil={editarPlan} onClose={() => setEditarPlan(null)} onGuardado={cargar} />
     </>
   )
@@ -403,6 +432,86 @@ function AltaCliente({ open, onClose, onCreated }: { open: boolean; onClose: () 
 }
 
 type Acceso = { email: string; password: string; bienvenida: 'no' | 'enviada' | 'error' }
+
+/**
+ * Otra empresa o actividad del mismo cliente (autónomo + SL, varias SL…): una cuenta con sus propios datos,
+ * facturas y contabilidad, a la que entra con SU email y cambia desde el selector de arriba.
+ * Sin email ni contraseña propios (supabase/cuentas-titular.sql, función invitar-cliente con { titular }).
+ */
+function OtraCuenta({ titular, onClose, onCreated }: { titular: Profile | null; onClose: () => void; onCreated: () => void }) {
+  const [nombre, setNombre] = useState('')
+  const [nif, setNif] = useState('')
+  const [plan, setPlan] = useState('')
+  const [enviando, setEnviando] = useState(false)
+
+  const cerrar = () => {
+    setNombre('')
+    setNif('')
+    setPlan('')
+    onClose()
+  }
+
+  const crear = async (e?: FormEvent) => {
+    e?.preventDefault()
+    if (!titular) return
+    setEnviando(true)
+    const { data, error } = await supabase.functions.invoke('invitar-cliente', { body: { titular: titular.id, nombre, nif } })
+    if (error) {
+      setEnviando(false)
+      return notify(await errorMessage(error), 'error')
+    }
+    if (!data?.vinculada) {
+      setEnviando(false)
+      return notify('La función invitar-cliente no está actualizada: publica la versión con «titular».', 'error')
+    }
+    if (plan) {
+      const { error: ePlan } = await supabase.from('profiles').update({ plan }).eq('id', data.id)
+      if (ePlan) notify(`Cuenta creada, pero sin plan: ${await errorMessage(ePlan)}`, 'error')
+    }
+    setEnviando(false)
+    notify(`${nombre} creada. ${titular.nombre || titular.email} ya la ve en su selector de cuentas.`)
+    onCreated()
+    cerrar()
+  }
+
+  const quien = titular?.nombre || titular?.email || 'el cliente'
+  return (
+    <Modal
+      open={Boolean(titular)}
+      onClose={cerrar}
+      title="Otra empresa o actividad"
+      footer={
+        <>
+          <Button variant="secondary" onClick={cerrar}>
+            Cancelar
+          </Button>
+          <Button onClick={() => crear()} loading={enviando} disabled={!nombre.trim()}>
+            Crear cuenta
+          </Button>
+        </>
+      }
+    >
+      <form onSubmit={crear} className="space-y-4">
+        <p className="text-[15px] text-muted">
+          Una cuenta más para <strong className="text-ink">{quien}</strong>, con sus propios datos, facturas y contabilidad. Entra con su
+          email de siempre{titular?.email ? ` (${titular.email})` : ''} y cambia de cuenta desde el selector de arriba. No hace falta otro email.
+        </p>
+        <Field label="Nombre o razón social">
+          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Strobo Films, S.L.U." autoFocus />
+        </Field>
+        <Field label="NIF / CIF" hint="Si aún no lo tiene (sociedad en constitución), déjalo vacío y ponlo después en su perfil.">
+          <Input value={nif} onChange={(e) => setNif(e.target.value)} />
+        </Field>
+        <Field label="Plan">
+          <Select value={plan} onChange={(e) => setPlan(e.target.value)}>
+            <OpcionesPlan />
+          </Select>
+        </Field>
+        <button type="submit" hidden />
+      </form>
+    </Modal>
+  )
+}
 
 function MensajeAcceso({ resultado, nombre, aviso }: { resultado: Acceso; nombre: string; aviso: string }) {
   const mensaje =

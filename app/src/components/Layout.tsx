@@ -81,14 +81,18 @@ const nombreDe = (p: Pick<Profile, 'nombre' | 'email'> & { nombre_comercial?: st
 
 /** Para quien tiene acceso a varias empresas (la suya y/o las de otros): elegir cuál ver */
 function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
-  const { me, owner, accesos, setOwner, rol } = useAuth()
+  const { me, owner, accesos, propias, setOwner, rol } = useAuth()
   const navigate = useNavigate()
   if (!me || !owner || me.role === 'advisor') return null
   const propia = me.role !== 'member'
-  if (accesos.length === 0) return null
+  if (accesos.length === 0 && propias.length === 0) return null
+  // Tus cuentas (la tuya y las vinculadas: autónomo + SL…) y luego las empresas en las que eres miembro
   const opciones: { id: string; texto: string }[] = [
     ...(propia ? [{ id: me.id, texto: `${nombreDe(me)} · Tu cuenta` }] : []),
-    ...accesos.map((a: Acceso) => ({ id: a.cuenta_id, texto: `${nombreDe(a.empresa)} · ${NOMBRE_ROL[a.rol]}` })),
+    ...propias.map((c) => ({ id: c.id, texto: `${nombreDe(c)} · Tu cuenta` })),
+    ...accesos
+      .filter((a: Acceso) => !propias.some((c) => c.id === a.cuenta_id))
+      .map((a: Acceso) => ({ id: a.cuenta_id, texto: `${nombreDe(a.empresa)} · ${NOMBRE_ROL[a.rol]}` })),
   ]
   if (opciones.length < 2)
     return (

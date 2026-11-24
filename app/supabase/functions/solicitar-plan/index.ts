@@ -1,5 +1,7 @@
 // Un cliente pide cambiar de plan desde el comparador del Área de clientes.
-// Entrada (POST JSON): { plan: 'empresa_max' | ... }
+// Entrada (POST JSON): { plan: 'empresa_max' | ..., cuenta?: <id> }
+//   cuenta: la cuenta para la que se pide (por defecto la propia). Si es otra, tiene que ser
+//   una cuenta vinculada de quien lo pide (supabase/cuentas-titular.sql: mi_rol = 'titular').
 // Envía un correo a pablo@nomotax.io desde info@nomotax.io (SMTP de Hostinger, secreto SMTP_PASSWORD).
 // No cambia el plan: eso lo hace el asesor desde el perfil del cliente.
 
@@ -59,7 +61,7 @@ Deno.serve(async (req) => {
   const { data: userData } = await asUser.auth.getUser(authHeader.replace(/^Bearer\s+/i, ""));
   if (!userData?.user) return json({ error: "Sesión no válida" }, 401);
 
-  let body: { plan?: string };
+  let body: { plan?: string; cuenta?: string };
   try {
     body = await req.json();
   } catch {
@@ -68,10 +70,17 @@ Deno.serve(async (req) => {
   const nuevo = body.plan ?? "";
   if (!PLANES[nuevo]) return json({ error: "Plan no válido" }, 400);
 
+  // Para otra cuenta (una vinculada del mismo titular): solo si eres su titular
+  const cuenta = body.cuenta && body.cuenta !== userData.user.id ? body.cuenta : userData.user.id;
+  if (cuenta !== userData.user.id) {
+    const { data: rol } = await asUser.rpc("mi_rol", { cuenta });
+    if (rol !== "titular") return json({ error: "Solo el titular de la cuenta puede pedir un cambio de plan" }, 403);
+  }
+
   const { data: perfil } = await asUser
     .from("profiles")
     .select("nombre, nif, email, telefono, plan")
-    .eq("id", userData.user.id)
+    .eq("id", cuenta)
     .single();
   if (!perfil) return json({ error: "Perfil no encontrado" }, 404);
   if (perfil.plan === nuevo) return json({ error: "Ya tienes ese plan" }, 400);
