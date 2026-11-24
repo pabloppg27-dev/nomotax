@@ -7,6 +7,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { generarPdfs } from './demo-pdfs.mjs'
 
 const APP = join(dirname(fileURLToPath(import.meta.url)), '..')
 const HOY = '2026-11-24'
@@ -367,6 +368,43 @@ console.log(`Resultado aprox. (sin amortizaciones): ${r2(ventas - gastosCorr - p
 console.log(`Banco: saldo final ${saldo}€ · mínimo ${minSaldo}€ · ${mov.length} movimientos`)
 console.log('303:', repercutido.map((x, i) => r2(x - soportado[i])), '· 111:', ret111, '· 115:', ret115)
 
+// ------------------------------------------------------------------ fichas de los trabajadores
+const CCC = '08123456789'
+// Usuarios de los trabajadores (entran con su email; aquí solo para la demo, sin contraseña)
+TRAB.forEach((w, i) => {
+  w.user = `de300000-0000-4000-8000-0000000001${pad(i + 1)}`
+  const [nom, ap] = w.nombre.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(' ')
+  w.email = `${nom}.${ap}@nomotaxdemo.example`
+  w.rol = w.comision ? 'comercial' : 'empleado'
+})
+// Certificados de retenciones de años anteriores (los da la empresa en enero para la renta)
+const certificados = []
+for (const w of TRAB) {
+  for (const [anio, subida, menosIrpf, ssPct] of [[2024, 1.06, 2, 6.45], [2025, 1.03, 1, 6.47]]) {
+    const ini = w.inicio > `${anio}-01-01` ? w.inicio : `${anio}-01-01`
+    if (ini > `${anio}-12-31`) continue
+    const dias = (Date.parse(`${anio}-12-31`) - Date.parse(ini)) / 864e5 + 1
+    const parte = dias / (anio % 4 ? 365 : 366)
+    const integro = r2(Math.round(w.bruto / subida / 10) * 10 * 14 * parte + (w.comision ? 5200 * parte : 0))
+    const pct = w.irpf - menosIrpf
+    certificados.push({ t: w, anio, integro, retencion: r2((integro * pct) / 100), ss: r2((integro * ssPct) / 100), pct })
+  }
+}
+// Tickets que han subido los trabajadores (pendientes de revisar: no entran aún en la contabilidad)
+const TICKETS = [
+  ['t4', '2026-11-05', '13:42', 'Restaurant El Racó del Port (ejemplo)', cif('B', 8, 40211), 'Moll de la Fusta 3, Barcelona', 'viajes', 'Comida con cliente: Costa Brava Homes', 10, [['Menú degustación x2', 78], ['Vino', 24], ['Cafés x2', 4]]],
+  ['t4', '2026-11-12', '19:05', 'Taxi licencia 0451 (ejemplo)', dni(46789012), 'Área Metropolitana de Barcelona', 'viajes', 'Taxi vuelta de reunión en Sant Cugat', 10, [['Trayecto Sant Cugat - Barcelona', 38.5]]],
+  ['t4', '2026-11-19', '08:10', 'Trens del Litoral (ejemplo)', cif('A', 8, 51870), 'Estació Central, Barcelona', 'viajes', 'Tren a Girona: visita a Costa Brava Homes', 10, [['Billete ida y vuelta', 32.4]]],
+  ['t2', '2026-11-07', '18:30', 'Parking Centre Gràcia (ejemplo)', cif('B', 8, 62044), 'Passeig de Gràcia 60, Barcelona', 'vehiculo', 'Parking visita a Logística Ebro Norte', 21, [['Estancia 3h 12min', 11.9]]],
+  ['t3', '2026-11-14', '11:20', 'Tecnoshop Catalunya (ejemplo)', cif('B', 8, 77301), 'Ronda de Sant Pere 12, Barcelona', 'material', 'Ratón y alfombrilla para teletrabajo', 21, [['Ratón inalámbrico', 34.99], ['Alfombrilla ergonómica', 14.99]]],
+  ['t1', '2026-11-20', '14:15', 'Restaurante Jardí Eixample (ejemplo)', cif('B', 8, 81590), 'Carrer de Mallorca 230, Barcelona', 'viajes', 'Comida de kick-off con Grupo Hotelero', 10, [['Menú ejecutivo x3', 87], ['Bebidas', 18.5]]],
+].map(([v, fecha, hora, proveedor, nif, direccion, categoria, concepto, iva, lineas], i) => {
+  const total = r2(lineas.reduce((s, [, x]) => s + x, 0))
+  const base = r2(total / (1 + iva / 100))
+  return { id: `ticket-${i + 1}`, w: TRAB.find((x) => x.v === v), fecha, hora, proveedor, nif, direccion, categoria, concepto, iva, lineas, total, base, cuota: r2(total - base), numero: `T${pad(1000 + i * 1371, 4)}` }
+})
+const pdfs = generarPdfs({ APP, EMPRESA, CCC, TRAB, nominas, tickets: TICKETS, certificados })
+
 // ------------------------------------------------------------------ SQL
 const L = []
 const out = (s = '') => L.push(s)
@@ -390,6 +428,11 @@ alter table public.profiles add column if not exists es_demo boolean not null de
 alter table public.profiles add column if not exists nombre_comercial text;
 alter table public.quotes add column if not exists enviado_at timestamptz;
 alter table public.quotes add column if not exists enviado_a text;
+-- Documentos del trabajador con año (certificado de retenciones): igual que laboral-documentos.sql
+alter table public.trabajador_documentos add column if not exists anio int;
+alter table public.trabajador_documentos drop constraint if exists trabajador_documentos_tipo_check;
+alter table public.trabajador_documentos add constraint trabajador_documentos_tipo_check
+  check (tipo in ('dni', 'contrato', 'alta_ss', 'teletrabajo', 'modelo_145', 'certificado_retenciones', 'otro'));
 alter table public.trabajadores add column if not exists irpf_pct numeric(5,2);
 alter table public.trabajadores add column if not exists convenio text;
 alter table public.trabajadores add column if not exists clasificacion text;
@@ -450,7 +493,10 @@ begin
     execute 'delete from public.facturas_plan where invoice_id in (select id from public.invoices where owner_id = $1)' using o;
   end if;
   if to_regclass('public.fichajes') is not null then
+    -- El registro de jornada no se puede borrar desde la app; aquí sí, solo el de la demo
+    execute 'alter table public.fichajes disable trigger fichajes_inalterable_trg';
     execute 'delete from public.fichajes where owner_id = $1' using o;
+    execute 'alter table public.fichajes enable trigger fichajes_inalterable_trg';
   end if;
   if to_regclass('public.solicitudes_irpf') is not null then
     execute 'delete from public.solicitudes_irpf where owner_id = $1' using o;
@@ -458,6 +504,7 @@ begin
   if to_regclass('public.tarjetas') is not null then
     execute 'update public.tarjetas set trabajador_id = null where trabajador_id in (select id from public.trabajadores where owner_id = $1)' using o;
   end if;
+  delete from public.miembros where cuenta_id = o and user_id::text like 'de300000-0000-4000-8000-0000000001%';
   update public.miembros set trabajador_id = null where cuenta_id = o and trabajador_id is not null;
   delete from public.nominas where owner_id = o;
   delete from public.trabajador_documentos where owner_id = o;
@@ -552,11 +599,114 @@ for (const t of TRAB) {
       'indefinido', 'completa', 40, 'L-J 9:00-18:00 · V 8:00-15:00', true, ${t.bruto}, 14, ${t.irpf}, 'Convenio TIC', ${q(t.clas)}, 6, 23, '23 días laborables + 24 y 31 de diciembre')
     returning id into ${t.v};`)
 }
-out('\n  -- Nóminas (sin PDF: al abrirlas, la app avisa de que son de ejemplo)')
+out('\n  -- Nóminas (con PDF de ejemplo en clientes.nomotax.io/demo-docs/)')
 for (const n of nominas) {
   out(`  insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, ${n.t.v}, ${n.anio}, ${n.mes}, '${n.tipo}', 'publicada', '', ${q(n.t.nombre)}, '${n.t.dni}', ${n.bruto}, ${n.neto}, ${n.irpf}, ${n.irpf_pct}, ${n.ss_trabajador}, ${n.ss_empresa}, ${n.variables}, ${n.coste_total}, ${j(n.conceptos)}, '${fechaDe(2026, n.mes, diasMes(2026, n.mes))} 18:00+01', marca);`)
+    (o, ${n.t.v}, ${n.anio}, ${n.mes}, '${n.tipo}', 'publicada', '${pdfs.nomPaths.get(n)}', ${q(n.t.nombre)}, '${n.t.dni}', ${n.bruto}, ${n.neto}, ${n.irpf}, ${n.irpf_pct}, ${n.ss_trabajador}, ${n.ss_empresa}, ${n.variables}, ${n.coste_total}, ${j(n.conceptos)}, '${fechaDe(2026, n.mes, diasMes(2026, n.mes))} 18:00+01', marca);`)
 }
+
+// ------------------------------------------------------------------ SQL: fichas completas de los trabajadores
+const CATS = [
+  ['t1', 'Jefe/a de proyecto (Área 2 · Grupo A · Nivel 1)', 1, 2650],
+  ['t2', 'Analista programador/a (Área 3 · Grupo B · Nivel 1)', 2, 2050],
+  ['t3', 'Programador/a (Área 3 · Grupo C · Nivel 1)', 2, 1650],
+  ['t4', 'Técnico/a comercial (Área 3 · Grupo B · Nivel 2)', 2, 1850],
+  ['t5', 'Técnico/a administrativo/a (Área 4 · Grupo C · Nivel 1)', 5, 1400],
+]
+const NOTAS = {
+  t1: 'Revisión salarial anual en septiembre. Pide reducción de jornada a partir de 2027 (cuidado de menor): preparar anexo.',
+  t2: 'Teletrabajo 2 días/semana. Tiene pendiente aprobar la salida del 13/11 (olvidó fichar).',
+  t3: 'Ha pedido subir el IRPF al 18% desde diciembre: aplicar en la nómina de diciembre.',
+  t4: 'Comisiones: 3% de lo cobrado de su cartera, se pagan el mes siguiente. Revisar objetivos 2027 con la empresa.',
+  t5: 'Periodo de prueba superado el 06/10/2026. Lleva la parte de RR. HH.',
+}
+out('\n  -- ---------------------------------------------------------- Fichas de los trabajadores: categoría y notas del asesor')
+CATS.forEach(([v, nombre, grupo, min], i) => {
+  out(`  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, ${q(nombre)}, ${grupo}, ${min}, ${i + 1}) returning id into x;`)
+  out(`  update public.trabajadores set categoria_id = x, notas_asesor = ${q(NOTAS[v])} where id = ${v};`)
+})
+
+out('\n  -- Documentos del trabajador (PDF de ejemplo en clientes.nomotax.io/demo-docs/)')
+for (const w of TRAB) {
+  for (const d of pdfs.docs[w.v]) {
+    out(`  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, ${w.v}, '${d.tipo}', ${q(d.nombre)}, '${d.path}', ${d.anio ?? 'null'}, o, '${d.fecha} 10:00+01');`)
+  }
+}
+
+out(`
+  -- ---------------------------------------------------------- Usuarios de los trabajadores (sin contraseña: no pueden entrar)
+  -- Salen en Usuarios con su rol: Pau es comercial y el resto empleados.`)
+for (const w of TRAB) {
+  out(`  if not exists (select 1 from auth.users where id = '${w.user}') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('${w.user}', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '${w.email}', '', now(),
+      '{"provider":"email","providers":["email"]}', ${q(JSON.stringify({ nombre: w.nombre }))}, now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('${w.user}', '${w.email}', ${q(w.nombre)}) on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = ${q(w.nombre)} where id = '${w.user}';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, '${w.user}', '${w.email}', ${q(w.nombre)}, '${w.rol}', ${w.v}, o, '${w.inicio} 09:00+01');`)
+}
+out(`  -- Fichan con la app (columna de fichajes.sql)
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'miembros' and column_name = 'fichaje') then
+    execute 'update public.miembros set fichaje = true where cuenta_id = $1 and user_id::text like ''de300000-0000-4000-8000-0000000001%''' using o;
+  end if;`)
+
+out('\n  -- Tickets de gasto subidos por los trabajadores (pendientes de revisar)')
+for (const k of TICKETS) {
+  out(`  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '${k.fecha}', ${q(k.proveedor)}, '${k.nif}', '${k.numero}', ${q(k.concepto)}, '${k.categoria}', ${k.base}, ${k.iva}, ${k.cuota}, ${k.total}, 'pendiente', false, 'gasto', '${k.path}', '${k.w.user}', '${k.fecha} ${k.hora}+01', marca);`)
+}
+
+// Registro de jornada: septiembre a hoy (solo si está fichajes.sql)
+const FESTIVOS = ['2026-09-11', '2026-09-24', '2026-10-12', '2026-11-02']
+const VACACIONES = { t1: ['2026-10-05', '2026-10-09'], t3: ['2026-11-03', '2026-11-06'] }
+const fich = []
+const hm = (h, m) => `${pad(h + Math.floor(m / 60))}:${pad(m % 60)}`
+for (const w of TRAB) {
+  for (let d = w.inicio > '2026-09-01' ? w.inicio : '2026-09-01'; d <= HOY; d = sumarDias(d, 1)) {
+    const dow = new Date(d + 'T12:00:00Z').getUTCDay()
+    if (dow === 0 || dow === 6 || FESTIVOS.includes(d)) continue
+    const vac = VACACIONES[w.v]
+    if (vac && d >= vac[0] && d <= vac[1]) continue
+    const esHoy = d === HOY
+    if (dow === 5) {
+      fich.push([w.v, d, hm(7, 50 + entre(0, 15)), 'entrada'])
+      if (!esHoy) fich.push([w.v, d, hm(15, entre(0, 12)), 'salida'])
+      continue
+    }
+    fich.push([w.v, d, hm(8, 45 + entre(0, 25)), 'entrada'])
+    fich.push([w.v, d, hm(14, entre(0, 10)), 'pausa'], [w.v, d, hm(14, 45 + entre(0, 10)), 'reanudar'])
+    if (esHoy) continue
+    if (w.v === 't2' && d === '2026-11-13') continue // olvidó fichar la salida: ha pedido la corrección
+    fich.push([w.v, d, hm(18, entre(0, 25)), 'salida'])
+  }
+}
+out(`
+  -- ---------------------------------------------------------- Registro de jornada (septiembre a hoy)
+  if to_regclass('public.fichajes') is not null then
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, registrado_por)
+    select o, (array[${TRAB.map((w) => w.v).join(', ')}])[r.t], r.tipo, (r.dia || ' ' || r.hora)::timestamp at time zone 'Europe/Madrid', 'app', 'valido',
+           (array[${TRAB.map((w) => `'${w.user}'::uuid`).join(', ')}])[r.t]
+    from (values
+      ${fich.map(([v, d, h, tipo]) => `(${Number(v.slice(1))}, '${d}', '${h}', '${tipo}')`).join(',\n      ')}
+    ) as r(t, dia, hora, tipo)
+    where (r.dia || ' ' || r.hora)::timestamp at time zone 'Europe/Madrid' <= now()
+    order by r.dia, r.hora;
+    -- Correcciones: Javier olvidó fichar la salida del viernes 13/11 (pendiente) y Lucía corrigió una entrada (aprobada)
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, motivo, registrado_por)
+    values (o, t2, 'salida', '2026-11-13 15:02'::timestamp at time zone 'Europe/Madrid', 'correccion', 'pendiente', 'Me olvidé de fichar la salida: salí a las 15:00 como cada viernes', '${TRAB[1].user}');
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, motivo, registrado_por, revisado_por, revisado_at)
+    values (o, t3, 'entrada', '2026-10-21 08:40'::timestamp at time zone 'Europe/Madrid', 'correccion', 'valido', 'La app no cargaba en el metro: entré a las 8:40', '${TRAB[2].user}', o, '2026-10-21 12:00+02');
+  end if;`)
+
+out(`
+  -- ---------------------------------------------------------- Solicitud de cambio de IRPF (Lucía, pendiente)
+  if to_regclass('public.solicitudes_irpf') is not null then
+    insert into public.solicitudes_irpf (owner_id, trabajador_id, pct_actual, pct_solicitado, desde, comentario, estado, solicitada_por, created_at)
+    values (o, t3, 16, 18, '2026-12', 'Me he comprado un piso este año y prefiero que me retengan un poco más para no pagar en la renta.', 'pendiente', '${TRAB[2].user}', '2026-11-18 09:30+01');
+  end if;`)
 
 out('\n  -- ---------------------------------------------------------- Impuestos')
 for (const i of impuestos) {
@@ -594,7 +744,9 @@ select p.nombre, p.email, p.es_demo,
   (select sum(base) from public.invoices i where i.owner_id = p.id) ventas_sin_iva,
   (select count(*) from public.expenses e where e.owner_id = p.id) gastos,
   (select count(*) from public.trabajadores t where t.owner_id = p.id) trabajadores,
-  (select count(*) from public.nominas n where n.owner_id = p.id) nominas
+  (select count(*) from public.nominas n where n.owner_id = p.id) nominas,
+  (select count(*) from public.trabajador_documentos d where d.owner_id = p.id) documentos,
+  (select count(*) from public.miembros m where m.cuenta_id = p.id) usuarios
 from public.profiles p where p.es_demo;
 `)
 writeFileSync(join(APP, 'supabase/carga-demo-nomotax.sql'), L.join('\n'))

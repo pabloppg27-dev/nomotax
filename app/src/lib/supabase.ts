@@ -49,6 +49,8 @@ export async function errorMessage(err: unknown): Promise<string> {
 }
 
 export async function signedUrl(path: string, seconds = 600): Promise<string | null> {
+  // Cuenta demo: sus documentos de ejemplo se publican con la web (public/demo-docs/), no están en Storage
+  if (path.startsWith('demo-docs/')) return new URL(import.meta.env.BASE_URL + path, window.location.origin).href
   const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, seconds)
   return data?.signedUrl ?? null
 }

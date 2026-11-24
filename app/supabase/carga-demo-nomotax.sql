@@ -18,6 +18,11 @@ alter table public.profiles add column if not exists es_demo boolean not null de
 alter table public.profiles add column if not exists nombre_comercial text;
 alter table public.quotes add column if not exists enviado_at timestamptz;
 alter table public.quotes add column if not exists enviado_a text;
+-- Documentos del trabajador con año (certificado de retenciones): igual que laboral-documentos.sql
+alter table public.trabajador_documentos add column if not exists anio int;
+alter table public.trabajador_documentos drop constraint if exists trabajador_documentos_tipo_check;
+alter table public.trabajador_documentos add constraint trabajador_documentos_tipo_check
+  check (tipo in ('dni', 'contrato', 'alta_ss', 'teletrabajo', 'modelo_145', 'certificado_retenciones', 'otro'));
 alter table public.trabajadores add column if not exists irpf_pct numeric(5,2);
 alter table public.trabajadores add column if not exists convenio text;
 alter table public.trabajadores add column if not exists clasificacion text;
@@ -78,7 +83,10 @@ begin
     execute 'delete from public.facturas_plan where invoice_id in (select id from public.invoices where owner_id = $1)' using o;
   end if;
   if to_regclass('public.fichajes') is not null then
+    -- El registro de jornada no se puede borrar desde la app; aquí sí, solo el de la demo
+    execute 'alter table public.fichajes disable trigger fichajes_inalterable_trg';
     execute 'delete from public.fichajes where owner_id = $1' using o;
+    execute 'alter table public.fichajes enable trigger fichajes_inalterable_trg';
   end if;
   if to_regclass('public.solicitudes_irpf') is not null then
     execute 'delete from public.solicitudes_irpf where owner_id = $1' using o;
@@ -86,6 +94,7 @@ begin
   if to_regclass('public.tarjetas') is not null then
     execute 'update public.tarjetas set trabajador_id = null where trabajador_id in (select id from public.trabajadores where owner_id = $1)' using o;
   end if;
+  delete from public.miembros where cuenta_id = o and user_id::text like 'de300000-0000-4000-8000-0000000001%';
   update public.miembros set trabajador_id = null where cuenta_id = o and trabajador_id is not null;
   delete from public.nominas where owner_id = o;
   delete from public.trabajador_documentos where owner_id = o;
@@ -507,111 +516,1243 @@ begin
       'indefinido', 'completa', 40, 'L-J 9:00-18:00 · V 8:00-15:00', true, 2200, 14, 12, 'Convenio TIC', 'Área 4 · Grupo C · Nivel 1 (Técnica administrativa)', 6, 23, '23 días laborables + 24 y 31 de diciembre')
     returning id into t5;
 
-  -- Nóminas (sin PDF: al abrirlas, la app avisa de que son de ejemplo)
+  -- Nóminas (con PDF de ejemplo en clientes.nomotax.io/demo-docs/)
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 1, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-01-31 18:00+01', marca);
+    (o, t1, 2026, 1, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-01.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-01-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 2, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-02-28 18:00+01', marca);
+    (o, t1, 2026, 2, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-02.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-02-28 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 3, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-03-31 18:00+01', marca);
+    (o, t1, 2026, 3, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-03.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-03-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 4, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-04-30 18:00+01', marca);
+    (o, t1, 2026, 4, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-04.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-04-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 5, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-05-31 18:00+01', marca);
+    (o, t1, 2026, 5, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-05.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-05-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 6, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t1, 2026, 6, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-06.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 6, 'extra', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 3276, 924, 22, 0, 0, 0, 4200, '[{"concepto":"Paga extraordinaria de verano","importe":4200}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t1, 2026, 6, 'extra', 'publicada', 'demo-docs/nominas/t1-2026-06-extra.pdf', 'Marta Soler Vidal', '46812937W', 4200, 3276, 924, 22, 0, 0, 0, 4200, '[{"concepto":"Paga extraordinaria de verano","importe":4200}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 7, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-07-31 18:00+01', marca);
+    (o, t1, 2026, 7, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-07.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-07-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 8, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-08-31 18:00+01', marca);
+    (o, t1, 2026, 8, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-08.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-08-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 9, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-09-30 18:00+01', marca);
+    (o, t1, 2026, 9, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-09.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-09-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t1, 2026, 10, 'mensual', 'publicada', '', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-10-31 18:00+01', marca);
+    (o, t1, 2026, 10, 'mensual', 'publicada', 'demo-docs/nominas/t1-2026-10.pdf', 'Marta Soler Vidal', '46812937W', 4200, 2957.5, 924, 22, 318.5, 1575.35, 0, 5775.35, '[{"concepto":"Salario base","importe":3444},{"concepto":"Plus de convenio","importe":756},{"concepto":"Retención IRPF (22%)","importe":-924},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-318.5}]'::jsonb, '2026-10-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 1, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-01-31 18:00+01', marca);
+    (o, t2, 2026, 1, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-01.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-01-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 2, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-02-28 18:00+01', marca);
+    (o, t2, 2026, 2, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-02.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-02-28 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 3, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-03-31 18:00+01', marca);
+    (o, t2, 2026, 3, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-03.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-03-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 4, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-04-30 18:00+01', marca);
+    (o, t2, 2026, 4, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-04.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-04-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 5, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-05-31 18:00+01', marca);
+    (o, t2, 2026, 5, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-05.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-05-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 6, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t2, 2026, 6, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-06.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 6, 'extra', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2916, 684, 19, 0, 0, 0, 3600, '[{"concepto":"Paga extraordinaria de verano","importe":3600}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t2, 2026, 6, 'extra', 'publicada', 'demo-docs/nominas/t2-2026-06-extra.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2916, 684, 19, 0, 0, 0, 3600, '[{"concepto":"Paga extraordinaria de verano","importe":3600}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 7, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-07-31 18:00+01', marca);
+    (o, t2, 2026, 7, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-07.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-07-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 8, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-08-31 18:00+01', marca);
+    (o, t2, 2026, 8, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-08.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-08-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 9, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-09-30 18:00+01', marca);
+    (o, t2, 2026, 9, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-09.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-09-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t2, 2026, 10, 'mensual', 'publicada', '', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-10-31 18:00+01', marca);
+    (o, t2, 2026, 10, 'mensual', 'publicada', 'demo-docs/nominas/t2-2026-10.pdf', 'Javier Ortega Prats', '38955120C', 3600, 2643, 684, 19, 273, 1350.3, 0, 4950.3, '[{"concepto":"Salario base","importe":2952},{"concepto":"Plus de convenio","importe":648},{"concepto":"Retención IRPF (19%)","importe":-684},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-273}]'::jsonb, '2026-10-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 1, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-01-31 18:00+01', marca);
+    (o, t3, 2026, 1, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-01.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-01-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 2, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-02-28 18:00+01', marca);
+    (o, t3, 2026, 2, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-02.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-02-28 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 3, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-03-31 18:00+01', marca);
+    (o, t3, 2026, 3, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-03.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-03-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 4, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-04-30 18:00+01', marca);
+    (o, t3, 2026, 4, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-04.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-04-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 5, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-05-31 18:00+01', marca);
+    (o, t3, 2026, 5, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-05.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-05-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 6, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t3, 2026, 6, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-06.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 6, 'extra', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2436, 464, 16, 0, 0, 0, 2900, '[{"concepto":"Paga extraordinaria de verano","importe":2900}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t3, 2026, 6, 'extra', 'publicada', 'demo-docs/nominas/t3-2026-06-extra.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2436, 464, 16, 0, 0, 0, 2900, '[{"concepto":"Paga extraordinaria de verano","importe":2900}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 7, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-07-31 18:00+01', marca);
+    (o, t3, 2026, 7, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-07.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-07-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 8, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-08-31 18:00+01', marca);
+    (o, t3, 2026, 8, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-08.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-08-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 9, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-09-30 18:00+01', marca);
+    (o, t3, 2026, 9, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-09.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-09-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t3, 2026, 10, 'mensual', 'publicada', '', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-10-31 18:00+01', marca);
+    (o, t3, 2026, 10, 'mensual', 'publicada', 'demo-docs/nominas/t3-2026-10.pdf', 'Lucía Fernández Gil', '53318764A', 2900, 2216.08, 464, 16, 219.92, 1087.74, 0, 3987.74, '[{"concepto":"Salario base","importe":2378},{"concepto":"Plus de convenio","importe":522},{"concepto":"Retención IRPF (16%)","importe":-464},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-219.92}]'::jsonb, '2026-10-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 1, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3550, 2757.5, 532.5, 15, 260, 1286, 850, 4836, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":850},{"concepto":"Retención IRPF (15%)","importe":-532.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-260}]'::jsonb, '2026-01-31 18:00+01', marca);
+    (o, t4, 2026, 1, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-01.pdf', 'Pau Ribas Comas', '47790311Z', 3550, 2757.5, 532.5, 15, 260, 1286, 850, 4836, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":850},{"concepto":"Retención IRPF (15%)","importe":-532.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-260}]'::jsonb, '2026-01-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 2, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-02-28 18:00+01', marca);
+    (o, t4, 2026, 2, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-02.pdf', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-02-28 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 3, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3000, 2325.75, 450, 15, 224.25, 1109.18, 300, 4109.18, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":300},{"concepto":"Retención IRPF (15%)","importe":-450},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-224.25}]'::jsonb, '2026-03-31 18:00+01', marca);
+    (o, t4, 2026, 3, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-03.pdf', 'Pau Ribas Comas', '47790311Z', 3000, 2325.75, 450, 15, 224.25, 1109.18, 300, 4109.18, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":300},{"concepto":"Retención IRPF (15%)","importe":-450},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-224.25}]'::jsonb, '2026-03-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 4, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 2950, 2286.5, 442.5, 15, 221, 1093.1, 250, 4043.1, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":250},{"concepto":"Retención IRPF (15%)","importe":-442.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-221}]'::jsonb, '2026-04-30 18:00+01', marca);
+    (o, t4, 2026, 4, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-04.pdf', 'Pau Ribas Comas', '47790311Z', 2950, 2286.5, 442.5, 15, 221, 1093.1, 250, 4043.1, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":250},{"concepto":"Retención IRPF (15%)","importe":-442.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-221}]'::jsonb, '2026-04-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 5, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-05-31 18:00+01', marca);
+    (o, t4, 2026, 5, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-05.pdf', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-05-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 6, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t4, 2026, 6, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-06.pdf', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 6, 'extra', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 2700, 2295, 405, 15, 0, 0, 0, 2700, '[{"concepto":"Paga extraordinaria de verano","importe":2700}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t4, 2026, 6, 'extra', 'publicada', 'demo-docs/nominas/t4-2026-06-extra.pdf', 'Pau Ribas Comas', '47790311Z', 2700, 2295, 405, 15, 0, 0, 0, 2700, '[{"concepto":"Paga extraordinaria de verano","importe":2700}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 7, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3000, 2325.75, 450, 15, 224.25, 1109.18, 300, 4109.18, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":300},{"concepto":"Retención IRPF (15%)","importe":-450},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-224.25}]'::jsonb, '2026-07-31 18:00+01', marca);
+    (o, t4, 2026, 7, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-07.pdf', 'Pau Ribas Comas', '47790311Z', 3000, 2325.75, 450, 15, 224.25, 1109.18, 300, 4109.18, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":300},{"concepto":"Retención IRPF (15%)","importe":-450},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-224.25}]'::jsonb, '2026-07-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 8, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-08-31 18:00+01', marca);
+    (o, t4, 2026, 8, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-08.pdf', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-08-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 9, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-09-30 18:00+01', marca);
+    (o, t4, 2026, 9, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-09.pdf', 'Pau Ribas Comas', '47790311Z', 3250, 2522, 487.5, 15, 240.5, 1189.55, 550, 4439.55, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":550},{"concepto":"Retención IRPF (15%)","importe":-487.5},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-240.5}]'::jsonb, '2026-09-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t4, 2026, 10, 'mensual', 'publicada', '', 'Pau Ribas Comas', '47790311Z', 3200, 2482.75, 480, 15, 237.25, 1173.47, 500, 4373.47, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":500},{"concepto":"Retención IRPF (15%)","importe":-480},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-237.25}]'::jsonb, '2026-10-31 18:00+01', marca);
+    (o, t4, 2026, 10, 'mensual', 'publicada', 'demo-docs/nominas/t4-2026-10.pdf', 'Pau Ribas Comas', '47790311Z', 3200, 2482.75, 480, 15, 237.25, 1173.47, 500, 4373.47, '[{"concepto":"Salario base","importe":2214},{"concepto":"Plus de convenio","importe":486},{"concepto":"Comisiones por ventas","importe":500},{"concepto":"Retención IRPF (15%)","importe":-480},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-237.25}]'::jsonb, '2026-10-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 4, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 1833.33, 1474.3, 220, 12, 139.03, 687.65, 0, 2520.98, '[{"concepto":"Salario base","importe":1503.33},{"concepto":"Plus de convenio","importe":330},{"concepto":"Retención IRPF (12%)","importe":-220},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-139.03}]'::jsonb, '2026-04-30 18:00+01', marca);
+    (o, t5, 2026, 4, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-04.pdf', 'Sara El Amrani Torres', '49127705G', 1833.33, 1474.3, 220, 12, 139.03, 687.65, 0, 2520.98, '[{"concepto":"Salario base","importe":1503.33},{"concepto":"Plus de convenio","importe":330},{"concepto":"Retención IRPF (12%)","importe":-220},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-139.03}]'::jsonb, '2026-04-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 5, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-05-31 18:00+01', marca);
+    (o, t5, 2026, 5, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-05.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-05-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 6, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t5, 2026, 6, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-06.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 6, 'extra', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 1045.3, 919.86, 125.44, 12, 0, 0, 0, 1045.3, '[{"concepto":"Paga extraordinaria de verano","importe":1045.3}]'::jsonb, '2026-06-30 18:00+01', marca);
+    (o, t5, 2026, 6, 'extra', 'publicada', 'demo-docs/nominas/t5-2026-06-extra.pdf', 'Sara El Amrani Torres', '49127705G', 1045.3, 919.86, 125.44, 12, 0, 0, 0, 1045.3, '[{"concepto":"Paga extraordinaria de verano","importe":1045.3}]'::jsonb, '2026-06-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 7, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-07-31 18:00+01', marca);
+    (o, t5, 2026, 7, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-07.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-07-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 8, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-08-31 18:00+01', marca);
+    (o, t5, 2026, 8, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-08.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-08-31 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 9, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-09-30 18:00+01', marca);
+    (o, t5, 2026, 9, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-09.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-09-30 18:00+01', marca);
   insert into public.nominas (owner_id, trabajador_id, anio, mes, tipo, estado, file_path, nombre_leido, dni_leido, bruto, neto, irpf, irpf_pct, ss_trabajador, ss_empresa, variables, coste_total, conceptos, publicada_at, ocr) values
-    (o, t5, 2026, 10, 'mensual', 'publicada', '', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-10-31 18:00+01', marca);
+    (o, t5, 2026, 10, 'mensual', 'publicada', 'demo-docs/nominas/t5-2026-10.pdf', 'Sara El Amrani Torres', '49127705G', 2200, 1769.17, 264, 12, 166.83, 825.18, 0, 3025.18, '[{"concepto":"Salario base","importe":1804},{"concepto":"Plus de convenio","importe":396},{"concepto":"Retención IRPF (12%)","importe":-264},{"concepto":"Seguridad Social trabajador (6,5%)","importe":-166.83}]'::jsonb, '2026-10-31 18:00+01', marca);
+
+  -- ---------------------------------------------------------- Fichas de los trabajadores: categoría y notas del asesor
+  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, 'Jefe/a de proyecto (Área 2 · Grupo A · Nivel 1)', 1, 2650, 1) returning id into x;
+  update public.trabajadores set categoria_id = x, notas_asesor = 'Revisión salarial anual en septiembre. Pide reducción de jornada a partir de 2027 (cuidado de menor): preparar anexo.' where id = t1;
+  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, 'Analista programador/a (Área 3 · Grupo B · Nivel 1)', 2, 2050, 2) returning id into x;
+  update public.trabajadores set categoria_id = x, notas_asesor = 'Teletrabajo 2 días/semana. Tiene pendiente aprobar la salida del 13/11 (olvidó fichar).' where id = t2;
+  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, 'Programador/a (Área 3 · Grupo C · Nivel 1)', 2, 1650, 3) returning id into x;
+  update public.trabajadores set categoria_id = x, notas_asesor = 'Ha pedido subir el IRPF al 18% desde diciembre: aplicar en la nómina de diciembre.' where id = t3;
+  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, 'Técnico/a comercial (Área 3 · Grupo B · Nivel 2)', 2, 1850, 4) returning id into x;
+  update public.trabajadores set categoria_id = x, notas_asesor = 'Comisiones: 3% de lo cobrado de su cartera, se pagan el mes siguiente. Revisar objetivos 2027 con la empresa.' where id = t4;
+  insert into public.categorias_convenio (owner_id, nombre, grupo_cotizacion, salario_min_mensual, orden) values (o, 'Técnico/a administrativo/a (Área 4 · Grupo C · Nivel 1)', 5, 1400, 5) returning id into x;
+  update public.trabajadores set categoria_id = x, notas_asesor = 'Periodo de prueba superado el 06/10/2026. Lleva la parte de RR. HH.' where id = t5;
+
+  -- Documentos del trabajador (PDF de ejemplo en clientes.nomotax.io/demo-docs/)
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'dni', 'DNI (copia)', 'demo-docs/t1-dni.pdf', null, o, '2021-09-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'contrato', 'Contrato de trabajo indefinido', 'demo-docs/t1-contrato.pdf', null, o, '2021-09-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'alta_ss', 'Alta en la Seguridad Social', 'demo-docs/t1-alta-ss.pdf', null, o, '2021-09-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'teletrabajo', 'Acuerdo de teletrabajo', 'demo-docs/t1-teletrabajo.pdf', null, o, '2021-09-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'modelo_145', 'Modelo 145', 'demo-docs/t1-modelo-145.pdf', null, o, '2026-01-02 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'certificado_retenciones', 'Certificado de retenciones 2024', 'demo-docs/t1-certificado-2024.pdf', 2024, o, '2025-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t1, 'certificado_retenciones', 'Certificado de retenciones 2025', 'demo-docs/t1-certificado-2025.pdf', 2025, o, '2026-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'dni', 'DNI (copia)', 'demo-docs/t2-dni.pdf', null, o, '2022-09-15 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'contrato', 'Contrato de trabajo indefinido', 'demo-docs/t2-contrato.pdf', null, o, '2022-09-15 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'alta_ss', 'Alta en la Seguridad Social', 'demo-docs/t2-alta-ss.pdf', null, o, '2022-09-15 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'teletrabajo', 'Acuerdo de teletrabajo', 'demo-docs/t2-teletrabajo.pdf', null, o, '2022-09-15 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'modelo_145', 'Modelo 145', 'demo-docs/t2-modelo-145.pdf', null, o, '2026-01-02 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'certificado_retenciones', 'Certificado de retenciones 2024', 'demo-docs/t2-certificado-2024.pdf', 2024, o, '2025-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t2, 'certificado_retenciones', 'Certificado de retenciones 2025', 'demo-docs/t2-certificado-2025.pdf', 2025, o, '2026-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'dni', 'DNI (copia)', 'demo-docs/t3-dni.pdf', null, o, '2024-02-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'contrato', 'Contrato de trabajo indefinido', 'demo-docs/t3-contrato.pdf', null, o, '2024-02-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'alta_ss', 'Alta en la Seguridad Social', 'demo-docs/t3-alta-ss.pdf', null, o, '2024-02-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'teletrabajo', 'Acuerdo de teletrabajo', 'demo-docs/t3-teletrabajo.pdf', null, o, '2024-02-01 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'modelo_145', 'Modelo 145', 'demo-docs/t3-modelo-145.pdf', null, o, '2026-01-02 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'certificado_retenciones', 'Certificado de retenciones 2024', 'demo-docs/t3-certificado-2024.pdf', 2024, o, '2025-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t3, 'certificado_retenciones', 'Certificado de retenciones 2025', 'demo-docs/t3-certificado-2025.pdf', 2025, o, '2026-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'dni', 'DNI (copia)', 'demo-docs/t4-dni.pdf', null, o, '2025-01-13 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'contrato', 'Contrato de trabajo indefinido', 'demo-docs/t4-contrato.pdf', null, o, '2025-01-13 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'alta_ss', 'Alta en la Seguridad Social', 'demo-docs/t4-alta-ss.pdf', null, o, '2025-01-13 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'teletrabajo', 'Acuerdo de teletrabajo', 'demo-docs/t4-teletrabajo.pdf', null, o, '2025-01-13 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'modelo_145', 'Modelo 145', 'demo-docs/t4-modelo-145.pdf', null, o, '2026-01-02 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t4, 'certificado_retenciones', 'Certificado de retenciones 2025', 'demo-docs/t4-certificado-2025.pdf', 2025, o, '2026-01-20 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t5, 'dni', 'DNI (copia)', 'demo-docs/t5-dni.pdf', null, o, '2026-04-06 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t5, 'contrato', 'Contrato de trabajo indefinido', 'demo-docs/t5-contrato.pdf', null, o, '2026-04-06 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t5, 'alta_ss', 'Alta en la Seguridad Social', 'demo-docs/t5-alta-ss.pdf', null, o, '2026-04-06 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t5, 'teletrabajo', 'Acuerdo de teletrabajo', 'demo-docs/t5-teletrabajo.pdf', null, o, '2026-04-06 10:00+01');
+  insert into public.trabajador_documentos (owner_id, trabajador_id, tipo, nombre, path, anio, subido_por, created_at) values (o, t5, 'modelo_145', 'Modelo 145', 'demo-docs/t5-modelo-145.pdf', null, o, '2026-04-06 10:00+01');
+
+  -- ---------------------------------------------------------- Usuarios de los trabajadores (sin contraseña: no pueden entrar)
+  -- Salen en Usuarios con su rol: Pau es comercial y el resto empleados.
+  if not exists (select 1 from auth.users where id = 'de300000-0000-4000-8000-000000000101') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('de300000-0000-4000-8000-000000000101', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'marta.soler@nomotaxdemo.example', '', now(),
+      '{"provider":"email","providers":["email"]}', '{"nombre":"Marta Soler Vidal"}', now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('de300000-0000-4000-8000-000000000101', 'marta.soler@nomotaxdemo.example', 'Marta Soler Vidal') on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = 'Marta Soler Vidal' where id = 'de300000-0000-4000-8000-000000000101';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, 'de300000-0000-4000-8000-000000000101', 'marta.soler@nomotaxdemo.example', 'Marta Soler Vidal', 'empleado', t1, o, '2021-09-01 09:00+01');
+  if not exists (select 1 from auth.users where id = 'de300000-0000-4000-8000-000000000102') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('de300000-0000-4000-8000-000000000102', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'javier.ortega@nomotaxdemo.example', '', now(),
+      '{"provider":"email","providers":["email"]}', '{"nombre":"Javier Ortega Prats"}', now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('de300000-0000-4000-8000-000000000102', 'javier.ortega@nomotaxdemo.example', 'Javier Ortega Prats') on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = 'Javier Ortega Prats' where id = 'de300000-0000-4000-8000-000000000102';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, 'de300000-0000-4000-8000-000000000102', 'javier.ortega@nomotaxdemo.example', 'Javier Ortega Prats', 'empleado', t2, o, '2022-09-15 09:00+01');
+  if not exists (select 1 from auth.users where id = 'de300000-0000-4000-8000-000000000103') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('de300000-0000-4000-8000-000000000103', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'lucia.fernandez@nomotaxdemo.example', '', now(),
+      '{"provider":"email","providers":["email"]}', '{"nombre":"Lucía Fernández Gil"}', now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('de300000-0000-4000-8000-000000000103', 'lucia.fernandez@nomotaxdemo.example', 'Lucía Fernández Gil') on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = 'Lucía Fernández Gil' where id = 'de300000-0000-4000-8000-000000000103';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, 'de300000-0000-4000-8000-000000000103', 'lucia.fernandez@nomotaxdemo.example', 'Lucía Fernández Gil', 'empleado', t3, o, '2024-02-01 09:00+01');
+  if not exists (select 1 from auth.users where id = 'de300000-0000-4000-8000-000000000104') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('de300000-0000-4000-8000-000000000104', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'pau.ribas@nomotaxdemo.example', '', now(),
+      '{"provider":"email","providers":["email"]}', '{"nombre":"Pau Ribas Comas"}', now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('de300000-0000-4000-8000-000000000104', 'pau.ribas@nomotaxdemo.example', 'Pau Ribas Comas') on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = 'Pau Ribas Comas' where id = 'de300000-0000-4000-8000-000000000104';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, 'de300000-0000-4000-8000-000000000104', 'pau.ribas@nomotaxdemo.example', 'Pau Ribas Comas', 'comercial', t4, o, '2025-01-13 09:00+01');
+  if not exists (select 1 from auth.users where id = 'de300000-0000-4000-8000-000000000105') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('de300000-0000-4000-8000-000000000105', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'sara.el@nomotaxdemo.example', '', now(),
+      '{"provider":"email","providers":["email"]}', '{"nombre":"Sara El Amrani Torres"}', now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('de300000-0000-4000-8000-000000000105', 'sara.el@nomotaxdemo.example', 'Sara El Amrani Torres') on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = 'Sara El Amrani Torres' where id = 'de300000-0000-4000-8000-000000000105';
+  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+    values (o, 'de300000-0000-4000-8000-000000000105', 'sara.el@nomotaxdemo.example', 'Sara El Amrani Torres', 'empleado', t5, o, '2026-04-06 09:00+01');
+  -- Fichan con la app (columna de fichajes.sql)
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'miembros' and column_name = 'fichaje') then
+    execute 'update public.miembros set fichaje = true where cuenta_id = $1 and user_id::text like ''de300000-0000-4000-8000-0000000001%''' using o;
+  end if;
+
+  -- Tickets de gasto subidos por los trabajadores (pendientes de revisar)
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-05', 'Restaurant El Racó del Port (ejemplo)', 'B08402117', 'T1000', 'Comida con cliente: Costa Brava Homes', 'viajes', 96.36, 10, 9.64, 106, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-1.pdf', 'de300000-0000-4000-8000-000000000104', '2026-11-05 13:42+01', marca);
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-12', 'Taxi licencia 0451 (ejemplo)', '46789012C', 'T2371', 'Taxi vuelta de reunión en Sant Cugat', 'viajes', 35, 10, 3.5, 38.5, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-2.pdf', 'de300000-0000-4000-8000-000000000104', '2026-11-12 19:05+01', marca);
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-19', 'Trens del Litoral (ejemplo)', 'A08518706', 'T3742', 'Tren a Girona: visita a Costa Brava Homes', 'viajes', 29.45, 10, 2.95, 32.4, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-3.pdf', 'de300000-0000-4000-8000-000000000104', '2026-11-19 08:10+01', marca);
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-07', 'Parking Centre Gràcia (ejemplo)', 'B08620445', 'T5113', 'Parking visita a Logística Ebro Norte', 'vehiculo', 9.83, 21, 2.07, 11.9, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-4.pdf', 'de300000-0000-4000-8000-000000000102', '2026-11-07 18:30+01', marca);
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-14', 'Tecnoshop Catalunya (ejemplo)', 'B08773012', 'T6484', 'Ratón y alfombrilla para teletrabajo', 'material', 41.31, 21, 8.67, 49.98, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-5.pdf', 'de300000-0000-4000-8000-000000000103', '2026-11-14 11:20+01', marca);
+  insert into public.expenses (owner_id, fecha, proveedor, proveedor_nif, numero, concepto, categoria, base, iva_pct, cuota_iva, total, estado, pagado, naturaleza, file_path, subido_por, created_at, ocr) values
+    (o, '2026-11-20', 'Restaurante Jardí Eixample (ejemplo)', 'B08815904', 'T7855', 'Comida de kick-off con Grupo Hotelero', 'viajes', 95.91, 10, 9.59, 105.5, 'pendiente', false, 'gasto', 'demo-docs/tickets/ticket-6.pdf', 'de300000-0000-4000-8000-000000000101', '2026-11-20 14:15+01', marca);
+
+  -- ---------------------------------------------------------- Registro de jornada (septiembre a hoy)
+  if to_regclass('public.fichajes') is not null then
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, registrado_por)
+    select o, (array[t1, t2, t3, t4, t5])[r.t], r.tipo, (r.dia || ' ' || r.hora)::timestamp at time zone 'Europe/Madrid', 'app', 'valido',
+           (array['de300000-0000-4000-8000-000000000101'::uuid, 'de300000-0000-4000-8000-000000000102'::uuid, 'de300000-0000-4000-8000-000000000103'::uuid, 'de300000-0000-4000-8000-000000000104'::uuid, 'de300000-0000-4000-8000-000000000105'::uuid])[r.t]
+    from (values
+      (1, '2026-09-01', '08:52', 'entrada'),
+      (1, '2026-09-01', '14:04', 'pausa'),
+      (1, '2026-09-01', '14:47', 'reanudar'),
+      (1, '2026-09-01', '18:21', 'salida'),
+      (1, '2026-09-02', '08:51', 'entrada'),
+      (1, '2026-09-02', '14:00', 'pausa'),
+      (1, '2026-09-02', '14:55', 'reanudar'),
+      (1, '2026-09-02', '18:18', 'salida'),
+      (1, '2026-09-03', '08:56', 'entrada'),
+      (1, '2026-09-03', '14:07', 'pausa'),
+      (1, '2026-09-03', '14:45', 'reanudar'),
+      (1, '2026-09-03', '18:10', 'salida'),
+      (1, '2026-09-04', '07:58', 'entrada'),
+      (1, '2026-09-04', '15:09', 'salida'),
+      (1, '2026-09-07', '09:07', 'entrada'),
+      (1, '2026-09-07', '14:05', 'pausa'),
+      (1, '2026-09-07', '14:53', 'reanudar'),
+      (1, '2026-09-07', '18:21', 'salida'),
+      (1, '2026-09-08', '08:54', 'entrada'),
+      (1, '2026-09-08', '14:08', 'pausa'),
+      (1, '2026-09-08', '14:49', 'reanudar'),
+      (1, '2026-09-08', '18:22', 'salida'),
+      (1, '2026-09-09', '08:54', 'entrada'),
+      (1, '2026-09-09', '14:09', 'pausa'),
+      (1, '2026-09-09', '14:53', 'reanudar'),
+      (1, '2026-09-09', '18:03', 'salida'),
+      (1, '2026-09-10', '09:02', 'entrada'),
+      (1, '2026-09-10', '14:06', 'pausa'),
+      (1, '2026-09-10', '14:47', 'reanudar'),
+      (1, '2026-09-10', '18:23', 'salida'),
+      (1, '2026-09-14', '09:02', 'entrada'),
+      (1, '2026-09-14', '14:08', 'pausa'),
+      (1, '2026-09-14', '14:53', 'reanudar'),
+      (1, '2026-09-14', '18:02', 'salida'),
+      (1, '2026-09-15', '09:08', 'entrada'),
+      (1, '2026-09-15', '14:10', 'pausa'),
+      (1, '2026-09-15', '14:48', 'reanudar'),
+      (1, '2026-09-15', '18:00', 'salida'),
+      (1, '2026-09-16', '08:50', 'entrada'),
+      (1, '2026-09-16', '14:00', 'pausa'),
+      (1, '2026-09-16', '14:49', 'reanudar'),
+      (1, '2026-09-16', '18:09', 'salida'),
+      (1, '2026-09-17', '09:04', 'entrada'),
+      (1, '2026-09-17', '14:05', 'pausa'),
+      (1, '2026-09-17', '14:51', 'reanudar'),
+      (1, '2026-09-17', '18:19', 'salida'),
+      (1, '2026-09-18', '08:00', 'entrada'),
+      (1, '2026-09-18', '15:01', 'salida'),
+      (1, '2026-09-21', '09:00', 'entrada'),
+      (1, '2026-09-21', '14:03', 'pausa'),
+      (1, '2026-09-21', '14:50', 'reanudar'),
+      (1, '2026-09-21', '18:01', 'salida'),
+      (1, '2026-09-22', '08:48', 'entrada'),
+      (1, '2026-09-22', '14:04', 'pausa'),
+      (1, '2026-09-22', '14:47', 'reanudar'),
+      (1, '2026-09-22', '18:21', 'salida'),
+      (1, '2026-09-23', '08:54', 'entrada'),
+      (1, '2026-09-23', '14:08', 'pausa'),
+      (1, '2026-09-23', '14:49', 'reanudar'),
+      (1, '2026-09-23', '18:24', 'salida'),
+      (1, '2026-09-25', '08:04', 'entrada'),
+      (1, '2026-09-25', '15:07', 'salida'),
+      (1, '2026-09-28', '09:00', 'entrada'),
+      (1, '2026-09-28', '14:08', 'pausa'),
+      (1, '2026-09-28', '14:45', 'reanudar'),
+      (1, '2026-09-28', '18:19', 'salida'),
+      (1, '2026-09-29', '09:04', 'entrada'),
+      (1, '2026-09-29', '14:08', 'pausa'),
+      (1, '2026-09-29', '14:46', 'reanudar'),
+      (1, '2026-09-29', '18:08', 'salida'),
+      (1, '2026-09-30', '08:57', 'entrada'),
+      (1, '2026-09-30', '14:02', 'pausa'),
+      (1, '2026-09-30', '14:45', 'reanudar'),
+      (1, '2026-09-30', '18:15', 'salida'),
+      (1, '2026-10-01', '09:08', 'entrada'),
+      (1, '2026-10-01', '14:01', 'pausa'),
+      (1, '2026-10-01', '14:48', 'reanudar'),
+      (1, '2026-10-01', '18:09', 'salida'),
+      (1, '2026-10-02', '08:03', 'entrada'),
+      (1, '2026-10-02', '15:00', 'salida'),
+      (1, '2026-10-13', '08:47', 'entrada'),
+      (1, '2026-10-13', '14:02', 'pausa'),
+      (1, '2026-10-13', '14:49', 'reanudar'),
+      (1, '2026-10-13', '18:16', 'salida'),
+      (1, '2026-10-14', '08:49', 'entrada'),
+      (1, '2026-10-14', '14:06', 'pausa'),
+      (1, '2026-10-14', '14:52', 'reanudar'),
+      (1, '2026-10-14', '18:16', 'salida'),
+      (1, '2026-10-15', '08:50', 'entrada'),
+      (1, '2026-10-15', '14:04', 'pausa'),
+      (1, '2026-10-15', '14:50', 'reanudar'),
+      (1, '2026-10-15', '18:09', 'salida'),
+      (1, '2026-10-16', '07:54', 'entrada'),
+      (1, '2026-10-16', '15:11', 'salida'),
+      (1, '2026-10-19', '09:06', 'entrada'),
+      (1, '2026-10-19', '14:07', 'pausa'),
+      (1, '2026-10-19', '14:53', 'reanudar'),
+      (1, '2026-10-19', '18:25', 'salida'),
+      (1, '2026-10-20', '09:08', 'entrada'),
+      (1, '2026-10-20', '14:05', 'pausa'),
+      (1, '2026-10-20', '14:49', 'reanudar'),
+      (1, '2026-10-20', '18:25', 'salida'),
+      (1, '2026-10-21', '09:02', 'entrada'),
+      (1, '2026-10-21', '14:04', 'pausa'),
+      (1, '2026-10-21', '14:51', 'reanudar'),
+      (1, '2026-10-21', '18:06', 'salida'),
+      (1, '2026-10-22', '08:48', 'entrada'),
+      (1, '2026-10-22', '14:05', 'pausa'),
+      (1, '2026-10-22', '14:55', 'reanudar'),
+      (1, '2026-10-22', '18:03', 'salida'),
+      (1, '2026-10-23', '07:56', 'entrada'),
+      (1, '2026-10-23', '15:08', 'salida'),
+      (1, '2026-10-26', '08:49', 'entrada'),
+      (1, '2026-10-26', '14:04', 'pausa'),
+      (1, '2026-10-26', '14:53', 'reanudar'),
+      (1, '2026-10-26', '18:10', 'salida'),
+      (1, '2026-10-27', '08:57', 'entrada'),
+      (1, '2026-10-27', '14:08', 'pausa'),
+      (1, '2026-10-27', '14:53', 'reanudar'),
+      (1, '2026-10-27', '18:04', 'salida'),
+      (1, '2026-10-28', '09:00', 'entrada'),
+      (1, '2026-10-28', '14:03', 'pausa'),
+      (1, '2026-10-28', '14:49', 'reanudar'),
+      (1, '2026-10-28', '18:18', 'salida'),
+      (1, '2026-10-29', '08:48', 'entrada'),
+      (1, '2026-10-29', '14:08', 'pausa'),
+      (1, '2026-10-29', '14:55', 'reanudar'),
+      (1, '2026-10-29', '18:12', 'salida'),
+      (1, '2026-10-30', '07:54', 'entrada'),
+      (1, '2026-10-30', '15:09', 'salida'),
+      (1, '2026-11-03', '08:59', 'entrada'),
+      (1, '2026-11-03', '14:04', 'pausa'),
+      (1, '2026-11-03', '14:50', 'reanudar'),
+      (1, '2026-11-03', '18:25', 'salida'),
+      (1, '2026-11-04', '09:01', 'entrada'),
+      (1, '2026-11-04', '14:04', 'pausa'),
+      (1, '2026-11-04', '14:49', 'reanudar'),
+      (1, '2026-11-04', '18:15', 'salida'),
+      (1, '2026-11-05', '08:54', 'entrada'),
+      (1, '2026-11-05', '14:00', 'pausa'),
+      (1, '2026-11-05', '14:45', 'reanudar'),
+      (1, '2026-11-05', '18:17', 'salida'),
+      (1, '2026-11-06', '07:57', 'entrada'),
+      (1, '2026-11-06', '15:08', 'salida'),
+      (1, '2026-11-09', '08:55', 'entrada'),
+      (1, '2026-11-09', '14:06', 'pausa'),
+      (1, '2026-11-09', '14:53', 'reanudar'),
+      (1, '2026-11-09', '18:04', 'salida'),
+      (1, '2026-11-10', '09:09', 'entrada'),
+      (1, '2026-11-10', '14:04', 'pausa'),
+      (1, '2026-11-10', '14:52', 'reanudar'),
+      (1, '2026-11-10', '18:24', 'salida'),
+      (1, '2026-11-11', '08:50', 'entrada'),
+      (1, '2026-11-11', '14:03', 'pausa'),
+      (1, '2026-11-11', '14:48', 'reanudar'),
+      (1, '2026-11-11', '18:06', 'salida'),
+      (1, '2026-11-12', '08:55', 'entrada'),
+      (1, '2026-11-12', '14:01', 'pausa'),
+      (1, '2026-11-12', '14:55', 'reanudar'),
+      (1, '2026-11-12', '18:09', 'salida'),
+      (1, '2026-11-13', '07:54', 'entrada'),
+      (1, '2026-11-13', '15:02', 'salida'),
+      (1, '2026-11-16', '08:54', 'entrada'),
+      (1, '2026-11-16', '14:04', 'pausa'),
+      (1, '2026-11-16', '14:47', 'reanudar'),
+      (1, '2026-11-16', '18:03', 'salida'),
+      (1, '2026-11-17', '09:09', 'entrada'),
+      (1, '2026-11-17', '14:07', 'pausa'),
+      (1, '2026-11-17', '14:47', 'reanudar'),
+      (1, '2026-11-17', '18:24', 'salida'),
+      (1, '2026-11-18', '09:06', 'entrada'),
+      (1, '2026-11-18', '14:07', 'pausa'),
+      (1, '2026-11-18', '14:45', 'reanudar'),
+      (1, '2026-11-18', '18:08', 'salida'),
+      (1, '2026-11-19', '09:03', 'entrada'),
+      (1, '2026-11-19', '14:02', 'pausa'),
+      (1, '2026-11-19', '14:46', 'reanudar'),
+      (1, '2026-11-19', '18:08', 'salida'),
+      (1, '2026-11-20', '07:55', 'entrada'),
+      (1, '2026-11-20', '15:01', 'salida'),
+      (1, '2026-11-23', '09:02', 'entrada'),
+      (1, '2026-11-23', '14:02', 'pausa'),
+      (1, '2026-11-23', '14:50', 'reanudar'),
+      (1, '2026-11-23', '18:20', 'salida'),
+      (1, '2026-11-24', '08:48', 'entrada'),
+      (1, '2026-11-24', '14:06', 'pausa'),
+      (1, '2026-11-24', '14:47', 'reanudar'),
+      (2, '2026-09-01', '08:47', 'entrada'),
+      (2, '2026-09-01', '14:02', 'pausa'),
+      (2, '2026-09-01', '14:47', 'reanudar'),
+      (2, '2026-09-01', '18:08', 'salida'),
+      (2, '2026-09-02', '08:53', 'entrada'),
+      (2, '2026-09-02', '14:08', 'pausa'),
+      (2, '2026-09-02', '14:54', 'reanudar'),
+      (2, '2026-09-02', '18:04', 'salida'),
+      (2, '2026-09-03', '08:59', 'entrada'),
+      (2, '2026-09-03', '14:06', 'pausa'),
+      (2, '2026-09-03', '14:47', 'reanudar'),
+      (2, '2026-09-03', '18:09', 'salida'),
+      (2, '2026-09-04', '07:56', 'entrada'),
+      (2, '2026-09-04', '15:04', 'salida'),
+      (2, '2026-09-07', '08:46', 'entrada'),
+      (2, '2026-09-07', '14:00', 'pausa'),
+      (2, '2026-09-07', '14:47', 'reanudar'),
+      (2, '2026-09-07', '18:11', 'salida'),
+      (2, '2026-09-08', '08:58', 'entrada'),
+      (2, '2026-09-08', '14:05', 'pausa'),
+      (2, '2026-09-08', '14:50', 'reanudar'),
+      (2, '2026-09-08', '18:22', 'salida'),
+      (2, '2026-09-09', '08:47', 'entrada'),
+      (2, '2026-09-09', '14:07', 'pausa'),
+      (2, '2026-09-09', '14:50', 'reanudar'),
+      (2, '2026-09-09', '18:12', 'salida'),
+      (2, '2026-09-10', '09:09', 'entrada'),
+      (2, '2026-09-10', '14:06', 'pausa'),
+      (2, '2026-09-10', '14:50', 'reanudar'),
+      (2, '2026-09-10', '18:17', 'salida'),
+      (2, '2026-09-14', '09:10', 'entrada'),
+      (2, '2026-09-14', '14:04', 'pausa'),
+      (2, '2026-09-14', '14:47', 'reanudar'),
+      (2, '2026-09-14', '18:00', 'salida'),
+      (2, '2026-09-15', '09:08', 'entrada'),
+      (2, '2026-09-15', '14:01', 'pausa'),
+      (2, '2026-09-15', '14:50', 'reanudar'),
+      (2, '2026-09-15', '18:09', 'salida'),
+      (2, '2026-09-16', '08:52', 'entrada'),
+      (2, '2026-09-16', '14:02', 'pausa'),
+      (2, '2026-09-16', '14:50', 'reanudar'),
+      (2, '2026-09-16', '18:25', 'salida'),
+      (2, '2026-09-17', '09:10', 'entrada'),
+      (2, '2026-09-17', '14:10', 'pausa'),
+      (2, '2026-09-17', '14:46', 'reanudar'),
+      (2, '2026-09-17', '18:25', 'salida'),
+      (2, '2026-09-18', '07:59', 'entrada'),
+      (2, '2026-09-18', '15:02', 'salida'),
+      (2, '2026-09-21', '08:45', 'entrada'),
+      (2, '2026-09-21', '14:07', 'pausa'),
+      (2, '2026-09-21', '14:54', 'reanudar'),
+      (2, '2026-09-21', '18:07', 'salida'),
+      (2, '2026-09-22', '09:02', 'entrada'),
+      (2, '2026-09-22', '14:02', 'pausa'),
+      (2, '2026-09-22', '14:47', 'reanudar'),
+      (2, '2026-09-22', '18:23', 'salida'),
+      (2, '2026-09-23', '09:03', 'entrada'),
+      (2, '2026-09-23', '14:07', 'pausa'),
+      (2, '2026-09-23', '14:49', 'reanudar'),
+      (2, '2026-09-23', '18:20', 'salida'),
+      (2, '2026-09-25', '08:01', 'entrada'),
+      (2, '2026-09-25', '15:06', 'salida'),
+      (2, '2026-09-28', '09:07', 'entrada'),
+      (2, '2026-09-28', '14:07', 'pausa'),
+      (2, '2026-09-28', '14:50', 'reanudar'),
+      (2, '2026-09-28', '18:14', 'salida'),
+      (2, '2026-09-29', '09:09', 'entrada'),
+      (2, '2026-09-29', '14:08', 'pausa'),
+      (2, '2026-09-29', '14:46', 'reanudar'),
+      (2, '2026-09-29', '18:03', 'salida'),
+      (2, '2026-09-30', '09:07', 'entrada'),
+      (2, '2026-09-30', '14:09', 'pausa'),
+      (2, '2026-09-30', '14:45', 'reanudar'),
+      (2, '2026-09-30', '18:08', 'salida'),
+      (2, '2026-10-01', '08:57', 'entrada'),
+      (2, '2026-10-01', '14:04', 'pausa'),
+      (2, '2026-10-01', '14:46', 'reanudar'),
+      (2, '2026-10-01', '18:24', 'salida'),
+      (2, '2026-10-02', '07:56', 'entrada'),
+      (2, '2026-10-02', '15:06', 'salida'),
+      (2, '2026-10-05', '08:46', 'entrada'),
+      (2, '2026-10-05', '14:08', 'pausa'),
+      (2, '2026-10-05', '14:48', 'reanudar'),
+      (2, '2026-10-05', '18:04', 'salida'),
+      (2, '2026-10-06', '08:48', 'entrada'),
+      (2, '2026-10-06', '14:08', 'pausa'),
+      (2, '2026-10-06', '14:50', 'reanudar'),
+      (2, '2026-10-06', '18:16', 'salida'),
+      (2, '2026-10-07', '09:10', 'entrada'),
+      (2, '2026-10-07', '14:08', 'pausa'),
+      (2, '2026-10-07', '14:49', 'reanudar'),
+      (2, '2026-10-07', '18:24', 'salida'),
+      (2, '2026-10-08', '09:03', 'entrada'),
+      (2, '2026-10-08', '14:01', 'pausa'),
+      (2, '2026-10-08', '14:55', 'reanudar'),
+      (2, '2026-10-08', '18:24', 'salida'),
+      (2, '2026-10-09', '07:56', 'entrada'),
+      (2, '2026-10-09', '15:01', 'salida'),
+      (2, '2026-10-13', '08:53', 'entrada'),
+      (2, '2026-10-13', '14:08', 'pausa'),
+      (2, '2026-10-13', '14:54', 'reanudar'),
+      (2, '2026-10-13', '18:25', 'salida'),
+      (2, '2026-10-14', '09:01', 'entrada'),
+      (2, '2026-10-14', '14:01', 'pausa'),
+      (2, '2026-10-14', '14:54', 'reanudar'),
+      (2, '2026-10-14', '18:25', 'salida'),
+      (2, '2026-10-15', '08:53', 'entrada'),
+      (2, '2026-10-15', '14:01', 'pausa'),
+      (2, '2026-10-15', '14:45', 'reanudar'),
+      (2, '2026-10-15', '18:17', 'salida'),
+      (2, '2026-10-16', '07:58', 'entrada'),
+      (2, '2026-10-16', '15:05', 'salida'),
+      (2, '2026-10-19', '09:04', 'entrada'),
+      (2, '2026-10-19', '14:04', 'pausa'),
+      (2, '2026-10-19', '14:53', 'reanudar'),
+      (2, '2026-10-19', '18:10', 'salida'),
+      (2, '2026-10-20', '08:57', 'entrada'),
+      (2, '2026-10-20', '14:08', 'pausa'),
+      (2, '2026-10-20', '14:52', 'reanudar'),
+      (2, '2026-10-20', '18:17', 'salida'),
+      (2, '2026-10-21', '08:49', 'entrada'),
+      (2, '2026-10-21', '14:04', 'pausa'),
+      (2, '2026-10-21', '14:51', 'reanudar'),
+      (2, '2026-10-21', '18:21', 'salida'),
+      (2, '2026-10-22', '08:54', 'entrada'),
+      (2, '2026-10-22', '14:03', 'pausa'),
+      (2, '2026-10-22', '14:54', 'reanudar'),
+      (2, '2026-10-22', '18:15', 'salida'),
+      (2, '2026-10-23', '07:55', 'entrada'),
+      (2, '2026-10-23', '15:09', 'salida'),
+      (2, '2026-10-26', '09:09', 'entrada'),
+      (2, '2026-10-26', '14:04', 'pausa'),
+      (2, '2026-10-26', '14:51', 'reanudar'),
+      (2, '2026-10-26', '18:07', 'salida'),
+      (2, '2026-10-27', '09:00', 'entrada'),
+      (2, '2026-10-27', '14:07', 'pausa'),
+      (2, '2026-10-27', '14:46', 'reanudar'),
+      (2, '2026-10-27', '18:19', 'salida'),
+      (2, '2026-10-28', '08:45', 'entrada'),
+      (2, '2026-10-28', '14:04', 'pausa'),
+      (2, '2026-10-28', '14:54', 'reanudar'),
+      (2, '2026-10-28', '18:05', 'salida'),
+      (2, '2026-10-29', '09:07', 'entrada'),
+      (2, '2026-10-29', '14:08', 'pausa'),
+      (2, '2026-10-29', '14:48', 'reanudar'),
+      (2, '2026-10-29', '18:11', 'salida'),
+      (2, '2026-10-30', '07:50', 'entrada'),
+      (2, '2026-10-30', '15:09', 'salida'),
+      (2, '2026-11-03', '08:55', 'entrada'),
+      (2, '2026-11-03', '14:00', 'pausa'),
+      (2, '2026-11-03', '14:46', 'reanudar'),
+      (2, '2026-11-03', '18:07', 'salida'),
+      (2, '2026-11-04', '08:48', 'entrada'),
+      (2, '2026-11-04', '14:04', 'pausa'),
+      (2, '2026-11-04', '14:49', 'reanudar'),
+      (2, '2026-11-04', '18:19', 'salida'),
+      (2, '2026-11-05', '09:00', 'entrada'),
+      (2, '2026-11-05', '14:00', 'pausa'),
+      (2, '2026-11-05', '14:45', 'reanudar'),
+      (2, '2026-11-05', '18:17', 'salida'),
+      (2, '2026-11-06', '08:05', 'entrada'),
+      (2, '2026-11-06', '15:11', 'salida'),
+      (2, '2026-11-09', '08:58', 'entrada'),
+      (2, '2026-11-09', '14:07', 'pausa'),
+      (2, '2026-11-09', '14:49', 'reanudar'),
+      (2, '2026-11-09', '18:18', 'salida'),
+      (2, '2026-11-10', '08:57', 'entrada'),
+      (2, '2026-11-10', '14:03', 'pausa'),
+      (2, '2026-11-10', '14:53', 'reanudar'),
+      (2, '2026-11-10', '18:21', 'salida'),
+      (2, '2026-11-11', '08:53', 'entrada'),
+      (2, '2026-11-11', '14:05', 'pausa'),
+      (2, '2026-11-11', '14:46', 'reanudar'),
+      (2, '2026-11-11', '18:00', 'salida'),
+      (2, '2026-11-12', '09:09', 'entrada'),
+      (2, '2026-11-12', '14:04', 'pausa'),
+      (2, '2026-11-12', '14:54', 'reanudar'),
+      (2, '2026-11-12', '18:17', 'salida'),
+      (2, '2026-11-13', '08:02', 'entrada'),
+      (2, '2026-11-13', '15:01', 'salida'),
+      (2, '2026-11-16', '09:01', 'entrada'),
+      (2, '2026-11-16', '14:07', 'pausa'),
+      (2, '2026-11-16', '14:53', 'reanudar'),
+      (2, '2026-11-16', '18:24', 'salida'),
+      (2, '2026-11-17', '08:51', 'entrada'),
+      (2, '2026-11-17', '14:01', 'pausa'),
+      (2, '2026-11-17', '14:45', 'reanudar'),
+      (2, '2026-11-17', '18:14', 'salida'),
+      (2, '2026-11-18', '08:49', 'entrada'),
+      (2, '2026-11-18', '14:06', 'pausa'),
+      (2, '2026-11-18', '14:46', 'reanudar'),
+      (2, '2026-11-18', '18:05', 'salida'),
+      (2, '2026-11-19', '08:48', 'entrada'),
+      (2, '2026-11-19', '14:04', 'pausa'),
+      (2, '2026-11-19', '14:54', 'reanudar'),
+      (2, '2026-11-19', '18:07', 'salida'),
+      (2, '2026-11-20', '07:55', 'entrada'),
+      (2, '2026-11-20', '15:09', 'salida'),
+      (2, '2026-11-23', '09:10', 'entrada'),
+      (2, '2026-11-23', '14:03', 'pausa'),
+      (2, '2026-11-23', '14:53', 'reanudar'),
+      (2, '2026-11-23', '18:21', 'salida'),
+      (2, '2026-11-24', '09:04', 'entrada'),
+      (2, '2026-11-24', '14:07', 'pausa'),
+      (2, '2026-11-24', '14:55', 'reanudar'),
+      (3, '2026-09-01', '08:53', 'entrada'),
+      (3, '2026-09-01', '14:02', 'pausa'),
+      (3, '2026-09-01', '14:50', 'reanudar'),
+      (3, '2026-09-01', '18:19', 'salida'),
+      (3, '2026-09-02', '09:04', 'entrada'),
+      (3, '2026-09-02', '14:01', 'pausa'),
+      (3, '2026-09-02', '14:55', 'reanudar'),
+      (3, '2026-09-02', '18:10', 'salida'),
+      (3, '2026-09-03', '08:45', 'entrada'),
+      (3, '2026-09-03', '14:05', 'pausa'),
+      (3, '2026-09-03', '14:46', 'reanudar'),
+      (3, '2026-09-03', '18:21', 'salida'),
+      (3, '2026-09-04', '07:57', 'entrada'),
+      (3, '2026-09-04', '15:10', 'salida'),
+      (3, '2026-09-07', '08:49', 'entrada'),
+      (3, '2026-09-07', '14:10', 'pausa'),
+      (3, '2026-09-07', '14:53', 'reanudar'),
+      (3, '2026-09-07', '18:17', 'salida'),
+      (3, '2026-09-08', '09:00', 'entrada'),
+      (3, '2026-09-08', '14:05', 'pausa'),
+      (3, '2026-09-08', '14:47', 'reanudar'),
+      (3, '2026-09-08', '18:25', 'salida'),
+      (3, '2026-09-09', '09:08', 'entrada'),
+      (3, '2026-09-09', '14:04', 'pausa'),
+      (3, '2026-09-09', '14:55', 'reanudar'),
+      (3, '2026-09-09', '18:23', 'salida'),
+      (3, '2026-09-10', '08:48', 'entrada'),
+      (3, '2026-09-10', '14:09', 'pausa'),
+      (3, '2026-09-10', '14:53', 'reanudar'),
+      (3, '2026-09-10', '18:07', 'salida'),
+      (3, '2026-09-14', '09:10', 'entrada'),
+      (3, '2026-09-14', '14:09', 'pausa'),
+      (3, '2026-09-14', '14:51', 'reanudar'),
+      (3, '2026-09-14', '18:13', 'salida'),
+      (3, '2026-09-15', '08:53', 'entrada'),
+      (3, '2026-09-15', '14:10', 'pausa'),
+      (3, '2026-09-15', '14:53', 'reanudar'),
+      (3, '2026-09-15', '18:23', 'salida'),
+      (3, '2026-09-16', '09:04', 'entrada'),
+      (3, '2026-09-16', '14:03', 'pausa'),
+      (3, '2026-09-16', '14:49', 'reanudar'),
+      (3, '2026-09-16', '18:04', 'salida'),
+      (3, '2026-09-17', '09:05', 'entrada'),
+      (3, '2026-09-17', '14:03', 'pausa'),
+      (3, '2026-09-17', '14:50', 'reanudar'),
+      (3, '2026-09-17', '18:13', 'salida'),
+      (3, '2026-09-18', '07:57', 'entrada'),
+      (3, '2026-09-18', '15:04', 'salida'),
+      (3, '2026-09-21', '08:48', 'entrada'),
+      (3, '2026-09-21', '14:07', 'pausa'),
+      (3, '2026-09-21', '14:48', 'reanudar'),
+      (3, '2026-09-21', '18:14', 'salida'),
+      (3, '2026-09-22', '09:08', 'entrada'),
+      (3, '2026-09-22', '14:02', 'pausa'),
+      (3, '2026-09-22', '14:47', 'reanudar'),
+      (3, '2026-09-22', '18:08', 'salida'),
+      (3, '2026-09-23', '08:58', 'entrada'),
+      (3, '2026-09-23', '14:05', 'pausa'),
+      (3, '2026-09-23', '14:55', 'reanudar'),
+      (3, '2026-09-23', '18:03', 'salida'),
+      (3, '2026-09-25', '07:50', 'entrada'),
+      (3, '2026-09-25', '15:11', 'salida'),
+      (3, '2026-09-28', '08:51', 'entrada'),
+      (3, '2026-09-28', '14:04', 'pausa'),
+      (3, '2026-09-28', '14:46', 'reanudar'),
+      (3, '2026-09-28', '18:05', 'salida'),
+      (3, '2026-09-29', '08:52', 'entrada'),
+      (3, '2026-09-29', '14:10', 'pausa'),
+      (3, '2026-09-29', '14:45', 'reanudar'),
+      (3, '2026-09-29', '18:08', 'salida'),
+      (3, '2026-09-30', '09:01', 'entrada'),
+      (3, '2026-09-30', '14:10', 'pausa'),
+      (3, '2026-09-30', '14:49', 'reanudar'),
+      (3, '2026-09-30', '18:04', 'salida'),
+      (3, '2026-10-01', '08:50', 'entrada'),
+      (3, '2026-10-01', '14:09', 'pausa'),
+      (3, '2026-10-01', '14:46', 'reanudar'),
+      (3, '2026-10-01', '18:06', 'salida'),
+      (3, '2026-10-02', '07:51', 'entrada'),
+      (3, '2026-10-02', '15:11', 'salida'),
+      (3, '2026-10-05', '09:01', 'entrada'),
+      (3, '2026-10-05', '14:00', 'pausa'),
+      (3, '2026-10-05', '14:47', 'reanudar'),
+      (3, '2026-10-05', '18:10', 'salida'),
+      (3, '2026-10-06', '08:55', 'entrada'),
+      (3, '2026-10-06', '14:04', 'pausa'),
+      (3, '2026-10-06', '14:46', 'reanudar'),
+      (3, '2026-10-06', '18:02', 'salida'),
+      (3, '2026-10-07', '08:48', 'entrada'),
+      (3, '2026-10-07', '14:03', 'pausa'),
+      (3, '2026-10-07', '14:45', 'reanudar'),
+      (3, '2026-10-07', '18:12', 'salida'),
+      (3, '2026-10-08', '08:59', 'entrada'),
+      (3, '2026-10-08', '14:01', 'pausa'),
+      (3, '2026-10-08', '14:54', 'reanudar'),
+      (3, '2026-10-08', '18:15', 'salida'),
+      (3, '2026-10-09', '08:04', 'entrada'),
+      (3, '2026-10-09', '15:00', 'salida'),
+      (3, '2026-10-13', '08:47', 'entrada'),
+      (3, '2026-10-13', '14:00', 'pausa'),
+      (3, '2026-10-13', '14:48', 'reanudar'),
+      (3, '2026-10-13', '18:08', 'salida'),
+      (3, '2026-10-14', '08:55', 'entrada'),
+      (3, '2026-10-14', '14:05', 'pausa'),
+      (3, '2026-10-14', '14:50', 'reanudar'),
+      (3, '2026-10-14', '18:17', 'salida'),
+      (3, '2026-10-15', '08:53', 'entrada'),
+      (3, '2026-10-15', '14:09', 'pausa'),
+      (3, '2026-10-15', '14:52', 'reanudar'),
+      (3, '2026-10-15', '18:25', 'salida'),
+      (3, '2026-10-16', '08:02', 'entrada'),
+      (3, '2026-10-16', '15:06', 'salida'),
+      (3, '2026-10-19', '08:52', 'entrada'),
+      (3, '2026-10-19', '14:04', 'pausa'),
+      (3, '2026-10-19', '14:47', 'reanudar'),
+      (3, '2026-10-19', '18:05', 'salida'),
+      (3, '2026-10-20', '08:50', 'entrada'),
+      (3, '2026-10-20', '14:10', 'pausa'),
+      (3, '2026-10-20', '14:48', 'reanudar'),
+      (3, '2026-10-20', '18:12', 'salida'),
+      (3, '2026-10-21', '09:10', 'entrada'),
+      (3, '2026-10-21', '14:01', 'pausa'),
+      (3, '2026-10-21', '14:54', 'reanudar'),
+      (3, '2026-10-21', '18:05', 'salida'),
+      (3, '2026-10-22', '08:54', 'entrada'),
+      (3, '2026-10-22', '14:04', 'pausa'),
+      (3, '2026-10-22', '14:45', 'reanudar'),
+      (3, '2026-10-22', '18:10', 'salida'),
+      (3, '2026-10-23', '08:05', 'entrada'),
+      (3, '2026-10-23', '15:10', 'salida'),
+      (3, '2026-10-26', '09:00', 'entrada'),
+      (3, '2026-10-26', '14:02', 'pausa'),
+      (3, '2026-10-26', '14:46', 'reanudar'),
+      (3, '2026-10-26', '18:07', 'salida'),
+      (3, '2026-10-27', '08:55', 'entrada'),
+      (3, '2026-10-27', '14:10', 'pausa'),
+      (3, '2026-10-27', '14:52', 'reanudar'),
+      (3, '2026-10-27', '18:24', 'salida'),
+      (3, '2026-10-28', '08:59', 'entrada'),
+      (3, '2026-10-28', '14:01', 'pausa'),
+      (3, '2026-10-28', '14:46', 'reanudar'),
+      (3, '2026-10-28', '18:02', 'salida'),
+      (3, '2026-10-29', '08:59', 'entrada'),
+      (3, '2026-10-29', '14:09', 'pausa'),
+      (3, '2026-10-29', '14:53', 'reanudar'),
+      (3, '2026-10-29', '18:18', 'salida'),
+      (3, '2026-10-30', '08:00', 'entrada'),
+      (3, '2026-10-30', '15:09', 'salida'),
+      (3, '2026-11-09', '08:57', 'entrada'),
+      (3, '2026-11-09', '14:10', 'pausa'),
+      (3, '2026-11-09', '14:46', 'reanudar'),
+      (3, '2026-11-09', '18:15', 'salida'),
+      (3, '2026-11-10', '08:53', 'entrada'),
+      (3, '2026-11-10', '14:05', 'pausa'),
+      (3, '2026-11-10', '14:52', 'reanudar'),
+      (3, '2026-11-10', '18:14', 'salida'),
+      (3, '2026-11-11', '08:50', 'entrada'),
+      (3, '2026-11-11', '14:02', 'pausa'),
+      (3, '2026-11-11', '14:47', 'reanudar'),
+      (3, '2026-11-11', '18:14', 'salida'),
+      (3, '2026-11-12', '08:54', 'entrada'),
+      (3, '2026-11-12', '14:07', 'pausa'),
+      (3, '2026-11-12', '14:52', 'reanudar'),
+      (3, '2026-11-12', '18:01', 'salida'),
+      (3, '2026-11-13', '07:58', 'entrada'),
+      (3, '2026-11-13', '15:10', 'salida'),
+      (3, '2026-11-16', '09:06', 'entrada'),
+      (3, '2026-11-16', '14:10', 'pausa'),
+      (3, '2026-11-16', '14:45', 'reanudar'),
+      (3, '2026-11-16', '18:16', 'salida'),
+      (3, '2026-11-17', '08:48', 'entrada'),
+      (3, '2026-11-17', '14:06', 'pausa'),
+      (3, '2026-11-17', '14:45', 'reanudar'),
+      (3, '2026-11-17', '18:22', 'salida'),
+      (3, '2026-11-18', '09:05', 'entrada'),
+      (3, '2026-11-18', '14:04', 'pausa'),
+      (3, '2026-11-18', '14:53', 'reanudar'),
+      (3, '2026-11-18', '18:06', 'salida'),
+      (3, '2026-11-19', '08:58', 'entrada'),
+      (3, '2026-11-19', '14:02', 'pausa'),
+      (3, '2026-11-19', '14:52', 'reanudar'),
+      (3, '2026-11-19', '18:07', 'salida'),
+      (3, '2026-11-20', '07:53', 'entrada'),
+      (3, '2026-11-20', '15:11', 'salida'),
+      (3, '2026-11-23', '08:46', 'entrada'),
+      (3, '2026-11-23', '14:10', 'pausa'),
+      (3, '2026-11-23', '14:49', 'reanudar'),
+      (3, '2026-11-23', '18:25', 'salida'),
+      (3, '2026-11-24', '08:47', 'entrada'),
+      (3, '2026-11-24', '14:04', 'pausa'),
+      (3, '2026-11-24', '14:46', 'reanudar'),
+      (4, '2026-09-01', '09:08', 'entrada'),
+      (4, '2026-09-01', '14:02', 'pausa'),
+      (4, '2026-09-01', '14:55', 'reanudar'),
+      (4, '2026-09-01', '18:06', 'salida'),
+      (4, '2026-09-02', '08:59', 'entrada'),
+      (4, '2026-09-02', '14:03', 'pausa'),
+      (4, '2026-09-02', '14:52', 'reanudar'),
+      (4, '2026-09-02', '18:01', 'salida'),
+      (4, '2026-09-03', '08:45', 'entrada'),
+      (4, '2026-09-03', '14:01', 'pausa'),
+      (4, '2026-09-03', '14:51', 'reanudar'),
+      (4, '2026-09-03', '18:18', 'salida'),
+      (4, '2026-09-04', '07:55', 'entrada'),
+      (4, '2026-09-04', '15:12', 'salida'),
+      (4, '2026-09-07', '09:04', 'entrada'),
+      (4, '2026-09-07', '14:09', 'pausa'),
+      (4, '2026-09-07', '14:45', 'reanudar'),
+      (4, '2026-09-07', '18:13', 'salida'),
+      (4, '2026-09-08', '08:56', 'entrada'),
+      (4, '2026-09-08', '14:06', 'pausa'),
+      (4, '2026-09-08', '14:54', 'reanudar'),
+      (4, '2026-09-08', '18:06', 'salida'),
+      (4, '2026-09-09', '08:52', 'entrada'),
+      (4, '2026-09-09', '14:06', 'pausa'),
+      (4, '2026-09-09', '14:54', 'reanudar'),
+      (4, '2026-09-09', '18:08', 'salida'),
+      (4, '2026-09-10', '08:50', 'entrada'),
+      (4, '2026-09-10', '14:01', 'pausa'),
+      (4, '2026-09-10', '14:47', 'reanudar'),
+      (4, '2026-09-10', '18:17', 'salida'),
+      (4, '2026-09-14', '09:02', 'entrada'),
+      (4, '2026-09-14', '14:09', 'pausa'),
+      (4, '2026-09-14', '14:47', 'reanudar'),
+      (4, '2026-09-14', '18:05', 'salida'),
+      (4, '2026-09-15', '08:54', 'entrada'),
+      (4, '2026-09-15', '14:02', 'pausa'),
+      (4, '2026-09-15', '14:54', 'reanudar'),
+      (4, '2026-09-15', '18:00', 'salida'),
+      (4, '2026-09-16', '08:59', 'entrada'),
+      (4, '2026-09-16', '14:06', 'pausa'),
+      (4, '2026-09-16', '14:52', 'reanudar'),
+      (4, '2026-09-16', '18:11', 'salida'),
+      (4, '2026-09-17', '08:59', 'entrada'),
+      (4, '2026-09-17', '14:06', 'pausa'),
+      (4, '2026-09-17', '14:51', 'reanudar'),
+      (4, '2026-09-17', '18:25', 'salida'),
+      (4, '2026-09-18', '08:02', 'entrada'),
+      (4, '2026-09-18', '15:03', 'salida'),
+      (4, '2026-09-21', '09:01', 'entrada'),
+      (4, '2026-09-21', '14:01', 'pausa'),
+      (4, '2026-09-21', '14:52', 'reanudar'),
+      (4, '2026-09-21', '18:10', 'salida'),
+      (4, '2026-09-22', '08:52', 'entrada'),
+      (4, '2026-09-22', '14:04', 'pausa'),
+      (4, '2026-09-22', '14:47', 'reanudar'),
+      (4, '2026-09-22', '18:08', 'salida'),
+      (4, '2026-09-23', '09:00', 'entrada'),
+      (4, '2026-09-23', '14:01', 'pausa'),
+      (4, '2026-09-23', '14:47', 'reanudar'),
+      (4, '2026-09-23', '18:21', 'salida'),
+      (4, '2026-09-25', '08:05', 'entrada'),
+      (4, '2026-09-25', '15:11', 'salida'),
+      (4, '2026-09-28', '08:45', 'entrada'),
+      (4, '2026-09-28', '14:07', 'pausa'),
+      (4, '2026-09-28', '14:47', 'reanudar'),
+      (4, '2026-09-28', '18:16', 'salida'),
+      (4, '2026-09-29', '08:47', 'entrada'),
+      (4, '2026-09-29', '14:06', 'pausa'),
+      (4, '2026-09-29', '14:51', 'reanudar'),
+      (4, '2026-09-29', '18:14', 'salida'),
+      (4, '2026-09-30', '08:56', 'entrada'),
+      (4, '2026-09-30', '14:03', 'pausa'),
+      (4, '2026-09-30', '14:52', 'reanudar'),
+      (4, '2026-09-30', '18:10', 'salida'),
+      (4, '2026-10-01', '08:48', 'entrada'),
+      (4, '2026-10-01', '14:08', 'pausa'),
+      (4, '2026-10-01', '14:51', 'reanudar'),
+      (4, '2026-10-01', '18:04', 'salida'),
+      (4, '2026-10-02', '07:57', 'entrada'),
+      (4, '2026-10-02', '15:00', 'salida'),
+      (4, '2026-10-05', '08:54', 'entrada'),
+      (4, '2026-10-05', '14:07', 'pausa'),
+      (4, '2026-10-05', '14:46', 'reanudar'),
+      (4, '2026-10-05', '18:03', 'salida'),
+      (4, '2026-10-06', '08:58', 'entrada'),
+      (4, '2026-10-06', '14:02', 'pausa'),
+      (4, '2026-10-06', '14:46', 'reanudar'),
+      (4, '2026-10-06', '18:06', 'salida'),
+      (4, '2026-10-07', '09:05', 'entrada'),
+      (4, '2026-10-07', '14:05', 'pausa'),
+      (4, '2026-10-07', '14:49', 'reanudar'),
+      (4, '2026-10-07', '18:18', 'salida'),
+      (4, '2026-10-08', '08:58', 'entrada'),
+      (4, '2026-10-08', '14:06', 'pausa'),
+      (4, '2026-10-08', '14:45', 'reanudar'),
+      (4, '2026-10-08', '18:21', 'salida'),
+      (4, '2026-10-09', '07:59', 'entrada'),
+      (4, '2026-10-09', '15:11', 'salida'),
+      (4, '2026-10-13', '09:03', 'entrada'),
+      (4, '2026-10-13', '14:02', 'pausa'),
+      (4, '2026-10-13', '14:46', 'reanudar'),
+      (4, '2026-10-13', '18:07', 'salida'),
+      (4, '2026-10-14', '09:07', 'entrada'),
+      (4, '2026-10-14', '14:08', 'pausa'),
+      (4, '2026-10-14', '14:52', 'reanudar'),
+      (4, '2026-10-14', '18:03', 'salida'),
+      (4, '2026-10-15', '09:10', 'entrada'),
+      (4, '2026-10-15', '14:10', 'pausa'),
+      (4, '2026-10-15', '14:48', 'reanudar'),
+      (4, '2026-10-15', '18:18', 'salida'),
+      (4, '2026-10-16', '08:05', 'entrada'),
+      (4, '2026-10-16', '15:10', 'salida'),
+      (4, '2026-10-19', '08:49', 'entrada'),
+      (4, '2026-10-19', '14:03', 'pausa'),
+      (4, '2026-10-19', '14:45', 'reanudar'),
+      (4, '2026-10-19', '18:16', 'salida'),
+      (4, '2026-10-20', '08:49', 'entrada'),
+      (4, '2026-10-20', '14:09', 'pausa'),
+      (4, '2026-10-20', '14:45', 'reanudar'),
+      (4, '2026-10-20', '18:10', 'salida'),
+      (4, '2026-10-21', '09:06', 'entrada'),
+      (4, '2026-10-21', '14:10', 'pausa'),
+      (4, '2026-10-21', '14:48', 'reanudar'),
+      (4, '2026-10-21', '18:10', 'salida'),
+      (4, '2026-10-22', '08:48', 'entrada'),
+      (4, '2026-10-22', '14:06', 'pausa'),
+      (4, '2026-10-22', '14:45', 'reanudar'),
+      (4, '2026-10-22', '18:03', 'salida'),
+      (4, '2026-10-23', '07:57', 'entrada'),
+      (4, '2026-10-23', '15:12', 'salida'),
+      (4, '2026-10-26', '08:47', 'entrada'),
+      (4, '2026-10-26', '14:04', 'pausa'),
+      (4, '2026-10-26', '14:49', 'reanudar'),
+      (4, '2026-10-26', '18:03', 'salida'),
+      (4, '2026-10-27', '08:51', 'entrada'),
+      (4, '2026-10-27', '14:08', 'pausa'),
+      (4, '2026-10-27', '14:55', 'reanudar'),
+      (4, '2026-10-27', '18:03', 'salida'),
+      (4, '2026-10-28', '08:47', 'entrada'),
+      (4, '2026-10-28', '14:09', 'pausa'),
+      (4, '2026-10-28', '14:54', 'reanudar'),
+      (4, '2026-10-28', '18:23', 'salida'),
+      (4, '2026-10-29', '08:57', 'entrada'),
+      (4, '2026-10-29', '14:03', 'pausa'),
+      (4, '2026-10-29', '14:50', 'reanudar'),
+      (4, '2026-10-29', '18:23', 'salida'),
+      (4, '2026-10-30', '07:52', 'entrada'),
+      (4, '2026-10-30', '15:07', 'salida'),
+      (4, '2026-11-03', '08:56', 'entrada'),
+      (4, '2026-11-03', '14:10', 'pausa'),
+      (4, '2026-11-03', '14:51', 'reanudar'),
+      (4, '2026-11-03', '18:19', 'salida'),
+      (4, '2026-11-04', '08:49', 'entrada'),
+      (4, '2026-11-04', '14:01', 'pausa'),
+      (4, '2026-11-04', '14:53', 'reanudar'),
+      (4, '2026-11-04', '18:01', 'salida'),
+      (4, '2026-11-05', '08:49', 'entrada'),
+      (4, '2026-11-05', '14:10', 'pausa'),
+      (4, '2026-11-05', '14:46', 'reanudar'),
+      (4, '2026-11-05', '18:20', 'salida'),
+      (4, '2026-11-06', '08:00', 'entrada'),
+      (4, '2026-11-06', '15:08', 'salida'),
+      (4, '2026-11-09', '08:53', 'entrada'),
+      (4, '2026-11-09', '14:06', 'pausa'),
+      (4, '2026-11-09', '14:54', 'reanudar'),
+      (4, '2026-11-09', '18:01', 'salida'),
+      (4, '2026-11-10', '08:54', 'entrada'),
+      (4, '2026-11-10', '14:10', 'pausa'),
+      (4, '2026-11-10', '14:54', 'reanudar'),
+      (4, '2026-11-10', '18:15', 'salida'),
+      (4, '2026-11-11', '09:07', 'entrada'),
+      (4, '2026-11-11', '14:00', 'pausa'),
+      (4, '2026-11-11', '14:51', 'reanudar'),
+      (4, '2026-11-11', '18:12', 'salida'),
+      (4, '2026-11-12', '08:51', 'entrada'),
+      (4, '2026-11-12', '14:01', 'pausa'),
+      (4, '2026-11-12', '14:55', 'reanudar'),
+      (4, '2026-11-12', '18:00', 'salida'),
+      (4, '2026-11-13', '07:56', 'entrada'),
+      (4, '2026-11-13', '15:08', 'salida'),
+      (4, '2026-11-16', '08:51', 'entrada'),
+      (4, '2026-11-16', '14:00', 'pausa'),
+      (4, '2026-11-16', '14:51', 'reanudar'),
+      (4, '2026-11-16', '18:09', 'salida'),
+      (4, '2026-11-17', '09:03', 'entrada'),
+      (4, '2026-11-17', '14:01', 'pausa'),
+      (4, '2026-11-17', '14:47', 'reanudar'),
+      (4, '2026-11-17', '18:14', 'salida'),
+      (4, '2026-11-18', '08:57', 'entrada'),
+      (4, '2026-11-18', '14:09', 'pausa'),
+      (4, '2026-11-18', '14:45', 'reanudar'),
+      (4, '2026-11-18', '18:15', 'salida'),
+      (4, '2026-11-19', '08:46', 'entrada'),
+      (4, '2026-11-19', '14:03', 'pausa'),
+      (4, '2026-11-19', '14:53', 'reanudar'),
+      (4, '2026-11-19', '18:02', 'salida'),
+      (4, '2026-11-20', '07:58', 'entrada'),
+      (4, '2026-11-20', '15:09', 'salida'),
+      (4, '2026-11-23', '08:58', 'entrada'),
+      (4, '2026-11-23', '14:07', 'pausa'),
+      (4, '2026-11-23', '14:53', 'reanudar'),
+      (4, '2026-11-23', '18:01', 'salida'),
+      (4, '2026-11-24', '08:53', 'entrada'),
+      (4, '2026-11-24', '14:07', 'pausa'),
+      (4, '2026-11-24', '14:53', 'reanudar'),
+      (5, '2026-09-01', '09:08', 'entrada'),
+      (5, '2026-09-01', '14:07', 'pausa'),
+      (5, '2026-09-01', '14:45', 'reanudar'),
+      (5, '2026-09-01', '18:25', 'salida'),
+      (5, '2026-09-02', '08:48', 'entrada'),
+      (5, '2026-09-02', '14:10', 'pausa'),
+      (5, '2026-09-02', '14:45', 'reanudar'),
+      (5, '2026-09-02', '18:00', 'salida'),
+      (5, '2026-09-03', '09:01', 'entrada'),
+      (5, '2026-09-03', '14:10', 'pausa'),
+      (5, '2026-09-03', '14:50', 'reanudar'),
+      (5, '2026-09-03', '18:25', 'salida'),
+      (5, '2026-09-04', '08:01', 'entrada'),
+      (5, '2026-09-04', '15:03', 'salida'),
+      (5, '2026-09-07', '08:57', 'entrada'),
+      (5, '2026-09-07', '14:09', 'pausa'),
+      (5, '2026-09-07', '14:45', 'reanudar'),
+      (5, '2026-09-07', '18:08', 'salida'),
+      (5, '2026-09-08', '08:48', 'entrada'),
+      (5, '2026-09-08', '14:05', 'pausa'),
+      (5, '2026-09-08', '14:49', 'reanudar'),
+      (5, '2026-09-08', '18:23', 'salida'),
+      (5, '2026-09-09', '08:54', 'entrada'),
+      (5, '2026-09-09', '14:00', 'pausa'),
+      (5, '2026-09-09', '14:46', 'reanudar'),
+      (5, '2026-09-09', '18:25', 'salida'),
+      (5, '2026-09-10', '08:50', 'entrada'),
+      (5, '2026-09-10', '14:10', 'pausa'),
+      (5, '2026-09-10', '14:52', 'reanudar'),
+      (5, '2026-09-10', '18:16', 'salida'),
+      (5, '2026-09-14', '09:02', 'entrada'),
+      (5, '2026-09-14', '14:01', 'pausa'),
+      (5, '2026-09-14', '14:50', 'reanudar'),
+      (5, '2026-09-14', '18:13', 'salida'),
+      (5, '2026-09-15', '08:56', 'entrada'),
+      (5, '2026-09-15', '14:01', 'pausa'),
+      (5, '2026-09-15', '14:55', 'reanudar'),
+      (5, '2026-09-15', '18:24', 'salida'),
+      (5, '2026-09-16', '08:50', 'entrada'),
+      (5, '2026-09-16', '14:00', 'pausa'),
+      (5, '2026-09-16', '14:46', 'reanudar'),
+      (5, '2026-09-16', '18:19', 'salida'),
+      (5, '2026-09-17', '08:55', 'entrada'),
+      (5, '2026-09-17', '14:01', 'pausa'),
+      (5, '2026-09-17', '14:48', 'reanudar'),
+      (5, '2026-09-17', '18:15', 'salida'),
+      (5, '2026-09-18', '08:05', 'entrada'),
+      (5, '2026-09-18', '15:11', 'salida'),
+      (5, '2026-09-21', '08:46', 'entrada'),
+      (5, '2026-09-21', '14:09', 'pausa'),
+      (5, '2026-09-21', '14:55', 'reanudar'),
+      (5, '2026-09-21', '18:03', 'salida'),
+      (5, '2026-09-22', '08:47', 'entrada'),
+      (5, '2026-09-22', '14:07', 'pausa'),
+      (5, '2026-09-22', '14:54', 'reanudar'),
+      (5, '2026-09-22', '18:05', 'salida'),
+      (5, '2026-09-23', '09:01', 'entrada'),
+      (5, '2026-09-23', '14:08', 'pausa'),
+      (5, '2026-09-23', '14:51', 'reanudar'),
+      (5, '2026-09-23', '18:05', 'salida'),
+      (5, '2026-09-25', '07:52', 'entrada'),
+      (5, '2026-09-25', '15:05', 'salida'),
+      (5, '2026-09-28', '09:06', 'entrada'),
+      (5, '2026-09-28', '14:08', 'pausa'),
+      (5, '2026-09-28', '14:49', 'reanudar'),
+      (5, '2026-09-28', '18:12', 'salida'),
+      (5, '2026-09-29', '08:49', 'entrada'),
+      (5, '2026-09-29', '14:05', 'pausa'),
+      (5, '2026-09-29', '14:55', 'reanudar'),
+      (5, '2026-09-29', '18:11', 'salida'),
+      (5, '2026-09-30', '08:53', 'entrada'),
+      (5, '2026-09-30', '14:10', 'pausa'),
+      (5, '2026-09-30', '14:53', 'reanudar'),
+      (5, '2026-09-30', '18:05', 'salida'),
+      (5, '2026-10-01', '08:54', 'entrada'),
+      (5, '2026-10-01', '14:10', 'pausa'),
+      (5, '2026-10-01', '14:45', 'reanudar'),
+      (5, '2026-10-01', '18:07', 'salida'),
+      (5, '2026-10-02', '07:57', 'entrada'),
+      (5, '2026-10-02', '15:11', 'salida'),
+      (5, '2026-10-05', '08:45', 'entrada'),
+      (5, '2026-10-05', '14:07', 'pausa'),
+      (5, '2026-10-05', '14:53', 'reanudar'),
+      (5, '2026-10-05', '18:09', 'salida'),
+      (5, '2026-10-06', '09:00', 'entrada'),
+      (5, '2026-10-06', '14:00', 'pausa'),
+      (5, '2026-10-06', '14:45', 'reanudar'),
+      (5, '2026-10-06', '18:05', 'salida'),
+      (5, '2026-10-07', '08:55', 'entrada'),
+      (5, '2026-10-07', '14:04', 'pausa'),
+      (5, '2026-10-07', '14:48', 'reanudar'),
+      (5, '2026-10-07', '18:20', 'salida'),
+      (5, '2026-10-08', '08:50', 'entrada'),
+      (5, '2026-10-08', '14:02', 'pausa'),
+      (5, '2026-10-08', '14:47', 'reanudar'),
+      (5, '2026-10-08', '18:11', 'salida'),
+      (5, '2026-10-09', '07:56', 'entrada'),
+      (5, '2026-10-09', '15:06', 'salida'),
+      (5, '2026-10-13', '08:58', 'entrada'),
+      (5, '2026-10-13', '14:05', 'pausa'),
+      (5, '2026-10-13', '14:46', 'reanudar'),
+      (5, '2026-10-13', '18:03', 'salida'),
+      (5, '2026-10-14', '09:07', 'entrada'),
+      (5, '2026-10-14', '14:04', 'pausa'),
+      (5, '2026-10-14', '14:46', 'reanudar'),
+      (5, '2026-10-14', '18:25', 'salida'),
+      (5, '2026-10-15', '08:52', 'entrada'),
+      (5, '2026-10-15', '14:03', 'pausa'),
+      (5, '2026-10-15', '14:53', 'reanudar'),
+      (5, '2026-10-15', '18:10', 'salida'),
+      (5, '2026-10-16', '08:00', 'entrada'),
+      (5, '2026-10-16', '15:00', 'salida'),
+      (5, '2026-10-19', '08:50', 'entrada'),
+      (5, '2026-10-19', '14:01', 'pausa'),
+      (5, '2026-10-19', '14:54', 'reanudar'),
+      (5, '2026-10-19', '18:18', 'salida'),
+      (5, '2026-10-20', '08:50', 'entrada'),
+      (5, '2026-10-20', '14:06', 'pausa'),
+      (5, '2026-10-20', '14:53', 'reanudar'),
+      (5, '2026-10-20', '18:11', 'salida'),
+      (5, '2026-10-21', '08:57', 'entrada'),
+      (5, '2026-10-21', '14:10', 'pausa'),
+      (5, '2026-10-21', '14:48', 'reanudar'),
+      (5, '2026-10-21', '18:04', 'salida'),
+      (5, '2026-10-22', '09:03', 'entrada'),
+      (5, '2026-10-22', '14:03', 'pausa'),
+      (5, '2026-10-22', '14:47', 'reanudar'),
+      (5, '2026-10-22', '18:02', 'salida'),
+      (5, '2026-10-23', '07:51', 'entrada'),
+      (5, '2026-10-23', '15:08', 'salida'),
+      (5, '2026-10-26', '09:09', 'entrada'),
+      (5, '2026-10-26', '14:01', 'pausa'),
+      (5, '2026-10-26', '14:52', 'reanudar'),
+      (5, '2026-10-26', '18:04', 'salida'),
+      (5, '2026-10-27', '08:47', 'entrada'),
+      (5, '2026-10-27', '14:05', 'pausa'),
+      (5, '2026-10-27', '14:47', 'reanudar'),
+      (5, '2026-10-27', '18:23', 'salida'),
+      (5, '2026-10-28', '08:47', 'entrada'),
+      (5, '2026-10-28', '14:10', 'pausa'),
+      (5, '2026-10-28', '14:46', 'reanudar'),
+      (5, '2026-10-28', '18:14', 'salida'),
+      (5, '2026-10-29', '08:54', 'entrada'),
+      (5, '2026-10-29', '14:04', 'pausa'),
+      (5, '2026-10-29', '14:46', 'reanudar'),
+      (5, '2026-10-29', '18:14', 'salida'),
+      (5, '2026-10-30', '07:55', 'entrada'),
+      (5, '2026-10-30', '15:05', 'salida'),
+      (5, '2026-11-03', '08:50', 'entrada'),
+      (5, '2026-11-03', '14:03', 'pausa'),
+      (5, '2026-11-03', '14:50', 'reanudar'),
+      (5, '2026-11-03', '18:14', 'salida'),
+      (5, '2026-11-04', '09:03', 'entrada'),
+      (5, '2026-11-04', '14:03', 'pausa'),
+      (5, '2026-11-04', '14:55', 'reanudar'),
+      (5, '2026-11-04', '18:01', 'salida'),
+      (5, '2026-11-05', '09:09', 'entrada'),
+      (5, '2026-11-05', '14:07', 'pausa'),
+      (5, '2026-11-05', '14:47', 'reanudar'),
+      (5, '2026-11-05', '18:02', 'salida'),
+      (5, '2026-11-06', '08:05', 'entrada'),
+      (5, '2026-11-06', '15:08', 'salida'),
+      (5, '2026-11-09', '09:08', 'entrada'),
+      (5, '2026-11-09', '14:00', 'pausa'),
+      (5, '2026-11-09', '14:47', 'reanudar'),
+      (5, '2026-11-09', '18:21', 'salida'),
+      (5, '2026-11-10', '08:49', 'entrada'),
+      (5, '2026-11-10', '14:04', 'pausa'),
+      (5, '2026-11-10', '14:55', 'reanudar'),
+      (5, '2026-11-10', '18:20', 'salida'),
+      (5, '2026-11-11', '08:52', 'entrada'),
+      (5, '2026-11-11', '14:05', 'pausa'),
+      (5, '2026-11-11', '14:48', 'reanudar'),
+      (5, '2026-11-11', '18:04', 'salida'),
+      (5, '2026-11-12', '09:06', 'entrada'),
+      (5, '2026-11-12', '14:04', 'pausa'),
+      (5, '2026-11-12', '14:46', 'reanudar'),
+      (5, '2026-11-12', '18:02', 'salida'),
+      (5, '2026-11-13', '08:02', 'entrada'),
+      (5, '2026-11-13', '15:11', 'salida'),
+      (5, '2026-11-16', '08:47', 'entrada'),
+      (5, '2026-11-16', '14:01', 'pausa'),
+      (5, '2026-11-16', '14:52', 'reanudar'),
+      (5, '2026-11-16', '18:12', 'salida'),
+      (5, '2026-11-17', '08:53', 'entrada'),
+      (5, '2026-11-17', '14:09', 'pausa'),
+      (5, '2026-11-17', '14:55', 'reanudar'),
+      (5, '2026-11-17', '18:12', 'salida'),
+      (5, '2026-11-18', '08:52', 'entrada'),
+      (5, '2026-11-18', '14:06', 'pausa'),
+      (5, '2026-11-18', '14:49', 'reanudar'),
+      (5, '2026-11-18', '18:05', 'salida'),
+      (5, '2026-11-19', '09:07', 'entrada'),
+      (5, '2026-11-19', '14:05', 'pausa'),
+      (5, '2026-11-19', '14:54', 'reanudar'),
+      (5, '2026-11-19', '18:13', 'salida'),
+      (5, '2026-11-20', '08:04', 'entrada'),
+      (5, '2026-11-20', '15:06', 'salida'),
+      (5, '2026-11-23', '09:05', 'entrada'),
+      (5, '2026-11-23', '14:09', 'pausa'),
+      (5, '2026-11-23', '14:50', 'reanudar'),
+      (5, '2026-11-23', '18:01', 'salida'),
+      (5, '2026-11-24', '08:59', 'entrada'),
+      (5, '2026-11-24', '14:08', 'pausa'),
+      (5, '2026-11-24', '14:51', 'reanudar')
+    ) as r(t, dia, hora, tipo)
+    where (r.dia || ' ' || r.hora)::timestamp at time zone 'Europe/Madrid' <= now()
+    order by r.dia, r.hora;
+    -- Correcciones: Javier olvidó fichar la salida del viernes 13/11 (pendiente) y Lucía corrigió una entrada (aprobada)
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, motivo, registrado_por)
+    values (o, t2, 'salida', '2026-11-13 15:02'::timestamp at time zone 'Europe/Madrid', 'correccion', 'pendiente', 'Me olvidé de fichar la salida: salí a las 15:00 como cada viernes', 'de300000-0000-4000-8000-000000000102');
+    insert into public.fichajes (owner_id, trabajador_id, tipo, momento, origen, estado, motivo, registrado_por, revisado_por, revisado_at)
+    values (o, t3, 'entrada', '2026-10-21 08:40'::timestamp at time zone 'Europe/Madrid', 'correccion', 'valido', 'La app no cargaba en el metro: entré a las 8:40', 'de300000-0000-4000-8000-000000000103', o, '2026-10-21 12:00+02');
+  end if;
+
+  -- ---------------------------------------------------------- Solicitud de cambio de IRPF (Lucía, pendiente)
+  if to_regclass('public.solicitudes_irpf') is not null then
+    insert into public.solicitudes_irpf (owner_id, trabajador_id, pct_actual, pct_solicitado, desde, comentario, estado, solicitada_por, created_at)
+    values (o, t3, 16, 18, '2026-12', 'Me he comprado un piso este año y prefiero que me retengan un poco más para no pagar en la renta.', 'pendiente', 'de300000-0000-4000-8000-000000000103', '2026-11-18 09:30+01');
+  end if;
 
   -- ---------------------------------------------------------- Impuestos
   insert into public.impuestos (owner_id, modelo, anio, periodo, resultado, importe, fecha_presentacion, notas) values (o, '303', 2026, '1T', 'ingresar', 9851.01, '2026-04-17', 'IVA repercutido 27237€ · soportado deducible 17385.99€');
@@ -684,5 +1825,7 @@ select p.nombre, p.email, p.es_demo,
   (select sum(base) from public.invoices i where i.owner_id = p.id) ventas_sin_iva,
   (select count(*) from public.expenses e where e.owner_id = p.id) gastos,
   (select count(*) from public.trabajadores t where t.owner_id = p.id) trabajadores,
-  (select count(*) from public.nominas n where n.owner_id = p.id) nominas
+  (select count(*) from public.nominas n where n.owner_id = p.id) nominas,
+  (select count(*) from public.trabajador_documentos d where d.owner_id = p.id) documentos,
+  (select count(*) from public.miembros m where m.cuenta_id = p.id) usuarios
 from public.profiles p where p.es_demo;

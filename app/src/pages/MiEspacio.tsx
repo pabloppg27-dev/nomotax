@@ -22,7 +22,7 @@ type Doc = { id: string; tipo: string; nombre: string | null; path: string; crea
 /** Portal del empleado: sus tickets de gasto, sus nóminas y sus documentos */
 export default function MiEspacio() {
   const { seccion } = useParams()
-  const { ownerId, owner, me, miembro } = useAuth()
+  const { ownerId, owner, me, miembro, viendoComo } = useAuth()
   const [tickets, setTickets] = useState<Expense[] | null>(null)
   const [nominas, setNominas] = useState<Nomina[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
@@ -37,8 +37,14 @@ export default function MiEspacio() {
 
   const cargar = useCallback(async () => {
     if (!ownerId || !me) return
+    // «Ver lo que ve X» (cuenta demo): sus tickets son los que subió su usuario, no el tuyo
+    const autor = viendoComo
+      ? ((await supabase.from('miembros').select('user_id').eq('cuenta_id', ownerId).eq('nombre', viendoComo.nombre).limit(1).maybeSingle()).data?.user_id ?? null)
+      : me.id
     const [t, n, d, f] = await Promise.all([
-      supabase.from('expenses').select('*').eq('owner_id', ownerId).eq('subido_por', me.id).order('created_at', { ascending: false }),
+      autor
+        ? supabase.from('expenses').select('*').eq('owner_id', ownerId).eq('subido_por', autor).order('created_at', { ascending: false })
+        : Promise.resolve({ data: [] }),
       trabajadorId
         ? supabase.from('nominas').select('*').eq('owner_id', ownerId).eq('trabajador_id', trabajadorId).eq('estado', 'publicada').order('anio', { ascending: false }).order('mes', { ascending: false })
         : Promise.resolve({ data: [] }),
@@ -51,7 +57,7 @@ export default function MiEspacio() {
     setNominas((n.data as Nomina[]) ?? [])
     setDocs((d.data as Doc[]) ?? [])
     setFicha((f.data as Trabajador) ?? null)
-  }, [ownerId, me, trabajadorId])
+  }, [ownerId, me, trabajadorId, viendoComo])
 
   useEffect(() => {
     cargar()

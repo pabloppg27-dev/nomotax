@@ -24,7 +24,7 @@ export default function DescargaFichajes({ trabajadorId, nombre, dni }: { trabaj
     const hasta = new Date(a, m, 1)
     setCargando(true)
     let fs: Fichaje[]
-    if (enDemo() || viendoComo) fs = fichajesDemo().filter((f) => f.trabajador_id === 'd1')
+    if (enDemo()) fs = fichajesDemo().filter((f) => f.trabajador_id === 'd1')
     else {
       const { data, error } = await supabase
         .from('fichajes')
@@ -38,6 +38,8 @@ export default function DescargaFichajes({ trabajadorId, nombre, dni }: { trabaj
         return notify('No se ha podido descargar', 'error')
       }
       fs = (data as Fichaje[]) ?? []
+      // Cuenta demo sin fichajes cargados: uno de ejemplo
+      if (viendoComo && !fs.length) fs = fichajesDemo().filter((f) => f.trabajador_id === 'd1')
     }
     fs = fs.filter((f) => new Date(f.momento) >= desde && new Date(f.momento) < hasta)
     setCargando(false)

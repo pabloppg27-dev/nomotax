@@ -27,12 +27,14 @@ export default function Fichar() {
   }, [simulando])
 
   const cargar = useCallback(async () => {
-    if (demo) return setFs((x) => x ?? fichajesDemo().filter((f) => f.trabajador_id === 'd1'))
+    if (local) return setFs((x) => x ?? fichajesDemo().filter((f) => f.trabajador_id === 'd1'))
     if (!ownerId || !trabajadorId) return setFs([])
     const desde = new Date(Date.now() - 62 * 86400000).toISOString()
     const { data } = await supabase.from('fichajes').select('*').eq('trabajador_id', trabajadorId).gte('momento', desde).order('momento')
-    setFs((data as Fichaje[]) ?? [])
-  }, [ownerId, trabajadorId, demo])
+    // «Ver lo que ve X»: su registro real; si la demo no tiene fichajes cargados, uno de ejemplo
+    if (viendoComo && !data?.length) return setFs((x) => x ?? fichajesDemo().filter((f) => f.trabajador_id === 'd1'))
+    setFs((x) => (viendoComo && x?.length ? x : (data as Fichaje[]) ?? []))
+  }, [ownerId, trabajadorId, local, viendoComo])
 
   useEffect(() => {
     cargar()
