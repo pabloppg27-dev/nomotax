@@ -18,21 +18,19 @@ const FILTROS: { id: 'todos' | QuoteEstado; label: string }[] = [
 ]
 
 export default function Presupuestos() {
-  const { ownerId } = useAuth()
+  const { ownerId, soloDe } = useAuth()
   const navigate = useNavigate()
   const [lista, setLista] = useState<Quote[] | null>(null)
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['id']>('todos')
 
   useEffect(() => {
     if (!ownerId) return
-    supabase
-      .from('quotes')
-      .select('*')
-      .eq('owner_id', ownerId)
-      .order('fecha', { ascending: false })
+    let q = supabase.from('quotes').select('*').eq('owner_id', ownerId)
+    if (soloDe) q = q.eq('creado_por', soloDe) // comercial: solo los suyos
+    q.order('fecha', { ascending: false })
       .order('created_at', { ascending: false })
       .then(({ data }) => setLista((data as Quote[]) ?? []))
-  }, [ownerId])
+  }, [ownerId, soloDe])
 
   const visibles = useMemo(() => (lista ?? []).filter((q) => filtro === 'todos' || q.estado === filtro), [lista, filtro])
 

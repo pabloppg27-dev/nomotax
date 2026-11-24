@@ -142,8 +142,10 @@ export default function FichaTrabajador() {
           <Button
             variant="secondary"
             icon={<Eye className="size-4" />}
-            onClick={() => {
-              verComoTrabajador({ id: t.id, nombre: t.nombre.split(' ')[0], rol: rolDemo(t.puesto) })
+            onClick={async () => {
+              // Su usuario en la empresa (para sus tickets y, si es comercial, solo sus ventas)
+              const { data: m } = await supabase.from('miembros').select('user_id').eq('cuenta_id', t.owner_id).or(`trabajador_id.eq.${t.id},nombre.eq."${t.nombre}"`).limit(1).maybeSingle()
+              verComoTrabajador({ id: t.id, nombre: t.nombre.split(' ')[0], rol: rolDemo(t.puesto), userId: (m?.user_id as string | undefined) ?? null })
               navigate(rolDemo(t.puesto) === 'comercial' ? '/presupuestos' : '/mi-espacio/nominas')
             }}
           >

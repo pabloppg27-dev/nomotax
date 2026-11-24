@@ -17,7 +17,7 @@ import { Button, Card, Loading, cx } from '../components/ui'
 type Datos = { facturas: Invoice[]; gastos: Expense[]; presupuestos: Quote[]; nominas: Nomina[] }
 
 export default function Resumen() {
-  const { ownerId, owner, viewingOther, puede } = useAuth()
+  const { ownerId, owner, viewingOther, puede, soloDe } = useAuth()
   // Cada uno ve lo de sus módulos: el comercial, por ejemplo, solo las ventas
   const verGastos = puede('gastos')
   // Las nóminas cuentan como gasto de personal (solo para quien puede ver nóminas)
@@ -52,12 +52,14 @@ export default function Resumen() {
     const desde = cargaDesde
     const hasta = cargaHasta
     const nada = Promise.resolve({ data: [] })
+    // Comercial: solo sus ventas
+    const deComercial = <T extends { eq: (c: string, v: string) => T }>(q: T) => (soloDe ? q.eq('creado_por', soloDe) : q)
     Promise.all([
-      verVentas ? supabase.from('invoices').select('*').eq('owner_id', ownerId).neq('estado', 'borrador') : nada,
+      verVentas ? deComercial(supabase.from('invoices').select('*').eq('owner_id', ownerId).neq('estado', 'borrador')) : nada,
       verGastos
         ? supabase.from('expenses').select('*').eq('owner_id', ownerId).or(`and(fecha.gte.${desde},fecha.lte.${hasta}),estado.eq.pendiente`)
         : nada,
-      verVentas ? supabase.from('quotes').select('*').eq('owner_id', ownerId).in('estado', ['enviado', 'aceptado']) : nada,
+      verVentas ? deComercial(supabase.from('quotes').select('*').eq('owner_id', ownerId).in('estado', ['enviado', 'aceptado'])) : nada,
       verNominas
         ? supabase.from('nominas').select('*').eq('owner_id', ownerId).eq('estado', 'publicada')
             .gte('anio', Number(desde.slice(0, 4))).lte('anio', Number(hasta.slice(0, 4)))
@@ -70,7 +72,7 @@ export default function Resumen() {
         nominas: (n.data as Nomina[]) ?? [],
       }),
     )
-  }, [ownerId, cargaDesde, cargaHasta, verVentas, verGastos, verNominas])
+  }, [ownerId, cargaDesde, cargaHasta, verVentas, verGastos, verNominas, soloDe])
 
   const calc = useMemo(() => {
     if (!datos) return null

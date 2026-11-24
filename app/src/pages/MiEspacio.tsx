@@ -38,8 +38,8 @@ export default function MiEspacio() {
   const cargar = useCallback(async () => {
     if (!ownerId || !me) return
     // «Ver lo que ve X» (cuenta demo): sus tickets son los que subió su usuario, no el tuyo
-    let autor: string | null = me.id
-    if (viendoComo) {
+    let autor: string | null = viendoComo ? viendoComo.userId ?? null : me.id
+    if (viendoComo && !autor) {
       const m = supabase.from('miembros').select('user_id').eq('cuenta_id', ownerId).limit(1)
       // Por su ficha; si su rol no la guarda (comercial), por el nombre
       autor = (await m.eq('trabajador_id', viendoComo.id).maybeSingle()).data?.user_id ?? null

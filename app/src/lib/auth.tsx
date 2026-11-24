@@ -33,9 +33,11 @@ interface AuthState {
   /** Usuario «member» al que ya no le queda ninguna empresa */
   sinAcceso: boolean
   /** Solo en una cuenta demo: el trabajador cuya vista se está enseñando («ver como el trabajador») */
-  viendoComo: { id: string; nombre: string; rol: 'empleado' | 'comercial' } | null
+  viendoComo: VerComo | null
   /** Entrar o salir de la vista de un trabajador (solo hace algo en una cuenta demo) */
-  verComoTrabajador: (t: { id: string; nombre: string; rol: 'empleado' | 'comercial' } | null) => void
+  verComoTrabajador: (t: VerComo | null) => void
+  /** Comercial: solo ve las facturas, presupuestos y clientes que ha hecho él (id de su usuario); null = todo */
+  soloDe: string | null
   setOwner: (id: string | null) => Promise<void>
   refresh: () => Promise<void>
   signOut: () => Promise<void>
@@ -105,12 +107,14 @@ export function verFichaDev(): boolean {
 const VER_COMO_KEY = 'nt-ver-trabajador'
 
 /** Trabajador de una cuenta demo cuya vista se enseña, con el rol con el que entraría (empleado o comercial) */
-export type VerComo = { id: string; nombre: string; rol: 'empleado' | 'comercial' }
+export type VerComo = { id: string; nombre: string; rol: 'empleado' | 'comercial'; userId?: string | null }
 
 function leerVerComo(): VerComo | null {
   try {
     const v = JSON.parse(sessionStorage.getItem(VER_COMO_KEY) ?? 'null')
-    return v && typeof v.id === 'string' ? { id: v.id, nombre: String(v.nombre ?? ''), rol: v.rol === 'comercial' ? 'comercial' : 'empleado' } : null
+    return v && typeof v.id === 'string'
+      ? { id: v.id, nombre: String(v.nombre ?? ''), rol: v.rol === 'comercial' ? 'comercial' : 'empleado', userId: typeof v.userId === 'string' ? v.userId : null }
+      : null
   } catch {
     return null
   }
@@ -256,6 +260,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sinAcceso: me?.role === 'member' && !other,
       viendoComo,
       verComoTrabajador,
+      // En la vista demo, el usuario del trabajador; si no se sabe, ninguno (no enseñar lo de todo el equipo)
+      soloDe: rol === 'comercial' ? (viendoComo ? viendoComo.userId || '00000000-0000-0000-0000-000000000000' : me?.id ?? null) : null,
       setOwner,
       refresh,
       signOut,

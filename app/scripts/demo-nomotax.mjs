@@ -403,6 +403,9 @@ const TICKETS = [
   const base = r2(total / (1 + iva / 100))
   return { id: `ticket-${i + 1}`, w: TRAB.find((x) => x.v === v), fecha, hora, proveedor, nif, direccion, categoria, concepto, iva, lineas, total, base, cuota: r2(total - base), numero: `T${pad(1000 + i * 1371, 4)}` }
 })
+// Cartera de Pau (comercial): las facturas y presupuestos de estos clientes los ha hecho él
+const CARTERA_PAU = ['costa', 'bodegas', 'moda', 'academia']
+const autor = (k) => (CARTERA_PAU.includes(k) ? `'${TRAB[3].user}'` : 'null')
 const pdfs = generarPdfs({ APP, EMPRESA, CCC, TRAB, nominas, tickets: TICKETS, certificados })
 
 // ------------------------------------------------------------------ SQL
@@ -543,6 +546,18 @@ for (const c of CLIENTES) {
 }
 const snap = (c) => ({ nombre: c.nombre, nif: c.nif, email: c.email, direccion: c.direccion, cp: c.cp, ciudad: c.ciudad, provincia: c.provincia, pais: c.pais })
 
+out(`
+  -- ---------------------------------------------------------- Usuarios de los trabajadores (sin contraseña: no pueden entrar)`)
+for (const w of TRAB) {
+  out(`  if not exists (select 1 from auth.users where id = '${w.user}') then
+    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change)
+    values ('${w.user}', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '${w.email}', '', now(),
+      '{"provider":"email","providers":["email"]}', ${q(JSON.stringify({ nombre: w.nombre }))}, now(), now(), '', '', '', '');
+  end if;
+  insert into public.profiles (id, email, nombre) values ('${w.user}', '${w.email}', ${q(w.nombre)}) on conflict (id) do nothing;
+  update public.profiles set role = 'member', nombre = ${q(w.nombre)} where id = '${w.user}';`)
+}
 out('\n  -- ---------------------------------------------------------- Presupuestos')
 const PRESUP = [
   ['bodegas', '2026-01-20', 'aceptado', [['Tienda online y club de vinos · Fase 1: diseño', 14500], ['Fase 2: desarrollo', 22000], ['Fase 3: lanzamiento', 9800]]],
@@ -557,15 +572,15 @@ for (const [k, fecha, estado, ls] of PRESUP) {
   const lineas = ls.map(([concepto, precio, cantidad = 1]) => ({ concepto, cantidad, precio, iva: 21 }))
   const base = r2(lineas.reduce((s, l) => s + l.precio * l.cantidad, 0))
   const cuota = r2(base * 0.21)
-  out(`  insert into public.quotes (owner_id, contact_id, cliente, serie, fecha, valido_hasta, lineas, base, cuota_iva, total, estado${estado === 'enviado' ? ', enviado_at, enviado_a' : ''}) values
-    (o, ${c.v}, ${j(snap(c))}, 'P', '${fecha}', '${sumarDias(fecha, 30)}', ${j(lineas)}, ${base}, ${cuota}, ${r2(base + cuota)}, '${estado}'${estado === 'enviado' ? `, '${fecha} 10:30+01', ${q(c.email)}` : ''});`)
+  out(`  insert into public.quotes (owner_id, contact_id, cliente, serie, fecha, valido_hasta, lineas, base, cuota_iva, total, creado_por, estado${estado === 'enviado' ? ', enviado_at, enviado_a' : ''}) values
+    (o, ${c.v}, ${j(snap(c))}, 'P', '${fecha}', '${sumarDias(fecha, 30)}', ${j(lineas)}, ${base}, ${cuota}, ${r2(base + cuota)}, ${autor(k)}, '${estado}'${estado === 'enviado' ? `, '${fecha} 10:30+01', ${q(c.email)}` : ''});`)
 }
 
 out('\n  -- ---------------------------------------------------------- Facturas emitidas (las numera la app: F2026-0001…)')
 for (const f of facturas) {
   const c = C[f.k]
-  out(`  insert into public.invoices (owner_id, contact_id, origen, cliente, serie, fecha, vencimiento, lineas, base, cuota_iva, total, estado, fecha_cobro, notas, ocr) values
-    (o, ${c.v}, 'app', ${j(snap(c))}, 'F', '${f.fecha}', '${f.vencimiento}', ${j(f.lineas)}, ${f.base}, ${f.cuota}, ${f.total}, '${f.estado}', ${q(f.fecha_cobro)}, ${q(f.notas)}, marca);`)
+  out(`  insert into public.invoices (owner_id, contact_id, origen, cliente, serie, fecha, vencimiento, lineas, base, cuota_iva, total, estado, fecha_cobro, notas, creado_por, ocr) values
+    (o, ${c.v}, 'app', ${j(snap(c))}, 'F', '${f.fecha}', '${f.vencimiento}', ${j(f.lineas)}, ${f.base}, ${f.cuota}, ${f.total}, '${f.estado}', ${q(f.fecha_cobro)}, ${q(f.notas)}, ${autor(f.k)}, marca);`)
 }
 
 out('\n  -- ---------------------------------------------------------- Gastos (revisados y pagados)')
@@ -633,19 +648,9 @@ for (const w of TRAB) {
   }
 }
 
-out(`
-  -- ---------------------------------------------------------- Usuarios de los trabajadores (sin contraseña: no pueden entrar)
-  -- Salen en Usuarios con su rol: Pau es comercial y el resto empleados.`)
+out('\n  -- Accesos de los trabajadores a la empresa: Pau es comercial y el resto empleados')
 for (const w of TRAB) {
-  out(`  if not exists (select 1 from auth.users where id = '${w.user}') then
-    insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-      confirmation_token, recovery_token, email_change_token_new, email_change)
-    values ('${w.user}', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', '${w.email}', '', now(),
-      '{"provider":"email","providers":["email"]}', ${q(JSON.stringify({ nombre: w.nombre }))}, now(), now(), '', '', '', '');
-  end if;
-  insert into public.profiles (id, email, nombre) values ('${w.user}', '${w.email}', ${q(w.nombre)}) on conflict (id) do nothing;
-  update public.profiles set role = 'member', nombre = ${q(w.nombre)} where id = '${w.user}';
-  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
+  out(`  insert into public.miembros (cuenta_id, user_id, email, nombre, rol, trabajador_id, invitado_por, created_at)
     values (o, '${w.user}', '${w.email}', ${q(w.nombre)}, '${w.rol}', ${w.v}, o, '${w.inicio} 09:00+01');`)
 }
 out(`  -- Fichan con la app (columna de fichajes.sql)

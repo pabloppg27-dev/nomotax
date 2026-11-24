@@ -23,7 +23,7 @@ const FILTROS: { id: Filtro; label: string }[] = [
 ]
 
 export default function Facturas() {
-  const { ownerId, rol } = useAuth()
+  const { ownerId, rol, soloDe } = useAuth()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [lista, setLista] = useState<Invoice[] | null>(null)
@@ -35,16 +35,13 @@ export default function Facturas() {
 
   const cargar = useCallback(async () => {
     if (!ownerId) return [] as Invoice[]
-    const { data } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('owner_id', ownerId)
-      .order('fecha', { ascending: false })
-      .order('created_at', { ascending: false })
+    let q = supabase.from('invoices').select('*').eq('owner_id', ownerId)
+    if (soloDe) q = q.eq('creado_por', soloDe) // comercial: solo las suyas
+    const { data } = await q.order('fecha', { ascending: false }).order('created_at', { ascending: false })
     const l = (data as Invoice[]) ?? []
     setLista(l)
     return l
-  }, [ownerId])
+  }, [ownerId, soloDe])
 
   // ?ver=<id>: abre la factura subida (desde el panel de subidas o un enlace)
   const ver = params.get('ver')

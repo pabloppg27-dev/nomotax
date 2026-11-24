@@ -8,7 +8,7 @@ import ContactForm from '../components/ContactForm'
 import { Button, Card, Empty, Input, Loading, PageHeader, confirmar, notify } from '../components/ui'
 
 export default function Clientes() {
-  const { ownerId } = useAuth()
+  const { ownerId, soloDe } = useAuth()
   const [contactos, setContactos] = useState<Contact[] | null>(null)
   const [facturado, setFacturado] = useState<Record<string, number>>({})
   const [q, setQ] = useState('')
@@ -17,22 +17,30 @@ export default function Clientes() {
 
   const cargar = useCallback(async () => {
     if (!ownerId) return
-    const [c, f] = await Promise.all([
+    let fq = supabase.from('invoices').select('contact_id, base').eq('owner_id', ownerId).neq('estado', 'borrador').gte('fecha', `${new Date().getFullYear()}-01-01`)
+    if (soloDe) fq = fq.eq('creado_por', soloDe)
+    const [c, f, suyos] = await Promise.all([
       supabase.from('contacts').select('*').eq('owner_id', ownerId).order('nombre'),
-      supabase
-        .from('invoices')
-        .select('contact_id, base')
-        .eq('owner_id', ownerId)
-        .neq('estado', 'borrador')
-        .gte('fecha', `${new Date().getFullYear()}-01-01`),
+      fq,
+      // Comercial: sus clientes son los que ha dado de alta él o con los que tiene facturas o presupuestos
+      soloDe
+        ? Promise.all([
+            supabase.from('invoices').select('contact_id').eq('owner_id', ownerId).eq('creado_por', soloDe),
+            supabase.from('quotes').select('contact_id').eq('owner_id', ownerId).eq('creado_por', soloDe),
+          ])
+        : Promise.resolve(null),
     ])
-    setContactos((c.data as Contact[]) ?? [])
+    const todos = (c.data as Contact[]) ?? []
+    if (suyos) {
+      const ids = new Set([...(suyos[0].data ?? []), ...(suyos[1].data ?? [])].map((r) => r.contact_id as string | null))
+      setContactos(todos.filter((x) => ids.has(x.id) || (x as Contact & { creado_por?: string | null }).creado_por === soloDe))
+    } else setContactos(todos)
     const totales: Record<string, number> = {}
     for (const r of (f.data as { contact_id: string | null; base: number }[]) ?? []) {
       if (r.contact_id) totales[r.contact_id] = (totales[r.contact_id] ?? 0) + Number(r.base)
     }
     setFacturado(totales)
-  }, [ownerId])
+  }, [ownerId, soloDe])
 
   useEffect(() => {
     cargar()

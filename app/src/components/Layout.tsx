@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { enDemo } from '../lib/demoFichaje'
 import {
@@ -311,7 +312,8 @@ export default function Layout() {
             <button
               onClick={() => {
                 const id = viendoComo.id
-                verComoTrabajador(null)
+                // Primero salir de su vista (si no, Laboral aún no se puede ver y la app manda al inicio)
+                flushSync(() => verComoTrabajador(null))
                 navigate(`/laboral/trabajadores/${id}`)
               }}
               className="inline-flex items-center gap-1 font-medium text-lima underline-offset-2 hover:underline"
