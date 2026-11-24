@@ -25,12 +25,15 @@ import {
   CreditCard,
   type LucideIcon,
   Clock,
+  ArrowLeftRight,
+  Check,
+  ChevronDown,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
 import { useConfig } from './Configuracion'
 import type { Permiso, Profile, RolEnCuenta } from '../lib/types'
-import { cx } from './ui'
+import { cx, notify } from './ui'
 import { PlanLateral } from './Planes'
 import { TARJETAS_ACTIVAS } from '../lib/config'
 import { misTarjetas } from '../lib/tarjetas'
@@ -79,28 +82,51 @@ const guiaDe = (to: string) => `nav-${to.split('/').pop() || 'inicio'}`
 /** Nombre corto de una empresa */
 const nombreDe = (p: Pick<Profile, 'nombre' | 'email'> & { nombre_comercial?: string | null }) => p.nombre_comercial || p.nombre || p.email || 'Empresa'
 
-/** Para quien tiene acceso a varias empresas (la suya y/o las de otros): elegir cuál ver */
-function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
-  const { me, owner, accesos, propias, setOwner, rol } = useAuth()
-  const navigate = useNavigate()
+type OpcionCuenta = { id: string; nombre: string; rol?: string }
+
+/** Inicial de la cuenta para su circulito */
+const inicial = (s: string) => s.trim().charAt(0).toUpperCase() || '·'
+
+/**
+ * Las cuentas entre las que puede moverse esta persona: las suyas (la propia y las vinculadas:
+ * autónomo + SL…), solo con su nombre, y luego las empresas en las que es miembro, con su rol.
+ * null si no aplica (asesor, o quien solo tiene una cuenta sin más accesos).
+ */
+function useCuentas() {
+  const { me, owner, accesos, propias, rol } = useAuth()
   if (!me || !owner || me.role === 'advisor') return null
-  const propia = me.role !== 'member'
   if (accesos.length === 0 && propias.length === 0) return null
-  // Tus cuentas (la tuya y las vinculadas: autónomo + SL…), solo con su nombre; luego las empresas en las que eres miembro, con tu rol
-  const opciones: { id: string; texto: string }[] = [
-    ...(propia ? [{ id: me.id, texto: nombreDe(me) }] : []),
-    ...propias.map((c) => ({ id: c.id, texto: nombreDe(c) })),
+  const propia = me.role !== 'member'
+  const opciones: OpcionCuenta[] = [
+    ...(propia ? [{ id: me.id, nombre: nombreDe(me) }] : []),
+    ...propias.map((c) => ({ id: c.id, nombre: nombreDe(c) })),
     ...accesos
       .filter((a: Acceso) => !propias.some((c) => c.id === a.cuenta_id))
-      .map((a: Acceso) => ({ id: a.cuenta_id, texto: `${nombreDe(a.empresa)} · ${NOMBRE_ROL[a.rol]}` })),
+      .map((a: Acceso) => ({ id: a.cuenta_id, nombre: nombreDe(a.empresa), rol: NOMBRE_ROL[a.rol] })),
   ]
-  if (opciones.length < 2)
+  return {
+    opciones,
+    actual: owner.id,
+    nombre: nombreDe(owner),
+    rol: rol && rol !== 'titular' ? NOMBRE_ROL[rol] : null,
+    /** Hay a dónde cambiar */
+    varias: opciones.length > 1,
+  }
+}
+
+/** Escritorio: desplegable en la barra lateral para elegir qué empresa ver */
+function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
+  const { setOwner } = useAuth()
+  const navigate = useNavigate()
+  const cuentas = useCuentas()
+  if (!cuentas) return null
+  if (!cuentas.varias)
     return (
       <div className={cx('flex items-center gap-2 rounded-xl px-3 py-2 text-sm', oscuro ? 'bg-white/5 text-white/80' : 'bg-paper')}>
         <Building2 className="size-4 shrink-0" />
         <span className="truncate">
-          {nombreDe(owner)}
-          {rol && rol !== 'titular' && <span className={oscuro ? 'text-white/50' : 'text-muted'}> · {NOMBRE_ROL[rol]}</span>}
+          {cuentas.nombre}
+          {cuentas.rol && <span className={oscuro ? 'text-white/50' : 'text-muted'}> · {cuentas.rol}</span>}
         </span>
       </div>
     )
@@ -109,16 +135,17 @@ function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
       <Building2 className="size-4 shrink-0" />
       <span className="sr-only">Empresa</span>
       <select
-        value={owner.id}
+        value={cuentas.actual}
         onChange={async (e) => {
           await setOwner(e.target.value)
           navigate('/')
         }}
         className={cx('min-w-0 flex-1 truncate bg-transparent outline-none', oscuro && '[&>option]:text-ink')}
       >
-        {opciones.map((o) => (
+        {cuentas.opciones.map((o) => (
           <option key={o.id} value={o.id}>
-            {o.texto}
+            {o.nombre}
+            {o.rol ? ` · ${o.rol}` : ''}
           </option>
         ))}
       </select>
@@ -146,6 +173,19 @@ export default function Layout() {
   const location = useLocation()
   const [mas, setMas] = useState(false)
   useEffect(() => setMas(false), [location.pathname])
+  // Móvil: la cuenta en la que estás, siempre arriba; se cambia desde ahí o desde «Más»
+  const cuentas = useCuentas()
+  const [verCuentas, setVerCuentas] = useState(false)
+  const [destello, setDestello] = useState(false)
+  const cambiarCuenta = async (o: OpcionCuenta) => {
+    setVerCuentas(false)
+    if (!cuentas || o.id === cuentas.actual) return
+    await setOwner(o.id)
+    navigate('/')
+    notify(`Ahora estás en ${o.nombre}`)
+    setDestello(true)
+    setTimeout(() => setDestello(false), 1400)
+  }
   // «Mi tarjeta»: solo si la empresa le ha dado alguna tarjeta a esta persona
   const { ownerId } = useAuth()
   const [conTarjeta, setConTarjeta] = useState(false)
@@ -172,6 +212,13 @@ export default function Layout() {
   }
 
   const nombreCuenta = owner?.nombre || owner?.email || ''
+  /** Lo que va en «Más» (además de Configuración) */
+  const itemsMas: ItemNav[] = [
+    ...NAV.filter((n) => !FIJAS.includes(n.to)),
+    ...ESP.map((e) => ({ ...e, label: e.to.endsWith('tickets') ? 'Mis tickets' : e.label })),
+    ...(verAsesor ? [{ to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare }] : []),
+    ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
+  ]
 
   return (
     <div className="min-h-dvh lg:flex">
@@ -283,11 +330,42 @@ export default function Layout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Cabecera (móvil) */}
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-ink px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 lg:hidden">
-          <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
-            <Logo dark />
-          </NavLink>
-          <div className="flex items-center gap-1">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 lg:hidden">
+          {cuentas ? (
+            <div className="flex min-w-0 items-center gap-2.5">
+              <NavLink to="/" aria-label="Ir al resumen" className="shrink-0 rounded-lg">
+                <img src="/logo.png" alt="" className="size-9" />
+              </NavLink>
+              <div className="min-w-0 leading-tight">
+                <NavLink to="/" className="block text-[15px] font-semibold tracking-tight text-white">
+                  NomoTax
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={() => cuentas.varias && setVerCuentas(true)}
+                  disabled={!cuentas.varias}
+                  aria-label={cuentas.varias ? `Estás en ${cuentas.nombre}. Cambiar de cuenta` : `Estás en ${cuentas.nombre}`}
+                  className={cx(
+                    'mt-0.5 flex max-w-full items-center gap-1 rounded-full py-0.5 pl-0.5 pr-2 text-[12px] transition-colors duration-500',
+                    destello ? 'bg-lima text-ink' : 'bg-white/10 text-white/85',
+                    cuentas.varias && 'cursor-pointer active:bg-white/20',
+                  )}
+                >
+                  <span className="grid size-4 shrink-0 place-items-center rounded-full bg-lima text-[9px] font-semibold text-ink">{inicial(cuentas.nombre)}</span>
+                  <span className="truncate">
+                    {cuentas.nombre}
+                    {cuentas.rol && <span className="opacity-60"> · {cuentas.rol}</span>}
+                  </span>
+                  {cuentas.varias && <ChevronDown className="size-3 shrink-0 opacity-70" />}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
+              <Logo dark />
+            </NavLink>
+          )}
+          <div className="flex shrink-0 items-center gap-1">
             {verAsesor && (
               <NavLink to="/mi-asesor" data-guia="nav-mi-asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Mi asesor">
                 <MessagesSquare className="size-5" />
@@ -303,10 +381,6 @@ export default function Layout() {
             </button>
           </div>
         </header>
-
-        <div className="border-b border-line bg-white px-4 py-2 empty:hidden lg:hidden">
-          <SelectorEmpresa />
-        </div>
 
         {viendoComo && (
           <div className="flex flex-wrap items-center justify-between gap-2 bg-ink px-4 py-2 text-sm text-white lg:px-10">
@@ -388,12 +462,7 @@ export default function Layout() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {[
-                  ...NAV.filter((n) => !FIJAS.includes(n.to)),
-                  ...ESP.map((e) => ({ ...e, label: e.to.endsWith('tickets') ? 'Mis tickets' : e.label })),
-                  ...(verAsesor ? [{ to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare }] : []),
-                  ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
-                ].map(({ to, label, icon: Icon }) => (
+                {itemsMas.map(({ to, label, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={to}
@@ -415,10 +484,74 @@ export default function Layout() {
                   <Settings className="size-6" />
                   Configuración
                 </button>
+                {cuentas?.varias && (
+                  <button
+                    onClick={() => {
+                      setMas(false)
+                      setVerCuentas(true)
+                    }}
+                    // Rellena los huecos de la última fila (si solo queda uno, va en su propia fila)
+                    className={cx(
+                      'flex min-w-0 items-center gap-2.5 rounded-2xl bg-ink px-3 py-3 text-left text-white active:bg-ink-3',
+                      (itemsMas.length + 1) % 3 === 1 ? 'col-span-2' : 'col-span-3',
+                    )}
+                  >
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-lima text-sm font-semibold text-ink">{inicial(cuentas.nombre)}</span>
+                    <span className="min-w-0 flex-1 leading-tight">
+                      <span className="block text-xs text-white/60">Estás en</span>
+                      <span className="block truncate text-sm font-medium">{cuentas.nombre}</span>
+                    </span>
+                    <ArrowLeftRight className="size-5 shrink-0 text-lima" />
+                  </button>
+                )}
               </div>
               <button onClick={signOut} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm text-muted active:bg-paper">
                 <LogOut className="size-4" /> Cerrar sesión
               </button>
+            </div>
+          </div>
+        )}
+
+        {verCuentas && cuentas && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]" onClick={() => setVerCuentas(false)} />
+            <div
+              role="dialog"
+              aria-label="Cambiar de cuenta"
+              className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-white px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl"
+            >
+              <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
+              <div className="mb-3 flex items-center justify-between px-1">
+                <p className="font-semibold">Cambiar de cuenta</p>
+                <button onClick={() => setVerCuentas(false)} className="grid size-10 place-items-center rounded-full bg-paper" aria-label="Cerrar">
+                  <X className="size-5" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                {cuentas.opciones.map((o) => {
+                  const activa = o.id === cuentas.actual
+                  return (
+                    <button
+                      key={o.id}
+                      onClick={() => cambiarCuenta(o)}
+                      aria-current={activa}
+                      className={cx(
+                        'flex items-center gap-3 rounded-2xl px-3 py-3 text-left',
+                        activa ? 'border-2 border-ink' : 'border border-line active:bg-paper',
+                      )}
+                    >
+                      <span className={cx('grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold text-ink', activa ? 'bg-lima' : 'bg-paper')}>
+                        {inicial(o.nombre)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[15px] font-medium">{o.nombre}</span>
+                        {o.rol && <span className="block text-xs text-muted">{o.rol}</span>}
+                      </span>
+                      {activa && <Check className="size-5 shrink-0" />}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
