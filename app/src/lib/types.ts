@@ -34,6 +34,8 @@ export interface Profile {
   nombre: string | null
   /** Marca con la que factura un autónomo; en el PDF va encima del nombre legal */
   nombre_comercial?: string | null
+  /** Cuenta de demostración (supabase/carga-demo-nomotax.sql): permite «ver como el trabajador» */
+  es_demo?: boolean | null
   nif: string | null
   direccion: string | null
   cp: string | null

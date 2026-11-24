@@ -32,6 +32,10 @@ interface AuthState {
   puede: (p: Permiso) => boolean
   /** Usuario «member» al que ya no le queda ninguna empresa */
   sinAcceso: boolean
+  /** Solo en una cuenta demo: el trabajador cuya vista se está enseñando («ver como el trabajador») */
+  viendoComo: { id: string; nombre: string } | null
+  /** Entrar o salir de la vista de un trabajador (solo hace algo en una cuenta demo) */
+  verComoTrabajador: (t: { id: string; nombre: string } | null) => void
   setOwner: (id: string | null) => Promise<void>
   refresh: () => Promise<void>
   signOut: () => Promise<void>
@@ -98,8 +102,29 @@ export function verFichaDev(): boolean {
   }
 }
 
+const VER_COMO_KEY = 'nt-ver-trabajador'
+
+function leerVerComo(): { id: string; nombre: string } | null {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(VER_COMO_KEY) ?? 'null')
+    return v && typeof v.id === 'string' ? { id: v.id, nombre: String(v.nombre ?? '') } : null
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
+  const [verComo, setVerComo] = useState(leerVerComo)
+  const verComoTrabajador = useCallback((t: { id: string; nombre: string } | null) => {
+    try {
+      if (t) sessionStorage.setItem(VER_COMO_KEY, JSON.stringify(t))
+      else sessionStorage.removeItem(VER_COMO_KEY)
+    } catch {
+      /* almacenamiento no disponible */
+    }
+    setVerComo(t)
+  }, [])
   const [me, setMe] = useState<Profile | null>(null)
   const [other, setOther] = useState<Profile | null>(null)
   const [accesos, setAccesos] = useState<Acceso[]>([])
@@ -193,7 +218,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else rol = miembro?.rol ?? null
     }
     // Solo en local (npm run dev): http://localhost:5173/?verComo=empleado | comercial | socio | admin | titular  (+ &ficha=1: además es trabajador)
-    const simulado = verComoDev()
+    // Cuenta demo: enseñar lo que ve un trabajador (su espacio con sus nóminas y su ficha), sin entrar con su usuario
+    const viendoComo = owner?.es_demo && rol && verComo ? verComo : null
+    if (viendoComo && owner) {
+      rol = 'empleado'
+      miembro = {
+        id: 'demo', cuenta_id: owner.id, user_id: me?.id ?? '', email: '', nombre: viendoComo.nombre, rol: 'empleado',
+        permisos: {}, trabajador_id: viendoComo.id, fichaje: false, activo: true, invitado_por: null, created_at: '', updated_at: '',
+        empresa: { id: owner.id, nombre: owner.nombre, email: owner.email, nombre_comercial: owner.nombre_comercial },
+      }
+    }
+    const simulado = viendoComo ? null : verComoDev()
     if (simulado && rol) {
       rol = simulado
       // &ficha=1 simula que además tiene ficha de trabajador (comercial o admin que también es trabajador)
@@ -216,11 +251,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       rol,
       puede: (p: Permiso) => puedeRol(rol, miembro?.permisos, p),
       sinAcceso: me?.role === 'member' && !other,
+      viendoComo,
+      verComoTrabajador,
       setOwner,
       refresh,
       signOut,
     }
-  }, [session, loading, me, other, accesos, setOwner, refresh, signOut])
+  }, [session, loading, me, other, accesos, verComo, verComoTrabajador, setOwner, refresh, signOut])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

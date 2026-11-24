@@ -136,7 +136,7 @@ function Logo({ dark = false }: { dark?: boolean }) {
 }
 
 export default function Layout() {
-  const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede, miembro } = useAuth()
+  const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede, miembro, viendoComo, verComoTrabajador } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [mas, setMas] = useState(false)
@@ -302,6 +302,24 @@ export default function Layout() {
         <div className="border-b border-line bg-white px-4 py-2 empty:hidden lg:hidden">
           <SelectorEmpresa />
         </div>
+
+        {viendoComo && (
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-ink px-4 py-2 text-sm text-white lg:px-10">
+            <span>
+              Estás viendo lo que ve <strong>{viendoComo.nombre}</strong> al entrar con su usuario
+            </span>
+            <button
+              onClick={() => {
+                const id = viendoComo.id
+                verComoTrabajador(null)
+                navigate(`/laboral/trabajadores/${id}`)
+              }}
+              className="inline-flex items-center gap-1 font-medium text-lima underline-offset-2 hover:underline"
+            >
+              <ArrowLeft className="size-4" /> Volver a la ficha
+            </button>
+          </div>
+        )}
 
         {viewingOther && (
           <div className="flex flex-wrap items-center justify-between gap-2 bg-lima px-4 py-2 text-sm text-ink lg:px-10">

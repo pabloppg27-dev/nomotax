@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, FileText, Paperclip, Pencil, Trash2, Upload } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Eye, FileText, Paperclip, Pencil, Trash2, Upload } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import { BUCKET, abrirDocumento, errorMessage, supabase } from '../../lib/supabase'
 import { eur, fecha, hoyISO, num, sumarDias } from '../../lib/format'
@@ -24,7 +24,7 @@ import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, confirmar
 export default function FichaTrabajador() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { ownerId, isAdvisor, me } = useAuth()
+  const { ownerId, isAdvisor, me, owner, verComoTrabajador } = useAuth()
   const [t, setT] = useState<Trabajador | null>(null)
   const [docs, setDocs] = useState<DocTrabajador[]>([])
   const [nominas, setNominas] = useState<Nomina[]>([])
@@ -135,6 +135,18 @@ export default function FichaTrabajador() {
             {t.puesto ? t.puesto.split('.')[0] : 'Sin puesto'} · {nombreContrato(t.tipo_contrato)} · desde {fecha(t.fecha_inicio)}
           </p>
         </div>
+        {owner?.es_demo && (
+          <Button
+            variant="secondary"
+            icon={<Eye className="size-4" />}
+            onClick={() => {
+              verComoTrabajador({ id: t.id, nombre: t.nombre.split(' ')[0] })
+              navigate('/mi-espacio/nominas')
+            }}
+          >
+            Ver lo que ve {t.nombre.split(' ')[0]}
+          </Button>
+        )}
         {editableCliente && (
           <div className="flex gap-2">
             <Button variant="secondary" icon={<Pencil className="size-4" />} onClick={() => navigate(`/laboral/alta/${t.id}`)}>
