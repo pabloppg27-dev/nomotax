@@ -15,6 +15,9 @@
 -- =====================================================================
 
 alter table public.profiles add column if not exists es_demo boolean not null default false;
+alter table public.profiles add column if not exists nombre_comercial text;
+alter table public.quotes add column if not exists enviado_at timestamptz;
+alter table public.quotes add column if not exists enviado_a text;
 alter table public.trabajadores add column if not exists irpf_pct numeric(5,2);
 alter table public.trabajadores add column if not exists convenio text;
 alter table public.trabajadores add column if not exists clasificacion text;
