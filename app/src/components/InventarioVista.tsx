@@ -46,7 +46,6 @@ export default function InventarioVista({
 }) {
   const inv = datos.inventario
   const corte = hasta < hoyISO() ? hasta : hoyISO()
-  const [abierto, setAbierto] = useState<string | null>(null)
   const [producto, setProducto] = useState<Partial<Producto> | null>(null)
   const [ajuste, setAjuste] = useState<{ producto_id?: string } | null>(null)
   const [recuento, setRecuento] = useState(false)
@@ -204,8 +203,9 @@ export default function InventarioVista({
               <div
                 role="button"
                 tabIndex={0}
-                className="flex cursor-pointer items-center gap-3 px-4 py-3 active:bg-paper"
-                onClick={() => setAbierto(abierto === p.id ? null : p.id)}
+                aria-label={`Ajustar stock de ${p.nombre}`}
+                className="flex cursor-pointer items-center gap-2 px-4 py-3 active:bg-paper"
+                onClick={() => setAjuste({ producto_id: p.id })}
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium leading-snug">
@@ -225,6 +225,16 @@ export default function InventarioVista({
                   </p>
                 </div>
                 <button
+                  className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-white text-ink active:bg-ink/5"
+                  aria-label={`Informe de ${p.nombre}`}
+                  onClick={(ev) => {
+                    ev.stopPropagation()
+                    setInforme(p)
+                  }}
+                >
+                  <BarChart3 className="size-4" />
+                </button>
+                <button
                   className="-mr-2 grid size-9 shrink-0 place-items-center rounded-full text-muted active:bg-ink/5"
                   aria-label="Editar producto"
                   onClick={(ev) => {
@@ -235,19 +245,6 @@ export default function InventarioVista({
                   <Pencil className="size-4" />
                 </button>
               </div>
-              {abierto === p.id && (
-                <div className="bg-paper/60 px-4 py-3">
-                  <Movimientos movs={movs.filter((m) => m.producto_id === p.id && m.fecha <= corte)} unidad={p.unidad} />
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Button variant="secondary" size="sm" icon={<BarChart3 className="size-4" />} onClick={() => setInforme(p)}>
-                      Ver informe
-                    </Button>
-                    <Button variant="ghost" size="sm" icon={<SlidersHorizontal className="size-4" />} onClick={() => setAjuste({ producto_id: p.id })}>
-                      Ajustar stock
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           )
         })}
@@ -266,7 +263,7 @@ export default function InventarioVista({
       </Card>
 
       <Card className="hidden overflow-x-auto sm:block">
-        <table className="num w-full min-w-[860px] text-left text-sm">
+        <table className="num w-full min-w-[960px] text-left text-sm">
           <thead className="border-b border-line bg-paper text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-3 py-2.5 font-medium">Referencia</th>
@@ -277,7 +274,7 @@ export default function InventarioVista({
               <th className="px-3 py-2.5 text-right font-medium">Precio venta</th>
               <th className="px-3 py-2.5 text-right font-medium">Margen</th>
               <th className="px-3 py-2.5 text-right font-medium">Valor</th>
-              <th className="w-10" />
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -285,7 +282,7 @@ export default function InventarioVista({
               const e = stock.get(p.id) ?? VACIO
               return (
                 <Fragment key={p.id}>
-                  <tr className="cursor-pointer border-b border-line hover:bg-paper" title="Ver informe del producto" onClick={() => setInforme(p)}>
+                  <tr className="cursor-pointer border-b border-line hover:bg-paper" title="Ajustar stock" onClick={() => setAjuste({ producto_id: p.id })}>
                     <td className="px-3 py-2.5 text-muted">{p.referencia || '—'}</td>
                     <td className="px-3 py-2.5 font-medium">
                       {p.nombre} {!p.activo && <Badge>Archivado</Badge>}
@@ -300,17 +297,30 @@ export default function InventarioVista({
                       {margen(p.precio_venta, e.coste) ? `${num(margen(p.precio_venta, e.coste)!.pct, 1)}%` : <span className="text-muted">—</span>}
                     </td>
                     <td className="px-3 py-2.5 text-right font-medium">{eur(e.valor)}</td>
-                    <td className="px-2 py-2.5">
-                      <button
-                        className="grid size-8 place-items-center rounded-full text-muted hover:bg-ink/5 hover:text-ink"
-                        aria-label="Editar producto"
-                        onClick={(ev) => {
-                          ev.stopPropagation()
-                          setProducto(p)
-                        }}
-                      >
-                        <Pencil className="size-4" />
-                      </button>
+                    <td className="px-2 py-2">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={<BarChart3 className="size-4" />}
+                          onClick={(ev) => {
+                            ev.stopPropagation()
+                            setInforme(p)
+                          }}
+                        >
+                          Informe
+                        </Button>
+                        <button
+                          className="grid size-8 place-items-center rounded-full text-muted hover:bg-ink/5 hover:text-ink"
+                          aria-label="Editar producto"
+                          onClick={(ev) => {
+                            ev.stopPropagation()
+                            setProducto(p)
+                          }}
+                        >
+                          <Pencil className="size-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </Fragment>
