@@ -171,11 +171,11 @@ export function datosCuenta(c: CuentaBancaria, idioma: Idioma): { principales: [
   return { principales, otros }
 }
 
-/** En una línea, para el correo: «IBAN ES12 3456 … · SWIFT/BIC BBVAESMM» */
+/** En una línea, para el correo: «IBAN ES12 3456 … | SWIFT/BIC BBVAESMM» */
 export const textoCuenta = (c: CuentaBancaria, idioma: Idioma) =>
   datosCuenta(c, idioma)
     .principales.map(([k, v]) => `${k} ${v}`)
-    .join(' · ')
+    .join(' | ')
 
 /* ------------------------------------------------------------ Factura en otra moneda */
 

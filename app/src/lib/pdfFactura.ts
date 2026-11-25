@@ -135,7 +135,7 @@ export async function construirPdf(
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8.3)
   doc.setTextColor(...MUTED)
-  const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(' · ')
+  const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(' | ')
   for (const l of [emisor.nif ? `${nifEmisor} ${emisor.nif}` : '', ...direccionCompleta(emisor, idioma), contacto]) {
     if (!l) continue
     doc.text(l, xE, yE, { maxWidth: anchoE })
@@ -371,8 +371,8 @@ export async function construirPdf(
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9.3)
       doc.setTextColor(...INK)
-      doc.text(`${T.transferenciaCorta} · IBAN`, M + 5, y + 11.5)
-      const xIban = M + 5 + doc.getTextWidth(`${T.transferenciaCorta} · IBAN`) + 1.6
+      doc.text(`${T.transferenciaCorta} | IBAN`, M + 5, y + 11.5)
+      const xIban = M + 5 + doc.getTextWidth(`${T.transferenciaCorta} | IBAN`) + 1.6
       doc.setFont('helvetica', 'bold')
       doc.text(iban.toUpperCase().replace(/\s+/g, ' ').trim(), xIban, y + 11.5)
       if (d.numero) {
@@ -479,7 +479,7 @@ export async function construirPdf(
     bloques.push([
       T.bloqueRectificativa,
       T.rectifica(inv.rectifica_numero ?? '', inv.rectifica_fecha ? fecha(inv.rectifica_fecha) : null) +
-        (causa ? ` ${T.causa}: ${causa.id} · ${causa.nombre}.` : '') +
+        (causa ? ` ${T.causa}: ${causa.id} | ${causa.nombre}.` : '') +
         (inv.motivo_rectificacion ? ` ${T.motivo}: ${inv.motivo_rectificacion}` : ''),
       false,
     ])
@@ -521,7 +521,7 @@ export async function construirPdf(
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7.3)
     doc.setTextColor(...MUTED)
-    const pie = [emisor.nombre, emisor.nif ? `${nifEmisor} ${emisor.nif}` : null].filter(Boolean).join(' · ')
+    const pie = [emisor.nombre, emisor.nif ? `${nifEmisor} ${emisor.nif}` : null].filter(Boolean).join(' | ')
     doc.text(pie, M, H - 10.5)
     doc.text(T.pagina(p, paginas), W - M, H - 10.5, { align: 'right' })
     if (pruebas && !borrador) {

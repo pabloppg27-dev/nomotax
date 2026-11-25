@@ -377,7 +377,7 @@ const TEXTOS = {
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE PRUEBAS",
 		avisoPruebas: "Documento generado en modo pruebas: no válido como factura.",
-		hechoCon: "Creado con NomoTax · nomotax.io",
+		hechoCon: "Creado con NomoTax | nomotax.io",
 		archivoFactura: "Factura",
 		archivoPresupuesto: "Presupuesto"
 	},
@@ -413,11 +413,11 @@ const TEXTOS = {
 		transferenciaCorta: "Bank transfer",
 		refPago: (n) => `Please quote ${n} as the payment reference.`,
 		contravalor: "Euro equivalent",
-		cambioBce: (f, c, m) => `ECB rate ${f}: 1 EUR = ${c} ${m}`,
+		cambioBce: (f, c, m) => `ECB rate ${f}: 1€ = ${c} ${m}`,
 		pagina: (p, n) => `Page ${p} of ${n}`,
 		marcaPruebas: "TEST DOCUMENT",
 		avisoPruebas: "Generated in test mode: not valid as an invoice.",
-		hechoCon: "Made with NomoTax · nomotax.io",
+		hechoCon: "Made with NomoTax | nomotax.io",
 		archivoFactura: "Invoice",
 		archivoPresupuesto: "Quote"
 	},
@@ -453,11 +453,11 @@ const TEXTOS = {
 		transferenciaCorta: "Bonifico bancario",
 		refPago: (n) => `Indicare ${n} nella causale del bonifico.`,
 		contravalor: "Controvalore in euro",
-		cambioBce: (f, c, m) => `Cambio BCE ${f}: 1 EUR = ${c} ${m}`,
+		cambioBce: (f, c, m) => `Cambio BCE ${f}: 1€ = ${c} ${m}`,
 		pagina: (p, n) => `Pagina ${p} di ${n}`,
 		marcaPruebas: "DOCUMENTO DI PROVA",
 		avisoPruebas: "Generato in modalità di prova: non valido come fattura.",
-		hechoCon: "Creato con NomoTax · nomotax.io",
+		hechoCon: "Creato con NomoTax | nomotax.io",
 		archivoFactura: "Fattura",
 		archivoPresupuesto: "Preventivo"
 	},
@@ -493,11 +493,11 @@ const TEXTOS = {
 		transferenciaCorta: "Virement bancaire",
 		refPago: (n) => `Merci d’indiquer ${n} en référence du virement.`,
 		contravalor: "Contre-valeur en euros",
-		cambioBce: (f, c, m) => `Taux BCE ${f}: 1 EUR = ${c} ${m}`,
+		cambioBce: (f, c, m) => `Taux BCE ${f}: 1€ = ${c} ${m}`,
 		pagina: (p, n) => `Page ${p} sur ${n}`,
 		marcaPruebas: "DOCUMENT DE TEST",
 		avisoPruebas: "Généré en mode test : non valable comme facture.",
-		hechoCon: "Créé avec NomoTax · nomotax.io",
+		hechoCon: "Créé avec NomoTax | nomotax.io",
 		archivoFactura: "Facture",
 		archivoPresupuesto: "Devis"
 	},
@@ -533,11 +533,11 @@ const TEXTOS = {
 		transferenciaCorta: "Banküberweisung",
 		refPago: (n) => `Bitte geben Sie ${n} als Verwendungszweck an.`,
 		contravalor: "Gegenwert in Euro",
-		cambioBce: (f, c, m) => `EZB-Kurs ${f}: 1 EUR = ${c} ${m}`,
+		cambioBce: (f, c, m) => `EZB-Kurs ${f}: 1€ = ${c} ${m}`,
 		pagina: (p, n) => `Seite ${p} von ${n}`,
 		marcaPruebas: "TESTDOKUMENT",
 		avisoPruebas: "Im Testmodus erstellt: keine gültige Rechnung.",
-		hechoCon: "Erstellt mit NomoTax · nomotax.io",
+		hechoCon: "Erstellt mit NomoTax | nomotax.io",
 		archivoFactura: "Rechnung",
 		archivoPresupuesto: "Angebot"
 	},
@@ -573,11 +573,11 @@ const TEXTOS = {
 		transferenciaCorta: "Transferência bancária",
 		refPago: (n) => `Indique ${n} na referência da transferência.`,
 		contravalor: "Contravalor em euros",
-		cambioBce: (f, c, m) => `Taxa BCE ${f}: 1 EUR = ${c} ${m}`,
+		cambioBce: (f, c, m) => `Taxa BCE ${f}: 1€ = ${c} ${m}`,
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE TESTE",
 		avisoPruebas: "Gerado em modo de teste: não válido como fatura.",
-		hechoCon: "Criado com NomoTax · nomotax.io",
+		hechoCon: "Criado com NomoTax | nomotax.io",
 		archivoFactura: "Fatura",
 		archivoPresupuesto: "Orcamento"
 	}
@@ -800,8 +800,8 @@ function datosCuenta(c, idioma) {
 		otros
 	};
 }
-/** En una línea, para el correo: «IBAN ES12 3456 … · SWIFT/BIC BBVAESMM» */
-const textoCuenta = (c, idioma) => datosCuenta(c, idioma).principales.map(([k, v]) => `${k} ${v}`).join(" · ");
+/** En una línea, para el correo: «IBAN ES12 3456 … | SWIFT/BIC BBVAESMM» */
+const textoCuenta = (c, idioma) => datosCuenta(c, idioma).principales.map(([k, v]) => `${k} ${v}`).join(" | ");
 /** Precios pasados a la moneda de la factura (redondeados a céntimos) */
 const lineasEnMoneda = (lineas, tasa) => lineas.map((l) => ({
 	...l,
@@ -988,7 +988,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	doc.setFont("helvetica", "normal");
 	doc.setFontSize(8.3);
 	doc.setTextColor(...MUTED);
-	const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(" · ");
+	const contacto = [emisor.email, emisor.telefono].filter(Boolean).join(" | ");
 	for (const l of [
 		emisor.nif ? `${nifEmisor} ${emisor.nif}` : "",
 		...direccionCompleta(emisor, idioma),
@@ -1281,8 +1281,8 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			doc.setFont("helvetica", "normal");
 			doc.setFontSize(9.3);
 			doc.setTextColor(...INK);
-			doc.text(`${T.transferenciaCorta} · IBAN`, 23, y + 11.5);
-			const xIban = 23 + doc.getTextWidth(`${T.transferenciaCorta} · IBAN`) + 1.6;
+			doc.text(`${T.transferenciaCorta} | IBAN`, 23, y + 11.5);
+			const xIban = 23 + doc.getTextWidth(`${T.transferenciaCorta} | IBAN`) + 1.6;
 			doc.setFont("helvetica", "bold");
 			doc.text(iban.toUpperCase().replace(/\s+/g, " ").trim(), xIban, y + 11.5);
 			if (d.numero) {
@@ -1398,7 +1398,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		const causa = CAUSAS_RECTIFICACION.find((c) => c.id === inv.causa_rectificacion);
 		bloques.push([
 			T.bloqueRectificativa,
-			T.rectifica(inv.rectifica_numero ?? "", inv.rectifica_fecha ? fecha(inv.rectifica_fecha) : null) + (causa ? ` ${T.causa}: ${causa.id} · ${causa.nombre}.` : "") + (inv.motivo_rectificacion ? ` ${T.motivo}: ${inv.motivo_rectificacion}` : ""),
+			T.rectifica(inv.rectifica_numero ?? "", inv.rectifica_fecha ? fecha(inv.rectifica_fecha) : null) + (causa ? ` ${T.causa}: ${causa.id} | ${causa.nombre}.` : "") + (inv.motivo_rectificacion ? ` ${T.motivo}: ${inv.motivo_rectificacion}` : ""),
 			false
 		]);
 	}
@@ -1448,7 +1448,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(7.3);
 		doc.setTextColor(...MUTED);
-		const pie = [emisor.nombre, emisor.nif ? `${nifEmisor} ${emisor.nif}` : null].filter(Boolean).join(" · ");
+		const pie = [emisor.nombre, emisor.nif ? `${nifEmisor} ${emisor.nif}` : null].filter(Boolean).join(" | ");
 		doc.text(pie, M, 286.5);
 		doc.text(T.pagina(p, paginas), 192, 286.5, { align: "right" });
 		if (pruebas && !borrador) doc.text(T.avisoPruebas, W / 2, 279, { align: "center" });
@@ -1580,7 +1580,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 		const [titulo, ...resto] = String(l.concepto ?? "").split("\n");
 		const detalle = resto.join(" ").trim();
 		const cantidad = Number(l.cantidad || 0);
-		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${dinero(Number(l.precio), d.moneda)}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" · ");
+		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${dinero(Number(l.precio), d.moneda)}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" | ");
 		return `
       <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ""}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ""}
@@ -1594,7 +1594,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 		impuestos = fila(esc(T.base), esc(dinero(t.base, d.moneda))) + t.desglose.map((x) => fila(`${esc(T.impuesto)} ${x.tipo}%`, esc(dinero(x.cuota, d.moneda)))).join("") + (t.cuota_irpf ? fila(`${esc(T.retencion)} ${irpf}%`, `−${esc(dinero(t.cuota_irpf, d.moneda))}`) : "") + fila(esc(T.total.charAt(0) + T.total.slice(1).toLowerCase()), esc(dinero(d.total, d.moneda)), true);
 	}
 	const iban = textoPago(diseno.iban);
-	const contacto = [diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : "", diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ""))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : ""].filter(Boolean).join(" &nbsp;·&nbsp; ");
+	const contacto = [diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : "", diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ""))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : ""].filter(Boolean).join(" &nbsp;|&nbsp; ");
 	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e7e7e2">
@@ -1617,7 +1617,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
           <td style="font:14px/1.5 ${FONT$1};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${rect ? F.etiquetaRect : F.etiqueta}</span><br>
             <strong style="font-size:17px">${esc(d.numero)}</strong><br>
-            <span style="color:#6b6b66">${esc(fecha(d.fecha))}${d.vencimiento ? ` · ${F.vence}: ${esc(fecha(d.vencimiento))}` : ""}</span>
+            <span style="color:#6b6b66">${esc(fecha(d.fecha))}${d.vencimiento ? ` | ${F.vence}: ${esc(fecha(d.vencimiento))}` : ""}</span>
           </td>
           <td align="right" valign="top" style="font:14px/1.5 ${FONT$1};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${esc(T.total)}</span><br>
@@ -1641,7 +1641,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
     <p style="margin:18px 0 0 0">${F.saludo}<br><strong>${esc(diseno.empresa)}</strong></p>
   </td></tr>
 </table>
-<p style="font:12px ${FONT$1};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+<p style="font:12px ${FONT$1};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax | <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
 </td></tr></table></body></html>`;
 }
 /** Versión en texto plano (algunos programas de correo la prefieren) */
@@ -1658,18 +1658,18 @@ function textoCorreoFactura(mensaje, d, diseno) {
 		"",
 		mensaje.trim(),
 		"",
-		`${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} · ${fecha(d.fecha)}`,
+		`${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} | ${fecha(d.fecha)}`,
 		...lineas.map((l) => `· ${String(l.concepto).split("\n")[0]}: ${dinero(importeLinea(l), d.moneda)}`),
 		`${T.total}: ${dinero(d.total, d.moneda)}`,
 		iban ? F.pago(iban, d.numero).replace(/<[^>]+>/g, "") : "",
 		"",
 		F.dudas,
-		[diseno.respuesta, diseno.telefono].filter(Boolean).join(" · "),
+		[diseno.respuesta, diseno.telefono].filter(Boolean).join(" | "),
 		"",
 		F.saludo,
 		diseno.empresa,
 		"",
-		`— ${F.enviadaCon} NomoTax · nomotax.io`
+		`— ${F.enviadaCon} NomoTax | nomotax.io`
 	].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
 }
 /** Cambia {nombre}, {empresa}… por sus datos (las variables que no existen se quedan como están) */

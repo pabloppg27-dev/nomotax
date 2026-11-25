@@ -24,13 +24,13 @@ export const VARIABLES_CORREO: { id: string; detalle: string }[] = [
 export function plantillaPorDefecto(idioma: Idioma = 'es'): { asunto: string; mensaje: string } {
   if (idioma === 'es') {
     return {
-      asunto: 'Factura {numero} · {empresa}',
+      asunto: 'Factura {numero} | {empresa}',
       mensaje:
         'Estimado cliente:\n\nLe enviamos la factura {numero} por un importe de {total}, con vencimiento el {vencimiento}. Encontrará el PDF adjunto y el detalle de los conceptos a continuación.\n\nQuedamos a su disposición para cualquier consulta.',
     }
   }
   return {
-    asunto: 'Invoice {numero} · {empresa}',
+    asunto: 'Invoice {numero} | {empresa}',
     mensaje:
       'Dear Customer,\n\nPlease find attached invoice {numero} for {total}, due on {vencimiento}. The breakdown of the charges is shown below.\n\nPlease let us know if you have any questions.',
   }
@@ -222,7 +222,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
         Number(l.descuento) ? `−${Number(l.descuento)}%` : '',
       ]
         .filter(Boolean)
-        .join(' · ')
+        .join(' | ')
       return `
       <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ''}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ''}
@@ -248,7 +248,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
     diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ''))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : '',
   ]
     .filter(Boolean)
-    .join(' &nbsp;·&nbsp; ')
+    .join(' &nbsp;|&nbsp; ')
 
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
@@ -272,7 +272,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
           <td style="font:14px/1.5 ${FONT};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${rect ? F.etiquetaRect : F.etiqueta}</span><br>
             <strong style="font-size:17px">${esc(d.numero)}</strong><br>
-            <span style="color:#6b6b66">${esc(fmtFecha(d.fecha))}${d.vencimiento ? ` · ${F.vence}: ${esc(fmtFecha(d.vencimiento))}` : ''}</span>
+            <span style="color:#6b6b66">${esc(fmtFecha(d.fecha))}${d.vencimiento ? ` | ${F.vence}: ${esc(fmtFecha(d.vencimiento))}` : ''}</span>
           </td>
           <td align="right" valign="top" style="font:14px/1.5 ${FONT};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${esc(T.total)}</span><br>
@@ -300,7 +300,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
     <p style="margin:18px 0 0 0">${F.saludo}<br><strong>${esc(diseno.empresa)}</strong></p>
   </td></tr>
 </table>
-<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax · <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
+<p style="font:12px ${FONT};color:#9a9a94;margin:16px 0 0 0">${F.enviadaCon} NomoTax | <a href="https://nomotax.io" style="color:#9a9a94">nomotax.io</a></p>
 </td></tr></table></body></html>`
 }
 
@@ -320,18 +320,18 @@ export function textoCorreoFactura(mensaje: string, d: DatosFacturaCorreo, disen
     '',
     mensaje.trim(),
     '',
-    `${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} · ${fmtFecha(d.fecha)}`,
+    `${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} | ${fmtFecha(d.fecha)}`,
     ...lineas.map((l) => `· ${String(l.concepto).split('\n')[0]}: ${dinero(importeLinea(l), d.moneda)}`),
     `${T.total}: ${dinero(d.total, d.moneda)}`,
     iban ? F.pago(iban, d.numero).replace(/<[^>]+>/g, '') : '',
     '',
     F.dudas,
-    [diseno.respuesta, diseno.telefono].filter(Boolean).join(' · '),
+    [diseno.respuesta, diseno.telefono].filter(Boolean).join(' | '),
     '',
     F.saludo,
     diseno.empresa,
     '',
-    `— ${F.enviadaCon} NomoTax · nomotax.io`,
+    `— ${F.enviadaCon} NomoTax | nomotax.io`,
   ]
     .filter((l, i, a) => !(l === '' && a[i - 1] === ''))
     .join('\n')
