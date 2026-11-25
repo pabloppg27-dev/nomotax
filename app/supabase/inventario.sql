@@ -30,9 +30,11 @@ create table if not exists public.productos (
     check (tipo in ('mercaderias', 'materias_primas', 'otros_aprovisionamientos', 'productos_terminados')),
   unidad text not null default 'ud',
   precio_venta numeric(12,4),
+  iva numeric(5,2) not null default 21,                        -- IVA de venta (%)
   activo boolean not null default true,
   created_at timestamptz not null default now()
 );
+alter table public.productos add column if not exists iva numeric(5,2) not null default 21;
 create index if not exists productos_owner_idx on public.productos(owner_id);
 create unique index if not exists productos_referencia_uq
   on public.productos(owner_id, lower(referencia))

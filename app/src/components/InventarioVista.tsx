@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react'
-import { AlertTriangle, Boxes, ClipboardCheck, Pencil, Plus, SlidersHorizontal } from 'lucide-react'
+import { AlertTriangle, BarChart3, Boxes, ClipboardCheck, Pencil, Plus, SlidersHorizontal } from 'lucide-react'
 import { errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha, hoyISO, num } from '../lib/format'
 import type { DatosContables } from '../lib/contabilidad.ts'
@@ -9,6 +9,7 @@ import {
   TIPOS_EXISTENCIA,
   aplicar,
   movimientosStock,
+  margen,
   stockA,
   type EstadoProducto,
   type MotivoAjuste,
@@ -17,7 +18,9 @@ import {
   type Producto,
   type TipoExistencia,
 } from '../lib/inventario.ts'
+import { TIPOS_IVA } from '../lib/totals'
 import NumInput from './NumInput'
+import ProductoInforme from './ProductoInforme'
 import SelectBuscable from './SelectBuscable'
 import { Badge, Button, Card, Empty, Field, Input, Modal, Select, confirmar, cx, notify } from './ui'
 
@@ -48,6 +51,7 @@ export default function InventarioVista({
   const [ajuste, setAjuste] = useState<{ producto_id?: string } | null>(null)
   const [recuento, setRecuento] = useState(false)
   const [verArchivados, setVerArchivados] = useState(false)
+  const [informe, setInforme] = useState<Producto | null>(null)
 
   const movs = useMemo(() => (inv ? movimientosStock(datos.gastos, datos.facturas, inv.ajustes) : []), [inv, datos.gastos, datos.facturas])
   const stock = useMemo(() => stockA(movs, corte), [movs, corte])
@@ -56,6 +60,7 @@ export default function InventarioVista({
 
   const productos = inv.productos.filter((p) => p.activo || verArchivados)
   const total = [...stock.values()].reduce((s, e) => s + e.valor, 0)
+  const valorVenta = inv.productos.reduce((s, p) => s + Math.max(stock.get(p.id)?.cantidad ?? 0, 0) * Number(p.precio_venta ?? 0), 0)
   const negativos = inv.productos.filter((p) => (stock.get(p.id)?.cantidad ?? 0) < 0)
   const compras = datos.gastos.filter((g) => g.categoria === 'compras')
   const pendientes = compras.filter((g) => g.estado === 'pendiente').length
@@ -89,11 +94,29 @@ export default function InventarioVista({
           ownerId={ownerId}
           producto={producto}
           tieneMovimientos={Boolean(producto.id && movs.some((m) => m.producto_id === producto.id))}
+          costeActual={producto.id && stock.get(producto.id) ? stock.get(producto.id)!.coste : null}
           onClose={() => setProducto(null)}
           onSaved={onChanged}
         />
       )}
       {ajuste && <AjusteModal ownerId={ownerId} productos={inv.productos} inicial={ajuste.producto_id} stock={stock} onClose={() => setAjuste(null)} onSaved={onChanged} />}
+      {informe && (
+        <ProductoInforme
+          producto={inv.productos.find((p) => p.id === informe.id) ?? informe}
+          movs={movs}
+          corte={corte}
+          movimientos={<Movimientos movs={movs.filter((m) => m.producto_id === informe.id && m.fecha <= corte)} unidad={informe.unidad} />}
+          onClose={() => setInforme(null)}
+          onEditar={() => {
+            setProducto(informe)
+            setInforme(null)
+          }}
+          onAjustar={() => {
+            setAjuste({ producto_id: informe.id })
+            setInforme(null)
+          }}
+        />
+      )}
       {recuento && <RecuentoModal ownerId={ownerId} productos={inv.productos.filter((p) => p.activo)} movs={movs} onClose={() => setRecuento(false)} onSaved={onChanged} />}
     </>
   )
@@ -117,7 +140,9 @@ export default function InventarioVista({
         <Card className="p-4">
           <p className="text-sm text-muted">Existencias a {fecha(corte)}</p>
           <p className="num mt-1 text-xl font-semibold">{eur(total)}</p>
-          <p className="mt-1 text-xs text-muted">A coste medio de compra</p>
+          <p className="mt-1 text-xs text-muted">
+            A coste medio de compra{valorVenta ? ` · valor de venta ${eur(valorVenta)}` : ''}
+          </p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-muted">Referencias</p>
@@ -213,9 +238,14 @@ export default function InventarioVista({
               {abierto === p.id && (
                 <div className="bg-paper/60 px-4 py-3">
                   <Movimientos movs={movs.filter((m) => m.producto_id === p.id && m.fecha <= corte)} unidad={p.unidad} />
-                  <Button variant="ghost" size="sm" className="mt-2" icon={<SlidersHorizontal className="size-4" />} onClick={() => setAjuste({ producto_id: p.id })}>
-                    Ajustar stock
-                  </Button>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button variant="secondary" size="sm" icon={<BarChart3 className="size-4" />} onClick={() => setInforme(p)}>
+                      Ver informe
+                    </Button>
+                    <Button variant="ghost" size="sm" icon={<SlidersHorizontal className="size-4" />} onClick={() => setAjuste({ producto_id: p.id })}>
+                      Ajustar stock
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -236,7 +266,7 @@ export default function InventarioVista({
       </Card>
 
       <Card className="hidden overflow-x-auto sm:block">
-        <table className="num w-full min-w-[720px] text-left text-sm">
+        <table className="num w-full min-w-[860px] text-left text-sm">
           <thead className="border-b border-line bg-paper text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-3 py-2.5 font-medium">Referencia</th>
@@ -244,6 +274,8 @@ export default function InventarioVista({
               <th className="px-3 py-2.5 font-medium">Tipo</th>
               <th className="px-3 py-2.5 text-right font-medium">Stock</th>
               <th className="px-3 py-2.5 text-right font-medium">Coste medio</th>
+              <th className="px-3 py-2.5 text-right font-medium">Precio venta</th>
+              <th className="px-3 py-2.5 text-right font-medium">Margen</th>
               <th className="px-3 py-2.5 text-right font-medium">Valor</th>
               <th className="w-10" />
             </tr>
@@ -253,7 +285,7 @@ export default function InventarioVista({
               const e = stock.get(p.id) ?? VACIO
               return (
                 <Fragment key={p.id}>
-                  <tr className="cursor-pointer border-b border-line hover:bg-paper" onClick={() => setAbierto(abierto === p.id ? null : p.id)}>
+                  <tr className="cursor-pointer border-b border-line hover:bg-paper" title="Ver informe del producto" onClick={() => setInforme(p)}>
                     <td className="px-3 py-2.5 text-muted">{p.referencia || '—'}</td>
                     <td className="px-3 py-2.5 font-medium">
                       {p.nombre} {!p.activo && <Badge>Archivado</Badge>}
@@ -263,6 +295,10 @@ export default function InventarioVista({
                       {num(e.cantidad, Number.isInteger(e.cantidad) ? 0 : 3)} {p.unidad}
                     </td>
                     <td className="px-3 py-2.5 text-right">{eur(e.coste)}</td>
+                    <td className="px-3 py-2.5 text-right">{p.precio_venta ? eur(p.precio_venta) : <span className="text-muted">—</span>}</td>
+                    <td className={cx('px-3 py-2.5 text-right', (margen(p.precio_venta, e.coste)?.euros ?? 0) < 0 && 'text-rojo')}>
+                      {margen(p.precio_venta, e.coste) ? `${num(margen(p.precio_venta, e.coste)!.pct, 1)}%` : <span className="text-muted">—</span>}
+                    </td>
                     <td className="px-3 py-2.5 text-right font-medium">{eur(e.valor)}</td>
                     <td className="px-2 py-2.5">
                       <button
@@ -277,16 +313,6 @@ export default function InventarioVista({
                       </button>
                     </td>
                   </tr>
-                  {abierto === p.id && (
-                    <tr className="border-b border-line bg-paper/60">
-                      <td colSpan={7} className="px-4 py-3">
-                        <Movimientos movs={movs.filter((m) => m.producto_id === p.id && m.fecha <= corte)} unidad={p.unidad} />
-                        <Button variant="ghost" size="sm" className="mt-2" icon={<SlidersHorizontal className="size-4" />} onClick={() => setAjuste({ producto_id: p.id })}>
-                          Ajustar stock
-                        </Button>
-                      </td>
-                    </tr>
-                  )}
                 </Fragment>
               )
             })}
@@ -297,7 +323,7 @@ export default function InventarioVista({
               if (!v) return null
               return (
                 <tr key={t.id} className="text-muted">
-                  <td colSpan={5} className="px-3 py-2 text-right">
+                  <td colSpan={7} className="px-3 py-2 text-right">
                     {t.nombre.split(' (')[0]} · cuenta {t.cuenta}
                   </td>
                   <td className="px-3 py-2 text-right font-medium text-ink">{eur(v)}</td>
@@ -371,12 +397,14 @@ function ProductoModal({
   ownerId,
   producto,
   tieneMovimientos,
+  costeActual,
   onClose,
   onSaved,
 }: {
   ownerId: string
   producto: Partial<Producto>
   tieneMovimientos: boolean
+  costeActual: number | null
   onClose: () => void
   onSaved: () => void
 }) {
@@ -393,6 +421,7 @@ function ProductoModal({
       tipo: f.tipo ?? 'mercaderias',
       unidad: f.unidad?.trim() || 'ud',
       precio_venta: f.precio_venta ?? null,
+      iva: f.iva ?? 21,
       activo: f.activo ?? true,
     }
     const { error } = f.id
@@ -462,9 +491,27 @@ function ProductoModal({
             ))}
           </Select>
         </Field>
-        <Field label="Precio de venta sin IVA (opcional)" hint="Se propone al añadirlo a una factura.">
+        <Field label="Precio de venta sin IVA" hint="Se propone al añadirlo a una factura y sirve para ver el margen.">
           <NumInput className="text-right" value={Number(f.precio_venta ?? 0)} onValue={(n) => set('precio_venta', n || null)} />
         </Field>
+        <Field label="IVA de venta">
+          <Select value={Number(f.iva ?? 21)} onChange={(e) => set('iva', Number(e.target.value))}>
+            {TIPOS_IVA.map((t) => (
+              <option key={t} value={t}>
+                {t}%
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {Number(f.precio_venta) > 0 && costeActual !== null && (
+          <p className="num text-sm text-muted sm:col-span-2">
+            Con el coste medio actual ({eur(costeActual)}), el margen es{' '}
+            <strong className={cx('text-ink', Number(f.precio_venta) < costeActual && 'text-rojo')}>
+              {num(margen(f.precio_venta, costeActual)!.pct, 1)}% · {eur(margen(f.precio_venta, costeActual)!.euros)}
+            </strong>{' '}
+            por {f.unidad || 'ud'}.
+          </p>
+        )}
         {f.activo === false && <p className="self-end text-sm text-muted">Archivado: no sale al elegir producto.</p>}
       </div>
     </Modal>

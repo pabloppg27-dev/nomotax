@@ -36,6 +36,8 @@ export interface Producto {
   tipo: TipoExistencia
   unidad: string
   precio_venta: number | null
+  /** IVA de venta en % (supabase/inventario-precios.sql); si falta, 21 */
+  iva?: number | null
   activo: boolean
   created_at: string
 }
@@ -80,6 +82,10 @@ export interface Movimiento {
   motivo?: MotivoAjuste
   /** Número de la factura, proveedor o cliente */
   documento: string
+  /** Proveedor (compras) o cliente (ventas) */
+  tercero?: string
+  /** Ventas: base de la línea en euros (negativa en devoluciones) */
+  importe?: number
   /** Para ordenar los del mismo día: entradas con coste primero */
   orden: string
   /** Movimientos que van en el mismo asiento «al momento»: las líneas de una factura, los ajustes del mismo día y motivo */
@@ -139,6 +145,7 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
         coste: (Number(l.importe || 0) * factor) / cantidad,
         origen: 'compra',
         documento: [g.numero, g.proveedor].filter(Boolean).join(' · ') || 'Factura de compra',
+        tercero: g.proveedor ?? undefined,
         orden: `${g.fecha}1${g.created_at}`,
         grupo: `g${g.id}`,
       })
@@ -147,6 +154,8 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
 
   for (const f of facturas) {
     if (f.estado === 'borrador') continue
+    const suma = (f.lineas ?? []).reduce((s, l) => s + importeVenta(l), 0)
+    const factor = suma ? Number(f.base) / suma : 1
     for (const l of f.lineas ?? []) {
       const cantidad = Math.abs(Number(l.cantidad || 0))
       if (!l.producto_id || !cantidad) continue
@@ -159,6 +168,8 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
         coste: null,
         origen: 'venta',
         documento: [f.numero, f.cliente?.nombre].filter(Boolean).join(' · ') || 'Factura',
+        tercero: f.cliente?.nombre ?? undefined,
+        importe: r2(importeVenta(l) * factor),
         orden: `${f.fecha}2${f.created_at}`,
         grupo: `f${f.id}`,
       })
@@ -278,4 +289,86 @@ export function buscarProducto(productos: Producto[], referencia: string | null 
   const nom = claveProducto(nombre)
   if (!nom) return undefined
   return productos.find((x) => !ref || !x.referencia ? claveProducto(x.nombre) === nom : false)
+}
+
+/* ------------------------------------------------- Informe de un producto */
+
+export interface VentaProducto {
+  fecha: string
+  documento: string
+  cliente: string
+  cantidad: number
+  importe: number
+  /** Coste de lo vendido (unidades × coste medio en ese momento) */
+  coste: number
+}
+
+export interface CompraProducto {
+  fecha: string
+  documento: string
+  proveedor: string
+  cantidad: number
+  coste: number
+}
+
+export interface InformeProducto {
+  estado: EstadoProducto
+  /** Stock al final de cada mes de los últimos 12 (el último, a la fecha de corte) */
+  serie: { mes: string; cantidad: number; valor: number }[]
+  ventas: VentaProducto[]
+  compras: CompraProducto[]
+  /** Último coste de compra por unidad */
+  ultimoCoste: number | null
+}
+
+/** Stock, ventas con su coste y compras de un producto hasta una fecha */
+export function informeProducto(movs: Movimiento[], productoId: string, corte: string): InformeProducto {
+  const propios = movs.filter((m) => m.producto_id === productoId && m.fecha <= corte)
+  // Meses: los 12 que acaban en el de la fecha de corte
+  const meses: string[] = []
+  let anio = Number(corte.slice(0, 4))
+  let mes = Number(corte.slice(5, 7))
+  for (let i = 0; i < 12; i++) {
+    meses.unshift(`${anio}-${String(mes).padStart(2, '0')}`)
+    if (--mes === 0) {
+      mes = 12
+      anio--
+    }
+  }
+  const ventas: VentaProducto[] = []
+  const compras: CompraProducto[] = []
+  let estado: EstadoProducto = { cantidad: 0, coste: 0, valor: 0 }
+  const finDe = new Map<string, EstadoProducto>()
+  for (const m of propios) {
+    if (m.origen === 'venta') {
+      ventas.push({
+        fecha: m.fecha,
+        documento: m.documento.split(' · ')[0],
+        cliente: m.tercero ?? 'Sin cliente',
+        cantidad: -m.cantidad,
+        importe: m.importe ?? 0,
+        coste: r2(-m.cantidad * estado.coste),
+      })
+    } else if (m.origen === 'compra' && m.coste !== null) {
+      compras.push({ fecha: m.fecha, documento: m.documento.split(' · ')[0], proveedor: m.tercero ?? 'Sin proveedor', cantidad: m.cantidad, coste: r4(m.coste) })
+    }
+    estado = aplicar(estado, m)
+    finDe.set(m.fecha.slice(0, 7), estado)
+  }
+  // Stock a final de cada mes: el último estado conocido hasta ese mes
+  const serie: InformeProducto['serie'] = []
+  let ultimo: EstadoProducto = { cantidad: 0, coste: 0, valor: 0 }
+  for (const m of propios) if (m.fecha.slice(0, 7) < meses[0]) ultimo = finDe.get(m.fecha.slice(0, 7)) ?? ultimo
+  for (const mm of meses) {
+    ultimo = finDe.get(mm) ?? ultimo
+    serie.push({ mes: mm, cantidad: ultimo.cantidad, valor: ultimo.valor })
+  }
+  return { estado, serie, ventas, compras, ultimoCoste: compras.at(-1)?.coste ?? null }
+}
+
+/** Margen sobre el precio de venta: (precio − coste) / precio */
+export function margen(precio: number | null | undefined, coste: number): { euros: number; pct: number } | null {
+  const p = Number(precio)
+  if (!p) return null
+  return { euros: r2(p - coste), pct: Math.round(((p - coste) / p) * 1000) / 10 }
 }

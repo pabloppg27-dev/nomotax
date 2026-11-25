@@ -39,6 +39,7 @@ export default function LinesEditor({
       referencia: p.referencia,
       concepto: l.concepto.trim() ? l.concepto : p.nombre,
       precio: Number(l.precio) ? l.precio : Number(p.precio_venta ?? 0),
+      iva: p.iva !== null && p.iva !== undefined ? Number(p.iva) : l.iva,
     })
   }
 

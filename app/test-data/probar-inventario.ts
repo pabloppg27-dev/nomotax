@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict'
 import { balanceSituacion, entre, generarAsientos, perdidasYGanancias, type AsientoManual } from '../src/lib/contabilidad.ts'
-import { cierresEntre, movimientosStock, stockA, type Producto, type StockAjuste } from '../src/lib/inventario.ts'
+import { cierresEntre, informeProducto, margen, movimientosStock, stockA, type Producto, type StockAjuste } from '../src/lib/inventario.ts'
 import type { Expense, Invoice } from '../src/lib/types.ts'
 
 const O = 'owner'
@@ -135,6 +135,17 @@ assert.equal(saldo(entre(momento, '2026-01-01', '2026-04-15'), '300'), 2150)
 assert.equal(saldo(entre(momento, '2026-01-01', '2026-06-30'), '300'), 2280)
 assert.equal(perdidasYGanancias(entre(momento, '2026-01-01', '2026-06-30')).lineas.find((l) => l.codigo === '4')!.importe, -3420)
 assert.equal(balanceSituacion(entre(momento, '2026-01-01', '2026-06-30')).diferencia, 0)
+
+// 8) Informe de un producto: ventas con su coste, compras, stock por meses y margen
+const infA = informeProducto(movs, 'A', '2026-06-30')
+assert.deepEqual(infA.ventas.map((v) => [v.documento, v.cliente, v.cantidad, v.importe, v.coste]), [['V1', 'Cliente', 150, 6000, 3450], ['R1', 'Cliente', -10, -400, -230]])
+assert.deepEqual(infA.compras.map((c) => [c.proveedor, c.cantidad, c.coste]), [['Proveedor', 100, 26]])
+assert.equal(infA.ultimoCoste, 26)
+assert.equal(infA.serie.length, 12)
+assert.deepEqual(infA.serie.slice(-6).map((x) => x.cantidad), [100, 200, 200, 50, 60, 60]) // ene … jun
+assert.equal(infA.serie[0].mes, '2025-07')
+assert.deepEqual(margen(40, 23), { euros: 17, pct: 42.5 })
+assert.equal(margen(null, 23), null)
 
 console.log('Al momento OK:', ex.map((a) => a.concepto).join(' | '))
 console.log('Inventario OK:', variaciones.map((a) => `${a.fecha} ${a.concepto}`).join(' | '))
