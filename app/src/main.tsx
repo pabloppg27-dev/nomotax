@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { notify } from './components/ui'
+import { bloquearZoom } from './lib/zoom'
+
+bloquearZoom()
 
 // Cualquier fallo inesperado se ve en pantalla (sobre todo en el móvil, sin consola)
 window.addEventListener('unhandledrejection', (e) => {

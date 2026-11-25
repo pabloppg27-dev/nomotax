@@ -47,6 +47,20 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Sin zoom con los dedos ni doble toque (src/lib/zoom.ts). El visor de documentos pone `zoom-libre`. */
+html:not(.zoom-libre) {
+  touch-action: pan-x pan-y;
+}
+
+/* En pantallas táctiles los campos a 16px como mínimo: con menos, el iPhone amplía la pantalla
+   solo al tocarlos. Va fuera de @layer para ganar a las clases text-[15px]/text-sm
+   (se respetan los campos con letra grande, p. ej. el total del gasto con text-lg). */
+@media (pointer: coarse) {
+  :is(input:not([type='checkbox'], [type='radio']), select, textarea):not(.text-lg, .text-xl, .text-2xl, .text-3xl) {
+    font-size: 16px;
+  }
+}
+
 /* Desplegables: flecha propia en todos los navegadores (la nativa se comía el texto, p. ej. «21 %») */
 .select-flecha {
   appearance: none;

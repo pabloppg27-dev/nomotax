@@ -2,10 +2,13 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { Download, ExternalLink, FileText, X } from 'lucide-react'
 import { cerrarVisor, visor } from '../lib/visor'
+import { usePermitirZoom } from '../lib/zoom'
 
 /** Documento a pantalla completa dentro de la app, con «Cerrar» siempre a la vista (también Esc). */
 export function VisorHost() {
   const doc = useSyncExternalStore(visor.suscribir, visor.leer)
+  // En el resto de la app el zoom con los dedos está bloqueado; aquí sí se puede ampliar el documento
+  usePermitirZoom(Boolean(doc))
 
   useEffect(() => {
     if (!doc) return
