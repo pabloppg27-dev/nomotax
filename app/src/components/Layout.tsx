@@ -230,6 +230,11 @@ export default function Layout() {
   }, [subtitulo])
   const [mas, setMas] = useState(false)
   useEffect(() => setMas(false), [location.pathname])
+  // iOS 26: el difuminado de la zona de la hora se tiñe con el fondo de la página → dentro de la app, negro (index.css)
+  useEffect(() => {
+    document.documentElement.classList.add('arriba-negro')
+    return () => document.documentElement.classList.remove('arriba-negro')
+  }, [])
   // Móvil: la cuenta en la que estás, siempre arriba; se cambia desde ahí o desde «Más»
   const cuentas = useCuentas()
   const [verCuentas, setVerCuentas] = useState(false)
@@ -386,12 +391,12 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* iOS 26+: Safari ya no usa theme-color y tiñe la zona de la hora con lo que haya fijo arriba
-            (si no hay nada, con el fondo claro de la página → velo blanco). Esta franja negra fija, del alto
-            de esa zona, hace que salga negra. Queda encima del padding de la cabecera, no tapa nada. */}
-        <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[max(env(safe-area-inset-top),1px)] bg-ink lg:hidden" />
+        {/* iOS 26+: no usa theme-color; pone un difuminado bajo la hora teñido con el fondo de la página.
+            Fondo negro en <html> (clase arriba-negro, index.css) + esta franja negra fija, algo más alta que
+            esa zona, para que el difuminado sea negro sobre negro. Queda sobre el padding de la cabecera. */}
+        <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[calc(env(safe-area-inset-top)+0.5rem)] bg-ink lg:hidden" />
         {/* Cabecera (móvil) */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 lg:hidden">
           {cuentas ? (
             <div className="flex min-w-0 items-center gap-2.5">
               <NavLink to="/" aria-label="Ir al resumen" className="shrink-0 rounded-lg">

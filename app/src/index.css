@@ -27,6 +27,16 @@
   body {
     font-family: var(--font-sans);
   }
+  /* Dentro de la app en móvil (Layout pone la clase): fondo negro en <html> para que iOS 26 tiña de negro
+     el difuminado de la zona de la hora, a juego con la cabecera. El body sigue claro y ocupa toda la pantalla. */
+  @media (max-width: 63.99rem) {
+    html.arriba-negro {
+      background: var(--color-ink);
+    }
+    html.arriba-negro body {
+      min-height: 100dvh;
+    }
+  }
   ::selection {
     background: var(--color-lima);
     color: var(--color-ink);
