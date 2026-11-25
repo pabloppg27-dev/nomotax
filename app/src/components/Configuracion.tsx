@@ -4,7 +4,8 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, ChevronRight, Compass, Search, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, ChevronLeft, ChevronRight, Compass, Search, X } from 'lucide-react'
 import { useAuth, verComoDev } from '../lib/auth'
 import { abrirGuia, tipoGuia } from '../lib/guia'
 import { GRUPOS_CONFIG, seccionesVisibles, type IdSeccion } from '../lib/configuracion'
@@ -61,7 +62,14 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 }
 
 function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClose: () => void }) {
-  const { rol, puede, viewingOther, owner, isAdvisor } = useAuth()
+  const { rol, puede, viewingOther, owner, isAdvisor, setOwner } = useAuth()
+  const navigate = useNavigate()
+  // Dentro de la cuenta de un cliente, el asesor vuelve a su panel desde aquí (discreto: en una demo no se ve en la app)
+  const volverAlPanel = async () => {
+    onClose()
+    await setOwner(null)
+    navigate('/asesor')
+  }
   const conGuia = tipoGuia(rol, isAdvisor, Boolean(verComoDev())) !== null
   const ctx = { viewingOther, rol, puede }
   // El asesor en su propia cuenta solo tiene el panel: aquí, su perfil (contraseña, datos)
@@ -226,6 +234,11 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
               )}
               {filtradas.length === 0 && !conGuia && <p className="px-2 py-2 text-sm text-muted">Nada con «{q}»</p>}
             </nav>
+            {isAdvisor && viewingOther && !q && (
+              <button onClick={volverAlPanel} className="mx-4 mb-6 flex items-center gap-1.5 px-2 text-xs text-muted hover:text-ink sm:mx-3 sm:mb-4">
+                <ArrowLeft className="size-3.5" /> Volver al panel del asesor
+              </button>
+            )}
           </aside>
 
           {/* Derecha: la sección elegida */}

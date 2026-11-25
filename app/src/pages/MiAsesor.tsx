@@ -73,7 +73,7 @@ export function AsesorCard({ compacta = false, onAgendar }: { compacta?: boolean
 }
 
 export default function MiAsesor() {
-  const { owner, ownerId, viewingOther } = useAuth()
+  const { owner, ownerId } = useAuth()
   const [modo, setModo] = useState<'llamame' | 'cita'>('cita')
   const [llamadas, setLlamadas] = useState<Llamada[] | null>(null)
   const agendaRef = useRef<HTMLDivElement>(null)
@@ -132,9 +132,7 @@ export default function MiAsesor() {
       <div ref={agendaRef} className="scroll-mt-6">
         <Card className="p-5 sm:p-6">
           <h2 className="font-semibold">Agendar una llamada</h2>
-          {viewingOther ? (
-            <p className="mt-2 text-sm text-muted">Estás viendo la cuenta de un cliente: la agenda la usa el propio cliente.</p>
-          ) : (
+          {(
             <>
               <div className="mt-4 inline-flex rounded-full bg-ink/5 p-1">
                 {(
@@ -165,7 +163,9 @@ export default function MiAsesor() {
 
 /** Peticiones al asesor (supabase/panel-asesor.sql): le llegan a su Bandeja */
 function PedirAlgo() {
-  const { ownerId, viewingOther } = useAuth()
+  const { ownerId, owner, viewingOther } = useAuth()
+  // El asesor dentro de un cliente ve lo mismo que el cliente; solo envía en la cuenta demo (para enseñarlo)
+  const bloqueado = viewingOther && !owner?.es_demo
   const [tipo, setTipo] = useState<TipoPeticion>('consulta')
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -186,6 +186,7 @@ function PedirAlgo() {
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault()
+    if (bloqueado) return notify('Dentro de la cuenta de un cliente no se envía: lo pide el propio cliente', 'error')
     if (tipo !== 'renta' && !texto.trim()) return notify('Cuéntanos qué necesitas', 'error')
     setEnviando(true)
     const { error } = await supabase.from('peticiones').insert({ owner_id: ownerId, tipo, texto: texto.trim() || null })
@@ -199,9 +200,7 @@ function PedirAlgo() {
   return (
     <Card className="mb-6 p-5 sm:p-6">
       <h2 className="font-semibold">Pedir algo a tu asesor</h2>
-      {viewingOther ? (
-        <p className="mt-1 text-sm text-muted">Lo que pida este cliente te llega a la Bandeja del panel.</p>
-      ) : (
+      {(
         <>
           <p className="mt-1 text-sm text-muted">La declaración de la renta, un certificado, una duda… Le llega al momento y aquí verás cuándo está hecho.</p>
           <form onSubmit={enviar} className="mt-4 grid max-w-xl grid-cols-[minmax(0,1fr)] gap-4">
@@ -252,7 +251,7 @@ function datosCliente(owner: { nombre: string | null; email: string | null }) {
 }
 
 function Llamame({ onHecho }: { onHecho: () => void }) {
-  const { owner, ownerId } = useAuth()
+  const { owner, ownerId, viewingOther } = useAuth()
   const [telefono, setTelefono] = useState(owner?.telefono ?? '')
   const [franja, setFranja] = useState('Cuando puedas')
   const [tema, setTema] = useState('')
@@ -263,6 +262,7 @@ function Llamame({ onHecho }: { onHecho: () => void }) {
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault()
+    if (viewingOther) return notify('Dentro de la cuenta de un cliente no se envía: la agenda la usa el propio cliente', 'error')
     if (telefono.replace(/\D/g, '').length < 6) return notify('Pon un teléfono para que podamos llamarte', 'error')
     setEnviando(true)
     try {
@@ -311,7 +311,7 @@ function Llamame({ onHecho }: { onHecho: () => void }) {
 }
 
 function ElegirHora({ onHecho }: { onHecho: () => void }) {
-  const { owner, ownerId } = useAuth()
+  const { owner, ownerId, viewingOther } = useAuth()
   const [huecos, setHuecos] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dia, setDia] = useState<string | null>(null)
@@ -379,6 +379,7 @@ function ElegirHora({ onHecho }: { onHecho: () => void }) {
 
   const confirmar = async (e: FormEvent) => {
     e.preventDefault()
+    if (viewingOther) return notify('Dentro de la cuenta de un cliente no se envía: la agenda la usa el propio cliente', 'error')
     if (!hora) return notify('Elige una hora', 'error')
     if (telefono.replace(/\D/g, '').length < 6) return notify('Pon un teléfono de contacto', 'error')
     setEnviando(true)

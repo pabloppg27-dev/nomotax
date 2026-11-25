@@ -3,7 +3,6 @@ import { flushSync } from 'react-dom'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { enDemo } from '../lib/demoFichaje'
 import {
-  Briefcase,
   FolderOpen,
   ClipboardList,
   FileText,
@@ -293,13 +292,11 @@ export default function Layout() {
     navigate('/asesor')
   }
 
-  const nombreCuenta = owner?.nombre || owner?.email || ''
   /** Lo que va en «Más» (además de Configuración) */
   const itemsMas: ItemNav[] = [
     ...NAV.filter((n) => !FIJAS.includes(n.to)),
     ...ESP.map((e) => ({ ...e, label: e.to.endsWith('tickets') ? 'Mis tickets' : e.label })),
     ...(verAsesor ? [{ to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare }] : []),
-    ...(isAdvisor && !modoAsesor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
   ]
 
   return (
@@ -375,21 +372,6 @@ export default function Layout() {
             Mi asesor
           </NavLink>
           )}
-          {isAdvisor && !modoAsesor && (
-            <NavLink
-              to="/asesor"
-              onClick={() => setOwner(null)}
-              className={({ isActive }) =>
-                cx(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
-                  isActive ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/5 hover:text-white',
-                )
-              }
-            >
-              <Briefcase className="size-[18px]" />
-              Panel del asesor
-            </NavLink>
-          )}
           <button
             onClick={() => abrirConfig()}
             data-guia="nav-config"
@@ -408,7 +390,7 @@ export default function Layout() {
             <LogOut className="size-[18px]" />
             Cerrar sesión
           </button>
-          <div className="mt-2 truncate px-3 text-xs text-white/40">{me?.email}</div>
+          <div className="mt-2 truncate px-3 text-xs text-white/40">{viewingOther ? owner?.email : me?.email}</div>
         </div>
       </aside>
 
@@ -457,11 +439,6 @@ export default function Layout() {
                 <MessagesSquare className="size-5" />
               </NavLink>
             )}
-            {isAdvisor && !modoAsesor && (
-              <NavLink to="/asesor" onClick={() => setOwner(null)} className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Panel del asesor">
-                <Briefcase className="size-5" />
-              </NavLink>
-            )}
             <button onClick={() => abrirConfig()} data-guia="nav-config" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Configuración">
               <Settings className="size-5" />
             </button>
@@ -483,17 +460,6 @@ export default function Layout() {
               className="inline-flex items-center gap-1 font-medium text-lima underline-offset-2 hover:underline"
             >
               <ArrowLeft className="size-4" /> Volver a la ficha
-            </button>
-          </div>
-        )}
-
-        {viewingOther && !modoAsesor && (
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-lima px-4 py-2 text-sm text-ink lg:px-10">
-            <span>
-              Estás viendo la cuenta de <strong>{nombreCuenta}</strong>
-            </span>
-            <button onClick={salirDeCuenta} className="inline-flex items-center gap-1 font-medium underline-offset-2 hover:underline">
-              <ArrowLeft className="size-4" /> Volver a mi panel
             </button>
           </div>
         )}
@@ -595,6 +561,11 @@ export default function Layout() {
               <button onClick={signOut} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm text-muted active:bg-paper">
                 <LogOut className="size-4" /> Cerrar sesión
               </button>
+              {isAdvisor && viewingOther && (
+                <button onClick={salirDeCuenta} className="flex w-full items-center justify-center gap-1.5 py-2 text-xs text-muted active:text-ink">
+                  <ArrowLeft className="size-3.5" /> Volver al panel del asesor
+                </button>
+              )}
             </div>
           </div>
         )}
