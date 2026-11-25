@@ -66,9 +66,9 @@ type Textos = {
   transferencia: (iban: string) => string
   transferenciaCorta: string
   refPago: (numero: string) => string
-  /** Factura en otra moneda: nota con el contravalor en euros (lo exige el reglamento de facturación) */
+  /** Factura en otra moneda: contravalor en euros (lo exige el reglamento de facturación) */
   contravalor: string
-  contravalorTexto: (moneda: string, fecha: string, cambio: string, base: string, iva: string, total: string) => string
+  cambioBce: (fecha: string, cambio: string, moneda: string) => string
   pagina: (p: number, n: number) => string
   marcaPruebas: string
   avisoPruebas: string
@@ -90,7 +90,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notas', formaPago: 'Forma de pago', transferencia: (i) => `Transferencia bancaria a ${i}`,
     transferenciaCorta: 'Transferencia', refPago: (n) => `Indica ${n} en el concepto de la transferencia.`,
     contravalor: 'Contravalor en euros',
-    contravalorTexto: (m, f, c, b, i, t) => `Factura emitida en ${m}. Al cambio del BCE del ${f} (1€ = ${c} ${m}): base imponible ${b}, IVA ${i}, total ${t}.`,
+    cambioBce: (f, c, m) => `Cambio BCE ${f}: 1€ = ${c} ${m}`,
     pagina: (p, n) => `Página ${p} de ${n}`,
     marcaPruebas: 'DOCUMENTO DE PRUEBAS', avisoPruebas: 'Documento generado en modo pruebas: no válido como factura.', hechoCon: 'Creado con NomoTax · nomotax.io',
     archivoFactura: 'Factura', archivoPresupuesto: 'Presupuesto',
@@ -106,7 +106,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notes', formaPago: 'Payment', transferencia: (i) => `Bank transfer to ${i}`,
     transferenciaCorta: 'Bank transfer', refPago: (n) => `Please quote ${n} as the payment reference.`,
     contravalor: 'Euro equivalent',
-    contravalorTexto: (m, f, c, b, i, t) => `Invoice issued in ${m}. At the ECB rate of ${f} (1 EUR = ${c} ${m}): subtotal ${b}, VAT ${i}, total ${t}.`,
+    cambioBce: (f, c, m) => `ECB rate ${f}: 1 EUR = ${c} ${m}`,
     pagina: (p, n) => `Page ${p} of ${n}`,
     marcaPruebas: 'TEST DOCUMENT', avisoPruebas: 'Generated in test mode: not valid as an invoice.', hechoCon: 'Made with NomoTax · nomotax.io',
     archivoFactura: 'Invoice', archivoPresupuesto: 'Quote',
@@ -122,7 +122,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Note', formaPago: 'Pagamento', transferencia: (i) => `Bonifico bancario a ${i}`,
     transferenciaCorta: 'Bonifico bancario', refPago: (n) => `Indicare ${n} nella causale del bonifico.`,
     contravalor: 'Controvalore in euro',
-    contravalorTexto: (m, f, c, b, i, t) => `Fattura emessa in ${m}. Al cambio BCE del ${f} (1 EUR = ${c} ${m}): imponibile ${b}, IVA ${i}, totale ${t}.`,
+    cambioBce: (f, c, m) => `Cambio BCE ${f}: 1 EUR = ${c} ${m}`,
     pagina: (p, n) => `Pagina ${p} di ${n}`,
     marcaPruebas: 'DOCUMENTO DI PROVA', avisoPruebas: 'Generato in modalità di prova: non valido come fattura.', hechoCon: 'Creato con NomoTax · nomotax.io',
     archivoFactura: 'Fattura', archivoPresupuesto: 'Preventivo',
@@ -138,7 +138,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notes', formaPago: 'Paiement', transferencia: (i) => `Virement bancaire sur ${i}`,
     transferenciaCorta: 'Virement bancaire', refPago: (n) => `Merci d’indiquer ${n} en référence du virement.`,
     contravalor: 'Contre-valeur en euros',
-    contravalorTexto: (m, f, c, b, i, t) => `Facture émise en ${m}. Au taux BCE du ${f} (1 EUR = ${c} ${m}) : total HT ${b}, TVA ${i}, total ${t}.`,
+    cambioBce: (f, c, m) => `Taux BCE ${f}: 1 EUR = ${c} ${m}`,
     pagina: (p, n) => `Page ${p} sur ${n}`,
     marcaPruebas: 'DOCUMENT DE TEST', avisoPruebas: 'Généré en mode test : non valable comme facture.', hechoCon: 'Créé avec NomoTax · nomotax.io',
     archivoFactura: 'Facture', archivoPresupuesto: 'Devis',
@@ -154,7 +154,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Hinweise', formaPago: 'Zahlung', transferencia: (i) => `Banküberweisung an ${i}`,
     transferenciaCorta: 'Banküberweisung', refPago: (n) => `Bitte geben Sie ${n} als Verwendungszweck an.`,
     contravalor: 'Gegenwert in Euro',
-    contravalorTexto: (m, f, c, b, i, t) => `Rechnung in ${m}. Zum EZB-Kurs vom ${f} (1 EUR = ${c} ${m}): Nettobetrag ${b}, MwSt. ${i}, Gesamt ${t}.`,
+    cambioBce: (f, c, m) => `EZB-Kurs ${f}: 1 EUR = ${c} ${m}`,
     pagina: (p, n) => `Seite ${p} von ${n}`,
     marcaPruebas: 'TESTDOKUMENT', avisoPruebas: 'Im Testmodus erstellt: keine gültige Rechnung.', hechoCon: 'Erstellt mit NomoTax · nomotax.io',
     archivoFactura: 'Rechnung', archivoPresupuesto: 'Angebot',
@@ -170,7 +170,7 @@ export const TEXTOS: Record<Idioma, Textos> = {
     notas: 'Notas', formaPago: 'Pagamento', transferencia: (i) => `Transferência bancária para ${i}`,
     transferenciaCorta: 'Transferência bancária', refPago: (n) => `Indique ${n} na referência da transferência.`,
     contravalor: 'Contravalor em euros',
-    contravalorTexto: (m, f, c, b, i, t) => `Fatura emitida em ${m}. À taxa do BCE de ${f} (1 EUR = ${c} ${m}): base tributável ${b}, IVA ${i}, total ${t}.`,
+    cambioBce: (f, c, m) => `Taxa BCE ${f}: 1 EUR = ${c} ${m}`,
     pagina: (p, n) => `Página ${p} de ${n}`,
     marcaPruebas: 'DOCUMENTO DE TESTE', avisoPruebas: 'Gerado em modo de teste: não válido como fatura.', hechoCon: 'Criado com NomoTax · nomotax.io',
     archivoFactura: 'Fatura', archivoPresupuesto: 'Orcamento',
