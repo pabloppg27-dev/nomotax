@@ -164,7 +164,72 @@ export default function InventarioVista({
         </div>
       )}
 
-      <Card className="overflow-x-auto">
+      {/* Móvil: una tarjeta por producto, sin desplazar a la derecha */}
+      <Card className="divide-y divide-line sm:hidden">
+        {productos.map((p) => {
+          const e = stock.get(p.id) ?? VACIO
+          return (
+            <div key={p.id}>
+              <div
+                role="button"
+                tabIndex={0}
+                className="flex cursor-pointer items-center gap-3 px-4 py-3 active:bg-paper"
+                onClick={() => setAbierto(abierto === p.id ? null : p.id)}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium leading-snug">
+                    {p.nombre} {!p.activo && <Badge>Archivado</Badge>}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-muted">
+                    {[p.referencia, TIPOS_EXISTENCIA.find((t) => t.id === p.tipo)?.nombre.split(' (')[0]].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <div className="num shrink-0 text-right">
+                  <p className={cx('font-semibold', e.cantidad < 0 && 'text-rojo')}>
+                    {num(e.cantidad, Number.isInteger(e.cantidad) ? 0 : 3)} {p.unidad}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {eur(e.valor)}
+                    {e.cantidad ? ` · ${eur(e.coste)}/${p.unidad}` : ''}
+                  </p>
+                </div>
+                <button
+                  className="-mr-2 grid size-9 shrink-0 place-items-center rounded-full text-muted active:bg-ink/5"
+                  aria-label="Editar producto"
+                  onClick={(ev) => {
+                    ev.stopPropagation()
+                    setProducto(p)
+                  }}
+                >
+                  <Pencil className="size-4" />
+                </button>
+              </div>
+              {abierto === p.id && (
+                <div className="bg-paper/60 px-4 py-3">
+                  <Movimientos movs={movs.filter((m) => m.producto_id === p.id && m.fecha <= corte)} unidad={p.unidad} />
+                  <Button variant="ghost" size="sm" className="mt-2" icon={<SlidersHorizontal className="size-4" />} onClick={() => setAjuste({ producto_id: p.id })}>
+                    Ajustar stock
+                  </Button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+        {TIPOS_EXISTENCIA.map((t) => {
+          const v = inv.productos.filter((p) => p.tipo === t.id).reduce((s, p) => s + (stock.get(p.id)?.valor ?? 0), 0)
+          if (!v) return null
+          return (
+            <div key={t.id} className="num flex justify-between gap-3 px-4 py-2.5 text-sm text-muted">
+              <span>
+                {t.nombre.split(' (')[0]} · {t.cuenta}
+              </span>
+              <span className="font-medium text-ink">{eur(v)}</span>
+            </div>
+          )
+        })}
+      </Card>
+
+      <Card className="hidden overflow-x-auto sm:block">
         <table className="num w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-line bg-paper text-xs uppercase tracking-wide text-muted">
             <tr>
@@ -263,32 +328,35 @@ function Movimientos({ movs, unidad }: { movs: Movimiento[]; unidad: string }) {
     e = aplicar(e, m)
     return { m, e }
   })
+  const n = (x: number) => num(x, Number.isInteger(x) ? 0 : 3)
   return (
-    <div className="overflow-x-auto">
+    <div className="num text-sm">
       <p className="mb-2 text-xs uppercase tracking-wide text-muted">Movimientos</p>
-      <table className="w-full min-w-[560px] text-sm">
-        <tbody>
-          {filas.reverse().map(({ m, e }, i) => (
-            <tr key={i} className="border-b border-line/60 last:border-0">
-              <td className="py-1.5 pr-3">{fecha(m.fecha)}</td>
-              <td className="py-1.5 pr-3">
+      <ul>
+        {filas.reverse().map(({ m, e }, i) => (
+          <li key={i} className="flex items-start gap-3 border-b border-line/60 py-2 last:border-0">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>{fecha(m.fecha)}</span>
                 <Badge tono={m.origen === 'compra' ? 'verde' : m.origen === 'venta' ? 'gris' : 'ambar'}>
                   {m.origen === 'compra' ? 'Compra' : m.origen === 'venta' ? 'Venta' : m.documento}
                 </Badge>
-              </td>
-              <td className="py-1.5 pr-3 text-muted">{m.origen === 'ajuste' ? '' : m.documento}</td>
-              <td className={cx('py-1.5 pr-3 text-right', m.cantidad < 0 ? 'text-rojo' : 'text-verde')}>
+              </div>
+              {m.origen !== 'ajuste' && m.documento && <p className="mt-0.5 truncate text-xs text-muted">{m.documento}</p>}
+            </div>
+            <div className="shrink-0 text-right">
+              <p className={cx('font-medium', m.cantidad < 0 ? 'text-rojo' : 'text-verde')}>
                 {m.cantidad > 0 ? '+' : ''}
-                {num(m.cantidad, Number.isInteger(m.cantidad) ? 0 : 3)} {unidad}
-              </td>
-              <td className="py-1.5 pr-3 text-right text-muted">{m.coste !== null ? `a ${eur(m.coste)}` : ''}</td>
-              <td className="py-1.5 text-right">
-                {num(e.cantidad, Number.isInteger(e.cantidad) ? 0 : 3)} · {eur(e.valor)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                {n(m.cantidad)} {unidad}
+                {m.coste !== null && <span className="font-normal text-muted"> a {eur(m.coste)}</span>}
+              </p>
+              <p className="text-xs text-muted">
+                Quedan {n(e.cantidad)} · {eur(e.valor)}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -415,23 +483,28 @@ function AjusteModal({
   const [productoId, setProductoId] = useState(inicial ?? '')
   const [fechaA, setFechaA] = useState(hoyISO())
   const [motivo, setMotivo] = useState<MotivoAjuste>(inicial && stock.get(inicial)?.cantidad ? 'ajuste' : 'inicial')
+  // Unidades siempre en positivo (el teclado numérico del móvil no tiene «−»): el sentido se elige aparte
   const [cantidad, setCantidad] = useState(0)
+  const [sentido, setSentido] = useState<'entra' | 'sale'>('entra')
   const [coste, setCoste] = useState(0)
   const [notas, setNotas] = useState('')
   const [guardando, setGuardando] = useState(false)
   const p = productos.find((x) => x.id === productoId)
-  const conCoste = motivo === 'inicial' || (motivo === 'ajuste' && cantidad > 0)
+  // El stock inicial siempre entra y la merma siempre sale; «Otro ajuste» deja elegir
+  const sale = motivo === 'merma' || (motivo === 'ajuste' && sentido === 'sale')
+  const unidades = Math.abs(cantidad)
+  const conCoste = motivo === 'inicial' || (motivo === 'ajuste' && !sale)
 
   const guardar = async () => {
     if (!productoId) return notify('Elige el producto', 'error')
-    if (!cantidad) return notify('Pon la cantidad (en negativo si sale)', 'error')
-    if (motivo === 'inicial' && (cantidad < 0 || !coste)) return notify('El stock inicial necesita unidades y su coste por unidad', 'error')
+    if (!unidades) return notify('Pon las unidades', 'error')
+    if (motivo === 'inicial' && !coste) return notify('El stock inicial necesita su coste por unidad', 'error')
     setGuardando(true)
     const { error } = await supabase.from('stock_ajustes').insert({
       owner_id: ownerId,
       producto_id: productoId,
       fecha: fechaA,
-      cantidad,
+      cantidad: sale ? -unidades : unidades,
       coste_unitario: conCoste && coste ? coste : null,
       motivo,
       notas: notas.trim() || null,
@@ -481,8 +554,39 @@ function AjusteModal({
         <Field label="Fecha" hint={motivo === 'inicial' ? 'Normalmente, el día de la apertura (1 de enero)' : undefined}>
           <Input type="date" value={fechaA} onChange={(e) => setFechaA(e.target.value)} />
         </Field>
-        <Field label={`Cantidad${p ? ` (${p.unidad})` : ''}`} hint={motivo === 'inicial' ? undefined : 'En negativo si salen unidades'}>
-          <NumInput className="text-right" value={cantidad} onValue={setCantidad} />
+        {motivo === 'ajuste' && (
+          // Sin <Field>: dentro de un <label> el toque se reenvía al primer botón
+          <div className="sm:col-span-2">
+            <span className="mb-1 block text-[13px] font-medium text-ink/80">Las unidades…</span>
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-paper p-1" role="radiogroup" aria-label="Las unidades entran o salen">
+              {(
+                [
+                  ['entra', 'Entran (+)'],
+                  ['sale', 'Salen (−)'],
+                ] as const
+              ).map(([id, txt]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={sentido === id}
+                  onClick={() => setSentido(id)}
+                  className={cx(
+                    'h-10 rounded-lg text-sm font-medium transition-colors',
+                    sentido === id ? (id === 'sale' ? 'bg-white text-rojo shadow-sm' : 'bg-white text-verde shadow-sm') : 'text-muted hover:text-ink',
+                  )}
+                >
+                  {txt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <Field
+          label={`${motivo === 'merma' ? 'Unidades perdidas' : 'Unidades'}${p ? ` (${p.unidad})` : ''}`}
+          hint={motivo === 'merma' ? 'Se restan del stock' : undefined}
+        >
+          <NumInput className="text-right" value={unidades} onValue={(n) => setCantidad(Math.abs(n))} />
         </Field>
         {conCoste && (
           <Field label="Coste por unidad sin IVA" hint={motivo === 'inicial' ? undefined : 'Vacío = al coste medio'}>
@@ -495,6 +599,12 @@ function AjusteModal({
         {p && (
           <p className="text-sm text-muted sm:col-span-2">
             Stock actual: {num(stock.get(p.id)?.cantidad ?? 0, 0)} {p.unidad} a {eur(stock.get(p.id)?.coste ?? 0)}.
+            {unidades > 0 && (
+              <span className="font-medium text-ink">
+                {' '}
+                Quedarán {num((stock.get(p.id)?.cantidad ?? 0) + (sale ? -unidades : unidades), Number.isInteger(unidades) ? 0 : 3)} {p.unidad}.
+              </span>
+            )}
             {motivo === 'inicial' && ' El stock inicial debe cuadrar con las existencias del asiento de apertura (cuenta 300).'}
           </p>
         )}
