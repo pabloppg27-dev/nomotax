@@ -25,10 +25,11 @@ import NumInput from '../components/NumInput'
 import PeriodPicker from '../components/PeriodPicker'
 import SelectBuscable from '../components/SelectBuscable'
 import { ExtractosVista, SubirExtracto } from '../components/Bancos'
+import InventarioVista from '../components/InventarioVista'
 import type { ExtractoBancario } from '../lib/bancos'
 import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, Select, confirmar, cx, notify } from '../components/ui'
 
-type Vista = 'resumen' | 'bancos' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'balance' | 'inmovilizado' | 'manuales'
+type Vista = 'resumen' | 'bancos' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'balance' | 'inmovilizado' | 'inventario' | 'manuales'
 
 const VISTAS: { id: Vista; label: string }[] = [
   { id: 'resumen', label: 'Resumen' },
@@ -36,6 +37,7 @@ const VISTAS: { id: Vista; label: string }[] = [
   { id: 'pyg', label: 'Pérdidas y ganancias' },
   { id: 'balance', label: 'Balance' },
   { id: 'inmovilizado', label: 'Inmovilizado' },
+  { id: 'inventario', label: 'Inventario' },
   { id: 'diario', label: 'Libro diario' },
   { id: 'mayor', label: 'Libro mayor' },
   { id: 'sumas', label: 'Sumas y saldos' },
@@ -76,7 +78,7 @@ export default function Contabilidad() {
     if (!ownerId) return
     let t: ReturnType<typeof setTimeout> | undefined
     const canal = supabase.channel(`conta-${ownerId}`)
-    for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados'])
+    for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados', 'productos', 'stock_ajustes'])
       canal.on('postgres_changes', { event: '*', schema: 'public', table: tabla, filter: `owner_id=eq.${ownerId}` }, () => {
         clearTimeout(t)
         t = setTimeout(cargar, 400)
@@ -191,7 +193,7 @@ export default function Contabilidad() {
       </div>
 
       <div className="mb-6 flex gap-1 overflow-x-auto border-b border-line">
-        {VISTAS.filter((v) => v.id !== 'bancos' || verBancos).map((v) => (
+        {VISTAS.filter((v) => (v.id !== 'bancos' || verBancos) && (v.id !== 'inventario' || datos?.inventario?.disponible)).map((v) => (
           <button
             key={v.id}
             data-guia={`conta-${v.id}`}
@@ -242,6 +244,7 @@ export default function Contabilidad() {
           {vista === 'pyg' && <Informe lineas={perdidasYGanancias(calc.delPeriodo).lineas} titulo="Cuenta de pérdidas y ganancias" sub={`Del ${fecha(desde)} al ${fecha(hasta)} · modelo PYMES`} />}
           {vista === 'balance' && <Balance calc={calc} hasta={hasta} />}
           {vista === 'inmovilizado' && <InmovilizadoVista datos={datos} hasta={hasta} />}
+          {vista === 'inventario' && <InventarioVista datos={datos} ownerId={ownerId} isAdvisor={isAdvisor} hasta={hasta} onChanged={cargar} />}
           {vista === 'manuales' && <Manuales datos={datos} ownerId={ownerId} editable={isAdvisor} anio={periodo.anio} onChanged={cargar} />}
         </>
       )}

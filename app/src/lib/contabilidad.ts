@@ -7,6 +7,7 @@
  * (factura nueva, rectificativa, gasto revisado, nómina…) se refleja enseguida.
  */
 import type { Expense, Invoice, Nomina } from './types.ts'
+import { TIPOS_EXISTENCIA, cierresEntre, movimientosStock, nombreCierre, valorPorTipo, ventasDeProductos, type DatosInventario } from './inventario.ts'
 
 /* --------------------------------------------------------------- Tipos */
 
@@ -20,7 +21,7 @@ export interface Asiento {
   n: number
   fecha: string
   concepto: string
-  origen: 'apertura' | 'factura' | 'cobro' | 'gasto' | 'pago' | 'nomina' | 'amortizacion' | 'manual'
+  origen: 'apertura' | 'factura' | 'cobro' | 'gasto' | 'pago' | 'nomina' | 'amortizacion' | 'existencias' | 'manual'
   documento?: string
   apuntes: Apunte[]
 }
@@ -54,6 +55,8 @@ export interface DatosContables {
   nominas: (Nomina & { trabajador_nombre?: string | null })[]
   manuales: AsientoManual[]
   inmovilizados: Inmovilizado[]
+  /** Productos, ajustes de stock y periodicidad de la variación de existencias (supabase/inventario.sql) */
+  inventario?: DatosInventario
   /** Hasta qué fecha se calculan las amortizaciones (por defecto, hoy) */
   hasta?: string
 }
@@ -79,6 +82,10 @@ export const CUENTAS: Record<string, string> = {
   '219': 'Otro inmovilizado material',
   '280': 'Amortización acumulada del inmovilizado intangible',
   '281': 'Amortización acumulada del inmovilizado material',
+  '300': 'Mercaderías',
+  '310': 'Materias primas',
+  '325': 'Materiales diversos',
+  '350': 'Productos terminados',
   '400': 'Proveedores',
   '410': 'Acreedores por prestaciones de servicios',
   '430': 'Clientes',
@@ -96,6 +103,11 @@ export const CUENTAS: Record<string, string> = {
   '570': 'Caja',
   '572': 'Bancos e instituciones de crédito',
   '600': 'Compras de mercaderías',
+  '601': 'Compras de materias primas',
+  '602': 'Compras de otros aprovisionamientos',
+  '610': 'Variación de existencias de mercaderías',
+  '611': 'Variación de existencias de materias primas',
+  '612': 'Variación de existencias de otros aprovisionamientos',
   '621': 'Arrendamientos y cánones',
   '622': 'Reparaciones y conservación',
   '623': 'Servicios de profesionales independientes',
@@ -114,7 +126,9 @@ export const CUENTAS: Record<string, string> = {
   '680': 'Amortización del inmovilizado intangible',
   '681': 'Amortización del inmovilizado material',
   '700': 'Ventas de mercaderías',
+  '701': 'Ventas de productos terminados',
   '705': 'Prestaciones de servicios',
+  '712': 'Variación de existencias de productos terminados',
   '759': 'Ingresos por servicios diversos',
   '769': 'Otros ingresos financieros',
   '778': 'Ingresos excepcionales',
@@ -123,6 +137,7 @@ export const CUENTAS: Record<string, string> = {
 export const GRUPOS: Record<string, string> = {
   '1': 'Financiación básica',
   '2': 'Activo no corriente',
+  '3': 'Existencias',
   '4': 'Acreedores y deudores',
   '5': 'Cuentas financieras',
   '6': 'Compras y gastos',
@@ -227,6 +242,7 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
     return c
   }
 
+  const tipoProducto = new Map((d.inventario?.productos ?? []).map((p) => [p.id, p.tipo]))
   const facturas = [...d.facturas].filter((f) => f.estado !== 'borrador').sort((a, b) => (a.fecha + a.created_at).localeCompare(b.fecha + b.created_at))
   for (const f of facturas) {
     const cli = clienteDe(f)
@@ -234,10 +250,15 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
     const iva = Number(f.cuota_iva)
     const irpf = Number(f.cuota_irpf)
     const total = Number(f.total)
-    const venta = subcuenta('705')
     const apuntes: Apunte[] = [{ cuenta: cli, debe: total, haber: 0 }]
     if (irpf) apuntes.push({ cuenta: subcuenta('473'), debe: irpf, haber: 0 })
-    apuntes.push({ cuenta: venta, debe: 0, haber: base })
+    // Las líneas con producto del inventario son venta de mercaderías (700) o de productos (701); el resto, servicios (705)
+    let servicios = base
+    for (const [tipo, importe] of ventasDeProductos(f, tipoProducto)) {
+      apuntes.push({ cuenta: subcuenta(TIPOS_EXISTENCIA.find((t) => t.id === tipo)?.ventas ?? '700'), debe: 0, haber: importe })
+      servicios = r2(servicios - importe)
+    }
+    apuntes.push({ cuenta: subcuenta('705'), debe: 0, haber: servicios })
     if (iva) apuntes.push({ cuenta: subcuenta('477'), debe: 0, haber: iva })
     lista.push({
       fecha: f.fecha,
@@ -329,8 +350,10 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
     })
   }
 
-  // Orden: fecha, con la apertura siempre primero; numeración por ejercicio
-  const peso = (o: Asiento['origen']) => (o === 'apertura' ? 0 : o === 'amortizacion' ? 2 : 1)
+  if (d.inventario) for (const a of variacionesExistencias(d, hasta, lista)) lista.push(a)
+
+  // Orden: fecha, con la apertura siempre primero y la variación de existencias al final del día; numeración por ejercicio
+  const peso = (o: Asiento['origen']) => (o === 'apertura' ? 0 : o === 'amortizacion' ? 2 : o === 'existencias' ? 3 : 1)
   lista.sort((a, b) => a.fecha.localeCompare(b.fecha) || peso(a.origen) - peso(b.origen))
   let anio = ''
   let n = 0
@@ -343,6 +366,53 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
     return { ...a, n, apuntes: a.apuntes.filter((x) => x.debe || x.haber).map((x) => ({ ...x, debe: r2(x.debe), haber: r2(x.haber) })) }
   })
   return { asientos, nombres }
+}
+
+/**
+ * Asiento de variación de existencias al cierre de cada periodo (mes, trimestre o año, según la cuenta):
+ * da de baja lo que había en la 300 (o 310, 325, 350) contra la 610 (611, 612, 712) y da de alta
+ * el valor del inventario a esa fecha (coste medio). Lo que había sale del saldo contable de la cuenta,
+ * así que también recoge las existencias de la apertura. Solo periodos ya cerrados (hasta hoy) y desde
+ * el primer movimiento de stock.
+ */
+function variacionesExistencias(d: DatosContables, hasta: string, previos: Omit<Asiento, 'n'>[]): Omit<Asiento, 'n'>[] {
+  const inv = d.inventario!
+  if (inv.periodo === 'no') return []
+  const movs = movimientosStock(d.gastos, d.facturas, inv.ajustes)
+  if (!movs.length) return []
+  const tope = hasta < hoy() ? hasta : hoy()
+  const out: Omit<Asiento, 'n'>[] = []
+  // Saldo de cada cuenta de existencias con lo que ya hay (apertura, asientos manuales) y las variaciones anteriores
+  const saldoPrevio = (prefijo: string, fecha: string) => {
+    let s = 0
+    for (const a of previos) {
+      if (a.fecha > fecha) continue
+      for (const p of a.apuntes) if (p.cuenta.startsWith(prefijo)) s += Number(p.debe) - Number(p.haber)
+    }
+    return r2(s)
+  }
+  const acumulado = new Map<string, number>()
+  for (const cierre of cierresEntre(inv.periodo, movs[0].fecha, tope)) {
+    const valores = valorPorTipo(movs, inv.productos, cierre)
+    const apuntes: Apunte[] = []
+    // Importe en negativo: se cambian el debe y el haber
+    const par = (debe: string, haber: string, importe: number) => {
+      if (!importe) return
+      const [dd, hh, x] = importe > 0 ? [debe, haber, importe] : [haber, debe, -importe]
+      apuntes.push({ cuenta: dd, debe: x, haber: 0 }, { cuenta: hh, debe: 0, haber: x })
+    }
+    for (const t of TIPOS_EXISTENCIA) {
+      const anterior = r2(saldoPrevio(t.cuenta, cierre) + (acumulado.get(t.id) ?? 0))
+      const nuevo = valores.get(t.id) ?? 0
+      if (anterior === nuevo && !nuevo) continue
+      par(subcuenta(t.variacion), subcuenta(t.cuenta), anterior) // baja de las existencias iniciales
+      par(subcuenta(t.cuenta), subcuenta(t.variacion), nuevo) // alta de las existencias finales
+      acumulado.set(t.id, r2((acumulado.get(t.id) ?? 0) + nuevo - anterior))
+    }
+    if (apuntes.length)
+      out.push({ fecha: cierre, concepto: `Variación de existencias · ${nombreCierre(inv.periodo, cierre)}`, origen: 'existencias', apuntes })
+  }
+  return out
 }
 
 /** Cuotas de amortización mensuales (lineales, prorrateando el primer mes por días) */
@@ -505,13 +575,14 @@ export function perdidasYGanancias(asientos: Asiento[]): { lineas: LineaInforme[
   const ing = (p: string[], ex: string[] = []) => -saldo(asientos, p, ex)
   const gas = (p: string[], ex: string[] = []) => -saldo(asientos, p, ex)
   const cifra = ing(['70'])
+  const variacion = ing(['71'])
   const aprov = gas(['60', '61'])
   const otrosIng = ing(['75'])
   const personal = gas(['64'])
   const otrosGastos = gas(['62', '631', '634', '65'])
   const amort = gas(['68'])
   const excep = ing(['778']) + gas(['678'])
-  const explotacion = r2(cifra + aprov + otrosIng + personal + otrosGastos + amort + excep)
+  const explotacion = r2(cifra + variacion + aprov + otrosIng + personal + otrosGastos + amort + excep)
   const ingFin = ing(['76'])
   const gasFin = gas(['66'])
   const financiero = r2(ingFin + gasFin)
@@ -522,6 +593,7 @@ export function perdidasYGanancias(asientos: Asiento[]): { lineas: LineaInforme[
     resultado,
     lineas: [
       { codigo: '1', nombre: 'Importe neto de la cifra de negocios', importe: cifra, nivel: 1 },
+      ...(variacion ? [{ codigo: '2', nombre: 'Variación de existencias de productos terminados y en curso', importe: variacion, nivel: 1 as const }] : []),
       { codigo: '4', nombre: 'Aprovisionamientos', importe: aprov, nivel: 1 },
       { codigo: '5', nombre: 'Otros ingresos de explotación', importe: otrosIng, nivel: 1 },
       { codigo: '6', nombre: 'Gastos de personal', importe: personal, nivel: 1 },
@@ -554,11 +626,12 @@ export function balanceSituacion(asientos: Asiento[]): {
   const intangible = r2(deudor(['20']) + deudor(['280']))
   const material = r2(deudor(['21']) + deudor(['281']))
   const noCorriente = r2(intangible + material)
+  const existencias = deudor(['3'], ['39'])
   const clientes = deudor(['43', '44'])
   const hpDeudora = r2(deudor(['470', '472', '473']))
   const tesoreria = deudor(['57'])
   const socios = Math.max(0, deudor(['551']))
-  const corriente = r2(clientes + hpDeudora + tesoreria + socios)
+  const corriente = r2(existencias + clientes + hpDeudora + tesoreria + socios)
   const totalActivo = r2(noCorriente + corriente)
 
   const capital = acreedor(['10'])
@@ -582,6 +655,7 @@ export function balanceSituacion(asientos: Asiento[]): {
       { codigo: 'I', nombre: 'Inmovilizado intangible', importe: intangible, nivel: 1 },
       { codigo: 'II', nombre: 'Inmovilizado material', importe: material, nivel: 1 },
       { codigo: 'B', nombre: 'ACTIVO CORRIENTE', importe: corriente, nivel: 0, total: true },
+      ...(existencias ? [{ codigo: 'II', nombre: 'Existencias', importe: existencias, nivel: 1 as const }] : []),
       { codigo: 'III', nombre: 'Clientes y deudores comerciales', importe: clientes, nivel: 1 },
       { codigo: 'III', nombre: 'Hacienda Pública deudora', importe: hpDeudora, nivel: 1 },
       { codigo: 'III', nombre: 'Socios y administradores', importe: socios, nivel: 1 },

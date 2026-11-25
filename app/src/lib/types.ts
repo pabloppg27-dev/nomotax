@@ -122,6 +122,9 @@ export interface Linea {
   precio: number
   iva: number
   descuento?: number
+  /** Producto del inventario (supabase/inventario.sql): la línea resta stock y la venta va a la 700 */
+  producto_id?: string | null
+  referencia?: string | null
 }
 
 interface DocBase {
@@ -222,6 +225,27 @@ export interface Expense {
   tipo_cambio?: number | null
   fecha_cambio?: string | null
   revision: 'pendiente' | 'gasto' | 'inmovilizado' | null
+  /** Líneas de la factura de compra con su producto (supabase/inventario.sql): suman stock */
+  lineas?: LineaCompra[] | null
+}
+
+/** Línea de una factura de compra. importe = base de la línea (sin IVA, tras descuentos), en la moneda de la factura */
+export interface LineaCompra {
+  referencia: string | null
+  descripcion: string
+  cantidad: number
+  importe: number
+  producto_id: string | null
+}
+
+/** Línea que lee la IA (ocr-factura) */
+export interface OcrLinea {
+  referencia: string | null
+  descripcion: string | null
+  cantidad: number
+  precio_unitario: number
+  importe: number
+  es_existencia: boolean
 }
 
 /** Lo que devuelve la función ocr-factura */
@@ -245,6 +269,8 @@ export interface OcrResult {
   notas: string | null
   naturaleza?: 'gasto' | 'inversion'
   tipo_inmovilizado?: string | null
+  /** Líneas de la factura (solo compras de existencias y facturas emitidas) */
+  lineas?: OcrLinea[]
   /** Si la factura venía en otra moneda: cambio del BCE aplicado e importes originales */
   divisa?: import('./divisas').Divisa
 }

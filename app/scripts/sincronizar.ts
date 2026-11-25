@@ -30,6 +30,7 @@ import { createClient } from '@supabase/supabase-js'
 import { entre, generarAsientos, type AsientoManual, type DatosContables, type Inmovilizado } from '../src/lib/contabilidad.ts'
 import { asientosA3, asientosHolded, asientosSage, libroExcel } from '../src/lib/exportar.ts'
 import type { Expense, Invoice, Nomina, Profile } from '../src/lib/types.ts'
+import type { PeriodoExistencias, Producto, StockAjuste } from '../src/lib/inventario.ts'
 import type { DocArchivo, Impuesto } from '../src/lib/impuestos.ts'
 import { nombrePeriodo, type ExtractoBancario } from '../src/lib/bancos.ts'
 
@@ -82,13 +83,16 @@ function carpetaCliente(p: Profile): string {
 }
 
 async function cargar(ownerId: string): Promise<DatosContables> {
-  const [f, g, n, t, m, i] = await Promise.all([
+  const [f, g, n, t, m, i, p, a, perfil] = await Promise.all([
     sb.from('invoices').select('*').eq('owner_id', ownerId),
     sb.from('expenses').select('*').eq('owner_id', ownerId),
     sb.from('nominas').select('*').eq('owner_id', ownerId),
     sb.from('trabajadores').select('id, nombre').eq('owner_id', ownerId),
     sb.from('asientos_manuales').select('*').eq('owner_id', ownerId),
     sb.from('inmovilizados').select('*').eq('owner_id', ownerId),
+    sb.from('productos').select('*').eq('owner_id', ownerId),
+    sb.from('stock_ajustes').select('*').eq('owner_id', ownerId),
+    sb.from('profiles').select('existencias_periodo').eq('id', ownerId).maybeSingle(),
   ])
   for (const r of [f, g, n, t, m, i]) if (r.error) throw new Error(r.error.message)
   const nombreTrab = new Map(((t.data as { id: string; nombre: string }[]) ?? []).map((x) => [x.id, x.nombre]))
@@ -98,6 +102,12 @@ async function cargar(ownerId: string): Promise<DatosContables> {
     nominas: ((n.data as Nomina[]) ?? []).map((x) => ({ ...x, trabajador_nombre: x.trabajador_id ? nombreTrab.get(x.trabajador_id) : null })),
     manuales: (m.data as AsientoManual[]) ?? [],
     inmovilizados: (i.data as Inmovilizado[]) ?? [],
+    // Inventario (supabase/inventario.sql); si aún no existe, sin existencias
+    inventario: {
+      productos: p.error ? [] : ((p.data as Producto[]) ?? []),
+      ajustes: a.error ? [] : ((a.data as StockAjuste[]) ?? []),
+      periodo: perfil.error ? 'no' : ((perfil.data as { existencias_periodo?: PeriodoExistencias } | null)?.existencias_periodo ?? 'no'),
+    },
   }
 }
 
@@ -262,7 +272,7 @@ if (vigilar) {
     )
   }
   const canal = sb.channel('copia-carpetas')
-  for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados', 'trabajadores', 'profiles', 'impuestos', 'archivo', 'extractos_bancarios'])
+  for (const tabla of ['invoices', 'expenses', 'nominas', 'asientos_manuales', 'inmovilizados', 'trabajadores', 'profiles', 'impuestos', 'archivo', 'extractos_bancarios', 'productos', 'stock_ajustes'])
     canal.on('postgres_changes', { event: '*', schema: 'public', table: tabla }, (cambio) => {
       const fila = (cambio.new && Object.keys(cambio.new).length ? cambio.new : cambio.old) as { owner_id?: string; id?: string }
       programar(tabla === 'profiles' ? fila.id : fila.owner_id)

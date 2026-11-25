@@ -63,7 +63,7 @@ const SCHEMA = {
   required: [
     "es_factura", "tipo_documento", "emisor", "receptor", "numero", "fecha", "vencimiento",
     "concepto", "desglose_iva", "base_total", "cuota_iva_total", "irpf_pct", "cuota_irpf",
-    "total", "moneda", "categoria", "naturaleza", "tipo_inmovilizado", "notas",
+    "total", "moneda", "categoria", "naturaleza", "tipo_inmovilizado", "notas", "lineas",
   ],
   properties: {
     es_factura: { type: "boolean" },
@@ -103,6 +103,23 @@ const SCHEMA = {
     naturaleza: { type: "string", enum: ["gasto", "inversion"] },
     tipo_inmovilizado: { type: "string", enum: TIPOS_INMOVILIZADO },
     notas: texto,
+    // Líneas de la factura, para el inventario (sin anyOf: no cuentan para el límite)
+    lineas: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["referencia", "descripcion", "cantidad", "precio_unitario", "importe", "es_existencia"],
+        properties: {
+          referencia: texto,
+          descripcion: texto,
+          cantidad: { type: "number" },
+          precio_unitario: { type: "number" },
+          importe: { type: "number" },
+          es_existencia: { type: "boolean" },
+        },
+      },
+    },
   },
 };
 
@@ -122,6 +139,14 @@ Reglas:
 - naturaleza: "inversion" si lo comprado es un bien duradero que la empresa usará más de un año (ordenadores, móviles, tablets, monitores, impresoras, muebles, maquinaria, herramientas, vehículos, instalaciones y reformas del local, licencias de software de compra única); "gasto" si se consume en el año (suministros, servicios, suscripciones mensuales o anuales, reparaciones, material fungible, comidas, viajes…). Si dudas, "gasto" y explícalo en "notas".
 - tipo_inmovilizado: si naturaleza es "inversion", el tipo de bien: equipos_informaticos (ordenadores, portátiles, móviles, tablets, monitores, impresoras), aplicaciones (software de compra única, web a medida), mobiliario, maquinaria, utillaje (herramientas), instalaciones (reformas, climatización, electricidad del local), transporte (vehículos), construcciones (edificios, locales), otro. Si es "gasto", "ninguno".
 - es_factura: false si el documento no es una factura ni un ticket (por ejemplo, un presupuesto, un albarán o una foto sin relación). Explica el motivo en "notas".
+- lineas: SOLO en facturas recibidas de categoria "compras" y en facturas EMITIDAS; en cualquier otro caso, [] (lista vacía). Una entrada por cada línea de artículo de la factura, en el mismo orden:
+  · referencia: el código del artículo tal como aparece (Ref., Código, Art., SKU, EAN…); "" si no tiene.
+  · descripcion: el nombre del artículo, sin la referencia.
+  · cantidad: unidades (o kg, litros… lo que indique la línea). Si no aparece, 1.
+  · precio_unitario: precio por unidad sin IVA, antes de descuentos.
+  · importe: base de la línea sin IVA, después de sus descuentos (en la moneda de la factura).
+  · es_existencia: true si es un bien físico que la empresa compra para revender o para fabricar (mercaderías, materias primas, envases y embalajes) o que vende; false para portes, transporte, servicios, mano de obra, tasas, recargos, gastos de envío y descuentos sueltos.
+  Una línea de portes o de descuento general también va, con es_existencia false.
 - notas: solo si hay algo que deba revisar una persona (datos ilegibles, sumas que no cuadran, factura que parece emitida y no recibida…). Una sola frase corta y directa, máximo 15 palabras, sin repetir importes ni NIF. Ej.: "Parece una factura emitida, no recibida." "" si no hay dudas.`;
 
 function json(body: unknown, status = 200) {

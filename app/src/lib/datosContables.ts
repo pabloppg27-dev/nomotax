@@ -2,6 +2,22 @@ import { supabase } from './supabase'
 import type { AsientoManual, DatosContables, Inmovilizado } from './contabilidad.ts'
 import type { Expense, Invoice, Nomina } from './types'
 import { agregarNominas } from './vistaSocio.ts'
+import type { DatosInventario, PeriodoExistencias, Producto, StockAjuste } from './inventario.ts'
+
+/** Productos, ajustes y periodicidad del inventario. Si aún no se ha ejecutado inventario.sql, va vacío */
+export async function cargarInventario(ownerId: string): Promise<DatosInventario> {
+  const [p, a, perfil] = await Promise.all([
+    supabase.from('productos').select('*').eq('owner_id', ownerId).order('nombre'),
+    supabase.from('stock_ajustes').select('*').eq('owner_id', ownerId),
+    supabase.from('profiles').select('existencias_periodo').eq('id', ownerId).maybeSingle(),
+  ])
+  return {
+    productos: p.error ? [] : ((p.data as Producto[]) ?? []),
+    ajustes: a.error ? [] : ((a.data as StockAjuste[]) ?? []),
+    disponible: !p.error,
+    periodo: perfil.error ? 'no' : (((perfil.data as { existencias_periodo?: PeriodoExistencias } | null)?.existencias_periodo ?? 'no') as PeriodoExistencias),
+  }
+}
 
 /**
  * Todo lo que necesita el motor contable de una cuenta.
@@ -9,7 +25,7 @@ import { agregarNominas } from './vistaSocio.ts'
  * recibe un total por mes, sin el nombre ni el sueldo de nadie.
  */
 export async function cargarDatosContables(ownerId: string, nominasAgregadas = false): Promise<DatosContables> {
-  const [f, g, n, t, m, i] = await Promise.all([
+  const [f, g, n, t, m, i, inventario] = await Promise.all([
     supabase.from('invoices').select('*').eq('owner_id', ownerId),
     supabase.from('expenses').select('*').eq('owner_id', ownerId),
     nominasAgregadas
@@ -21,6 +37,7 @@ export async function cargarDatosContables(ownerId: string, nominasAgregadas = f
     nominasAgregadas ? Promise.resolve({ data: [] }) : supabase.from('trabajadores').select('id, nombre').eq('owner_id', ownerId),
     supabase.from('asientos_manuales').select('*').eq('owner_id', ownerId),
     supabase.from('inmovilizados').select('*').eq('owner_id', ownerId),
+    cargarInventario(ownerId),
   ])
   const nombreTrab = new Map(((t.data as { id: string; nombre: string }[]) ?? []).map((x) => [x.id, x.nombre]))
   return {
@@ -29,6 +46,7 @@ export async function cargarDatosContables(ownerId: string, nominasAgregadas = f
     nominas: ((n.data as Nomina[]) ?? []).map((x) => ({ ...x, trabajador_nombre: x.trabajador_id ? nombreTrab.get(x.trabajador_id) : null })),
     manuales: (m.data as AsientoManual[]) ?? [],
     inmovilizados: (i.data as Inmovilizado[]) ?? [],
+    inventario,
   }
 }
 

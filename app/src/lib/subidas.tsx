@@ -11,6 +11,7 @@ import { necesitaRevision } from './contabilidad.ts'
 import { columnasDivisa } from './divisas'
 import { importesDe, leerFactura, prepararArchivo, subirDocumento } from './upload'
 import { nuevoId } from './id'
+import { lineasVentaExterna, vincularLineasCompra } from './productos'
 
 /** gasto = Gastos · ticket = ticket de un empleado (Mi espacio) · factura = factura emitida con otro programa */
 export type TipoSubida = 'gasto' | 'ticket' | 'factura'
@@ -41,6 +42,11 @@ async function procesarGasto(ownerId: string, file: File, avisar: Avisar) {
   try {
     const ocr = await leerFactura(path, 'gasto', ownerId)
     const imp = importesDe(ocr)
+    // Compra de existencias: cada línea con su producto (se crea si no existe) para el inventario
+    const lineas =
+      ocr.categoria === 'compras' && ocr.lineas?.some((l) => l.es_existencia)
+        ? await vincularLineasCompra(ownerId, ocr.lineas).catch(() => null)
+        : null
     const { error: e2 } = await supabase
       .from('expenses')
       .update({
@@ -55,6 +61,8 @@ async function procesarGasto(ownerId: string, file: File, avisar: Avisar) {
         revision: necesitaRevision(ocr.naturaleza, imp.base) ? 'pendiente' : null,
         ...columnasDivisa(ocr),
         ocr,
+        // Solo si algún producto se ha podido casar o crear (así, sin inventario.sql, no falla)
+        ...(lineas?.some((l) => l.producto_id) ? { lineas } : {}),
       })
       .eq('id', fila.id)
     if (e2) throw new Error(await errorMessage(e2))
@@ -83,7 +91,10 @@ async function procesarFactura(ownerId: string, file: File, avisar: Avisar) {
       cuota_irpf: imp.cuota_irpf,
       irpf_pct: imp.irpf_pct ?? 0,
       total: imp.total,
-      lineas: [{ concepto: ocr.concepto || 'Según factura', cantidad: 1, precio: imp.base, iva: imp.iva_pct ?? 0 }],
+      // Con productos del inventario, las líneas (si cuadran con la base) para que resten stock
+      lineas: (await lineasVentaExterna(ownerId, ocr.lineas, imp.base, imp.iva_pct).catch(() => null)) ?? [
+        { concepto: ocr.concepto || 'Según factura', cantidad: 1, precio: imp.base, iva: imp.iva_pct ?? 0 },
+      ],
       ...columnasDivisa(ocr),
       ocr,
     }

@@ -5,7 +5,10 @@ import { BUCKET, errorMessage, supabase } from '../lib/supabase'
 import { eur, fecha as fmtFecha, limpiarNif, num, round2 } from '../lib/format'
 import { CATEGORIAS } from '../lib/categorias'
 import { importesDe, leerFactura } from '../lib/upload'
-import type { Expense, OcrResult } from '../lib/types'
+import type { Expense, LineaCompra, OcrResult } from '../lib/types'
+import type { Producto } from '../lib/inventario.ts'
+import { vincularLineasCompra } from '../lib/productos'
+import LineasCompra from './LineasCompra'
 import { aEuros, columnasDivisa, importeMoneda } from '../lib/divisas'
 import { CUENTA_CATEGORIA, TIPOS_INMOVILIZADO, necesitaRevision, type Inmovilizado } from '../lib/contabilidad.ts'
 import DocPreview from './DocPreview'
@@ -51,6 +54,20 @@ export default function ExpenseReview({
   const [leyendo, setLeyendo] = useState(false)
   const [ocr, setOcr] = useState<OcrResult | null>(null)
   const [dec, setDec] = useState<Decision | null>(null)
+  const [lineas, setLineas] = useState<LineaCompra[] | null>(null)
+  // null = sin inventario (aún no se ha ejecutado inventario.sql o no hay permiso)
+  const [productos, setProductos] = useState<Producto[] | null>(null)
+
+  useEffect(() => {
+    setLineas(gasto?.lineas ?? null)
+    if (!gasto) return
+    supabase
+      .from('productos')
+      .select('*')
+      .eq('owner_id', gasto.owner_id)
+      .order('nombre')
+      .then(({ data, error }) => setProductos(error ? null : ((data as Producto[]) ?? [])))
+  }, [gasto])
 
   useEffect(() => {
     setOcr(gasto?.ocr ?? null)
@@ -124,6 +141,14 @@ export default function ExpenseReview({
       const o = await leerFactura(gasto.file_path, 'gasto', gasto.owner_id)
       const imp = importesDe(o)
       setOcr(o)
+      if (productos && o.categoria === 'compras' && o.lineas?.some((l) => l.es_existencia)) {
+        const nuevas = await vincularLineasCompra(gasto.owner_id, o.lineas).catch(() => null)
+        if (nuevas) {
+          setLineas(nuevas)
+          const { data } = await supabase.from('productos').select('*').eq('owner_id', gasto.owner_id).order('nombre')
+          if (data) setProductos(data as Producto[])
+        }
+      }
       setForm({
         ...form,
         fecha: o.fecha ?? form.fecha,
@@ -160,6 +185,7 @@ export default function ExpenseReview({
       estado: 'revisado',
       ...(ocr?.divisa ? columnasDivisa(ocr) : {}),
       ocr,
+      ...(productos && lineas ? { lineas: lineas.length ? lineas : null } : {}),
     }
     if (decidido) {
       cambios.revision = d.tipo
@@ -345,6 +371,17 @@ export default function ExpenseReview({
               </p>
             )}
           </div>
+
+          {productos && (lineas?.length || form.categoria === 'compras') ? (
+            <LineasCompra
+              ownerId={gasto.owner_id}
+              lineas={lineas ?? []}
+              onChange={setLineas}
+              productos={productos}
+              onProducto={(p) => setProductos((xs) => [...(xs ?? []), p].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
+              base={form.base}
+            />
+          ) : null}
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
             <label className="flex items-center gap-2">
