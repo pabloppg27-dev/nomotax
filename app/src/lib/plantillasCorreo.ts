@@ -2,6 +2,7 @@
  * Plantillas de correo de cada empresa (Configuración → Plantillas): facturas, accesos, nóminas y presupuestos.
  * Cada una tiene asunto y mensaje con {variables}; el diseño (cabecera, logo, color de marca, pie) es común.
  * La factura tiene su propio diseño en correoFactura.ts; el resto usa htmlCorreoPlantilla().
+ * El rol «empleado» recibe un correo de acceso propio, con texto fijo (tipo 'equipo', ASUNTO_EQUIPO).
  * Sin navegador: lo usan la vista previa de la app y las funciones del servidor (invitar-miembro…).
  */
 import { NEGRO_CORREO, VARIABLES_CORREO, acentoSobre, colorValido, esc, plantillaPorDefecto, textoSobre } from './correoFactura'
@@ -39,6 +40,25 @@ export const FUNCIONES_ROL: Record<string, string> = {
   empleado: 'Subir tus tickets de gasto y ver tus nóminas y tus documentos.',
 }
 
+/**
+ * Correo de acceso del rol «empleado» (tipo 'equipo'): texto fijo, no sale de la plantilla «Accesos»
+ * (esa es para administración, socio y comercial). Recuerda que el registro diario de la jornada es obligatorio.
+ */
+export const ASUNTO_EQUIPO = 'Ya tienes tu perfil de equipo en NomoTax'
+
+const EQUIPO = {
+  alta: (empresa: string) =>
+    `${empresa} te ha dado de alta en NomoTax, su plataforma de gestión laboral, donde ya tienes activo tu perfil de equipo.`,
+  jornada: 'Te recordamos que el registro diario de la jornada es obligatorio.',
+  jornadaDetalle: 'Deberás registrar cada día tu entrada y tu salida desde tu perfil.',
+  app: 'Para mayor comodidad en tu día a día, puedes instalar NomoTax como aplicación en tu móvil y en tu ordenador.',
+  perfil:
+    'Desde tu perfil podrás consultar tus nóminas, tus certificados de retenciones y tus documentos laborales, subir tus tickets de gasto, solicitar un cambio en tu retención de IRPF y, durante la campaña de la renta, solicitarnos la presentación de tu declaración.',
+}
+
+/** Correos con el diseño de htmlCorreoPlantilla(): los de las plantillas (menos la factura) y el de equipo */
+export type TipoCorreo = Exclude<TipoPlantilla, 'factura'> | 'equipo'
+
 export const PLANTILLAS: DefPlantilla[] = [
   {
     tipo: 'factura',
@@ -53,7 +73,7 @@ export const PLANTILLAS: DefPlantilla[] = [
   {
     tipo: 'acceso',
     titulo: 'Accesos',
-    detalle: 'El correo que recibe cada persona a la que das acceso a la empresa. Los datos de acceso se añaden solos.',
+    detalle: 'El correo que recibe cada persona a la que das acceso a la empresa (administración, socio o comercial). Los datos de acceso se añaden solos.',
     colAsunto: 'acceso_asunto',
     colMensaje: 'acceso_mensaje',
     variables: [
@@ -194,7 +214,7 @@ export const APP_URL = 'https://clientes.nomotax.io'
 /** Guía para poner el Área de clientes como app (iPhone, Android, Mac, Windows) */
 export const GUIA_APP = 'https://nomotax.io/instalar-app'
 
-const ETIQUETA: Record<Exclude<TipoPlantilla, 'factura'>, string> = { acceso: 'ACCESO', nomina: 'NÓMINA', presupuesto: 'PRESUPUESTO' }
+const ETIQUETA: Record<TipoCorreo, string> = { acceso: 'ACCESO', equipo: 'PERFIL DE EQUIPO', nomina: 'NÓMINA', presupuesto: 'PRESUPUESTO' }
 
 /** Textos fijos del correo de presupuestos en cada idioma (accesos y nóminas, siempre en español) */
 const FRASES = {
@@ -217,10 +237,10 @@ const FRASES = {
 }
 
 /** Cuadro de resumen de cada tipo (accesos, datos de la nómina o del presupuesto) */
-function cuadro(tipo: Exclude<TipoPlantilla, 'factura'>, v: Record<string, string>, color: string, F = FRASES.es): string {
+function cuadro(tipo: TipoCorreo, v: Record<string, string>, color: string, F = FRASES.es): string {
   const etiqueta = (t: string) => `<span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${t}</span><br>`
   let dentro = ''
-  if (tipo === 'acceso') {
+  if (tipo === 'acceso' || tipo === 'equipo') {
     const clave = v.contrasena
       ? `Contraseña provisional: <strong style="font-family:Menlo,Consolas,monospace;font-size:16px;background:${color};color:${textoSobre(color)};padding:2px 6px;border-radius:6px">${esc(v.contrasena)}</strong>`
       : 'Contraseña: <strong>la que ya usas en NomoTax</strong><br><span style="color:#6b6b66">Arriba, en la barra lateral, podrás elegir la empresa.</span>'
@@ -233,15 +253,27 @@ function cuadro(tipo: Exclude<TipoPlantilla, 'factura'>, v: Record<string, strin
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px;margin-top:8px"><tr><td style="padding:18px 20px;font:15px/1.7 ${FONT};color:#111110">${dentro}</td></tr></table>`
 }
 
-const TITULO: Record<Exclude<TipoPlantilla, 'factura'>, (v: Record<string, string>) => string> = {
+const TITULO: Record<TipoCorreo, (v: Record<string, string>) => string> = {
   acceso: (v) => `Hola${v.nombre ? ' ' + v.nombre : ''}, ya tienes acceso`,
+  equipo: (v) => (v.nombre ? `Hola, ${v.nombre}` : 'Hola'),
   nomina: (v) => `Tu nómina de ${v.mes ?? ''}`,
   presupuesto: (v) => `Presupuesto de ${v.empresa ?? ''}`,
 }
 
-/** HTML del correo de accesos, nóminas y presupuestos, con la marca de la empresa */
+/** Cuerpo fijo del correo de equipo: alta, aviso del registro de jornada (destacado), la app y lo que puede hacer */
+function cuerpoEquipo(v: Record<string, string>, color: string): string {
+  const p = (html: string, abajo = 18) => `<p style="margin:0 0 ${abajo}px 0">${html}</p>`
+  return [
+    p(esc(EQUIPO.alta(v.empresa ?? ''))),
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${color};border-radius:14px;margin:0 0 18px 0"><tr><td style="padding:16px 20px;font:15px/1.6 ${FONT};color:${textoSobre(color)}"><strong>${EQUIPO.jornada}</strong><br>${EQUIPO.jornadaDetalle}</td></tr></table>`,
+    p(`${EQUIPO.app} <a href="${GUIA_APP}" style="color:#111110;font-weight:600">Ver cómo instalarla, en 1 minuto</a>.`),
+    p(EQUIPO.perfil, 14),
+  ].join('')
+}
+
+/** HTML del correo de accesos (y el de equipo), nóminas y presupuestos, con la marca de la empresa. En 'equipo' no se usa el mensaje. */
 export function htmlCorreoPlantilla(
-  tipo: Exclude<TipoPlantilla, 'factura'>,
+  tipo: TipoCorreo,
   mensaje: string,
   v: Record<string, string>,
   diseno: DisenoPlantilla,
@@ -253,11 +285,14 @@ export function htmlCorreoPlantilla(
   const F = FRASES[tipo === 'presupuesto' && diseno.lengua === 'en' ? 'en' : 'es']
   const etiqueta = tipo === 'presupuesto' ? F.etiqueta : ETIQUETA[tipo]
   const titulo = tipo === 'presupuesto' ? F.titulo(v.empresa ?? '') : TITULO[tipo](v)
-  const parrafos = mensaje
-    .trim()
-    .split(/\n{2,}/)
-    .map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, '<br>')}</p>`)
-    .join('')
+  const parrafos =
+    tipo === 'equipo'
+      ? cuerpoEquipo(v, color)
+      : mensaje
+          .trim()
+          .split(/\n{2,}/)
+          .map((p) => `<p style="margin:0 0 14px 0">${esc(p).replace(/\n/g, '<br>')}</p>`)
+          .join('')
   const logo = diseno.logo
     ? `<td style="padding-right:14px" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#ffffff;border-radius:10px;padding:6px 8px"><img src="${esc(diseno.logo)}" alt="" height="32" style="display:block;height:32px;width:auto;max-width:150px;border:0"></td></tr></table></td>`
     : ''
@@ -270,7 +305,9 @@ export function htmlCorreoPlantilla(
   const boton =
     tipo === 'acceso'
       ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0"><tr><td style="background:${colorBoton};border-radius:999px"><a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px ${FONT};color:${textoSobre(colorBoton)};text-decoration:none">Entrar en el Área de clientes →</a></td></tr></table>${v.contrasena ? `<p style="margin:0 0 10px 0;font-size:13px;color:#6b6b66">Al entrar, cambia la contraseña en «Mi perfil».</p>` : ''}<p style="margin:0 0 16px 0;font-size:13px;color:#6b6b66">📱 Tenla como app en tu móvil u ordenador: <a href="${GUIA_APP}" style="color:#111110;font-weight:600">así se hace, en 1 minuto</a>.</p>`
-      : ''
+      : tipo === 'equipo'
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px 0"><tr><td style="background:${colorBoton};border-radius:999px"><a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px ${FONT};color:${textoSobre(colorBoton)};text-decoration:none">Acceder a mi perfil →</a></td></tr></table>${v.contrasena ? `<p style="margin:0 0 16px 0;font-size:13px;color:#6b6b66">Por seguridad, cambia la contraseña la primera vez que accedas.</p>` : ''}`
+        : ''
 
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
@@ -301,7 +338,7 @@ export function htmlCorreoPlantilla(
 
 /** Versión en texto plano */
 export function textoCorreoPlantilla(
-  tipo: Exclude<TipoPlantilla, 'factura'>,
+  tipo: TipoCorreo,
   mensaje: string,
   v: Record<string, string>,
   diseno: DisenoPlantilla,
@@ -310,13 +347,17 @@ export function textoCorreoPlantilla(
   const extra =
     tipo === 'acceso'
       ? [`Entra en: ${APP_URL}`, `Usuario: ${v.usuario ?? ''}`, v.contrasena ? `Contraseña provisional: ${v.contrasena}` : 'Contraseña: la que ya usas en NomoTax.', '', `Tenla como app en tu móvil u ordenador: ${GUIA_APP}`]
+      : tipo === 'equipo'
+        ? [`Accede a tu perfil: ${APP_URL}`, `Usuario: ${v.usuario ?? ''}`, v.contrasena ? `Contraseña provisional: ${v.contrasena}` : 'Contraseña: la que ya usas en NomoTax.']
       : tipo === 'nomina'
         ? [`Nómina: ${v.mes ?? ''}`, `Adjunto: ${v.archivo ?? ''}`]
         : [`${F.etiqueta.charAt(0) + F.etiqueta.slice(1).toLowerCase()} ${v.numero ?? ''} · ${v.fecha ?? ''}`, `${F.total}: ${v.total ?? ''}`, F.valido(v.validez ?? '')]
   return [
     tipo === 'presupuesto' ? F.titulo(v.empresa ?? '') : TITULO[tipo](v),
     '',
-    mensaje.trim(),
+    tipo === 'equipo'
+      ? [EQUIPO.alta(v.empresa ?? ''), '', `${EQUIPO.jornada} ${EQUIPO.jornadaDetalle}`, '', `${EQUIPO.app} ${GUIA_APP}`, '', EQUIPO.perfil].join('\n')
+      : mensaje.trim(),
     '',
     ...extra,
     '',

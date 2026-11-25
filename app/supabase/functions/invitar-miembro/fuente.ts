@@ -10,7 +10,8 @@
 // el acceso y se le avisa: entra con su contraseña de siempre y elige la empresa arriba.
 //
 // El correo de acceso sale desde el correo propio de la empresa (Configuración → Correo, smtp_empresas activo)
-// o, si no lo ha conectado, desde info@nomotax.io con su nombre. El texto es su plantilla de «Accesos» (Configuración → Plantillas).
+// o, si no lo ha conectado, desde info@nomotax.io con su nombre. El texto es su plantilla de «Accesos» (Configuración → Plantillas),
+// salvo para el rol empleado, que recibe el correo de equipo (texto fijo, con el aviso del registro de jornada).
 // FUENTE: NO se pega en Supabase. `node scripts/empaquetar-facturar.mjs invitar-miembro` genera index.ts (un solo archivo)
 // y ese es el que se pega en Edge Functions → invitar-miembro. Secretos: SMTP_PASSWORD (NomoTax) y SMTP_CLAVE (correo propio).
 
@@ -18,6 +19,7 @@ import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
 import { explicarErrorSmtp, smtpActivo, transporte } from "../_compartido/smtp";
 import {
+  ASUNTO_EQUIPO,
   FUNCIONES_ROL,
   NOMBRE_ROL,
   correoDePlantilla,
@@ -206,14 +208,26 @@ async function enviar(admin: { from: (t: string) => any }, d: DatosAcceso): Prom
       usuario: d.email,
       contrasena: d.password ?? "",
     };
-    const { asunto, mensaje } = correoDePlantilla("acceso", { asunto: p.acceso_asunto, mensaje: p.acceso_mensaje }, vars);
     const diseno = { empresa, color: p.color_marca, cabecera: p.color_cabecera, boton: p.color_boton, logo: null, respuesta, telefono: p.telefono };
-    const mail = {
-      to: d.email,
-      subject: asunto,
-      text: textoCorreoPlantilla("acceso", mensaje, vars, diseno),
-      html: htmlCorreoPlantilla("acceso", mensaje, vars, diseno),
-    };
+    // El rol empleado recibe el correo de equipo (texto fijo, con el aviso del registro de jornada);
+    // el resto, la plantilla «Accesos» de la empresa
+    let mail: { to: string; subject: string; text: string; html: string };
+    if (d.rol === "empleado") {
+      mail = {
+        to: d.email,
+        subject: ASUNTO_EQUIPO,
+        text: textoCorreoPlantilla("equipo", "", vars, diseno),
+        html: htmlCorreoPlantilla("equipo", "", vars, diseno),
+      };
+    } else {
+      const { asunto, mensaje } = correoDePlantilla("acceso", { asunto: p.acceso_asunto, mensaje: p.acceso_mensaje }, vars);
+      mail = {
+        to: d.email,
+        subject: asunto,
+        text: textoCorreoPlantilla("acceso", mensaje, vars, diseno),
+        html: htmlCorreoPlantilla("acceso", mensaje, vars, diseno),
+      };
+    }
 
     // ¿La empresa tiene su propio correo conectado?
     const propio = await smtpActivo(admin, d.cuenta);

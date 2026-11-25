@@ -10,6 +10,9 @@ import { errorMessage, supabase } from '../lib/supabase'
 import { hoyISO } from '../lib/format'
 import { correoDeFactura, htmlCorreoFactura } from '../lib/correoFactura'
 import {
+  ASUNTO_EQUIPO,
+  FUNCIONES_ROL,
+  NOMBRE_ROL,
   PLANTILLAS,
   correoDePlantilla,
   ejemploPlantilla,
@@ -43,6 +46,8 @@ export default function Plantillas() {
   const [tipo, setTipo] = useState<TipoPlantilla>('factura')
   const [borradores, setBorradores] = useState<Partial<Record<TipoPlantilla, Borrador>>>({})
   const [guardando, setGuardando] = useState(false)
+  // En «Accesos», la vista previa puede enseñar el correo de equipo (el que recibe el rol empleado)
+  const [verEquipo, setVerEquipo] = useState(false)
   const ultimoCampo = useRef<'asunto' | 'mensaje'>('mensaje')
   const refAsunto = useRef<HTMLInputElement>(null)
   const refMensaje = useRef<HTMLTextAreaElement>(null)
@@ -125,6 +130,10 @@ export default function Plantillas() {
     const listo = correoDeFactura(actual, ejemplo)
     asuntoListo = listo.asunto
     html = htmlCorreoFactura(listo.mensaje, ejemplo, { ...diseno, iban: owner.iban })
+  } else if (tipo === 'acceso' && verEquipo) {
+    const vars = { ...ejemploPlantilla('acceso', empresa), rol: NOMBRE_ROL.empleado, funciones: FUNCIONES_ROL.empleado }
+    asuntoListo = ASUNTO_EQUIPO
+    html = htmlCorreoPlantilla('equipo', '', vars, diseno)
   } else {
     const vars = ejemploPlantilla(tipo, empresa)
     const listo = correoDePlantilla(tipo, actual, vars)
@@ -268,7 +277,7 @@ export default function Plantillas() {
                 {tipo === 'factura'
                   ? 'A los clientes de fuera de España se les envía en inglés, igual que el PDF. '
                   : tipo === 'acceso'
-                    ? 'El usuario, la contraseña y el botón de entrada se añaden solos debajo del mensaje. '
+                    ? 'El usuario, la contraseña y el botón de entrada se añaden solos debajo del mensaje. Los empleados reciben un correo propio de equipo, con el aviso del registro de jornada (míralo en la vista previa). '
                     : 'El PDF va adjunto y se añade solo un resumen debajo del mensaje. '}
                 El logo y el color son los de tu Perfil.
               </p>
@@ -357,6 +366,31 @@ export default function Plantillas() {
 
         <div className="lg:sticky lg:top-0 lg:self-start">
           <p className="mb-2 text-[13px] font-medium text-ink/80">Vista previa (con datos de ejemplo)</p>
+          {tipo === 'acceso' && (
+            <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Correo de accesos según el rol">
+              {[
+                { equipo: false, texto: 'Administración, socio y comercial' },
+                { equipo: true, texto: 'Empleados' },
+              ].map((o) => (
+                <button
+                  key={o.texto}
+                  type="button"
+                  role="tab"
+                  aria-selected={verEquipo === o.equipo}
+                  onClick={() => setVerEquipo(o.equipo)}
+                  className={cx(
+                    'rounded-full px-3 py-1.5 text-sm transition-colors',
+                    verEquipo === o.equipo ? 'bg-ink font-medium text-white' : 'bg-paper text-ink/75 ring-1 ring-line hover:bg-ink/[0.05] hover:text-ink',
+                  )}
+                >
+                  {o.texto}
+                </button>
+              ))}
+            </div>
+          )}
+          {tipo === 'acceso' && verEquipo && (
+            <p className="mb-3 text-xs text-muted">Este correo tiene un texto fijo: no cambia con la plantilla de la izquierda.</p>
+          )}
           <VistaPreviaCorreo de={remitente.de} responder={responder} asunto={asuntoListo} html={html} />
         </div>
       </div>
