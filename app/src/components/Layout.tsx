@@ -390,26 +390,27 @@ export default function Layout() {
               <NavLink to="/" aria-label="Ir al resumen" className="shrink-0 rounded-lg">
                 <img src="/logo.png" alt="" className="size-9" />
               </NavLink>
-              <div className="min-w-0 leading-tight">
-                <NavLink to="/" className="block text-[15px] font-semibold tracking-tight text-white">
-                  NomoTax
-                </NavLink>
-                <button
-                  type="button"
-                  onClick={() => cuentas.varias && setVerCuentas(true)}
-                  disabled={!cuentas.varias}
-                  aria-label={cuentas.varias ? `Estás en ${cuentas.cuenta.linea}. Cambiar de cuenta` : `Estás en ${cuentas.cuenta.linea}`}
-                  className={cx(
-                    'mt-0.5 flex max-w-full items-center gap-1 rounded-full py-0.5 pl-0.5 pr-2 text-[12px] transition-colors duration-500',
-                    destello ? 'bg-lima text-ink' : 'bg-white/10 text-white/85',
-                    cuentas.varias && 'cursor-pointer active:bg-white/20',
+              {/* La cuenta en la que estás, como en la barra lateral del ordenador: iniciales y dos líneas */}
+              <button
+                type="button"
+                onClick={() => cuentas.varias && setVerCuentas(true)}
+                disabled={!cuentas.varias}
+                aria-label={cuentas.varias ? `Estás en ${cuentas.cuenta.linea}. Cambiar de cuenta` : `Estás en ${cuentas.cuenta.linea}`}
+                className={cx(
+                  'flex min-w-0 items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-3 text-left transition-colors duration-500',
+                  destello ? 'bg-lima text-ink' : 'bg-white/5 text-white',
+                  cuentas.varias && 'cursor-pointer active:bg-white/15',
+                )}
+              >
+                <Iniciales texto={cuentas.cuenta.iniciales} className="size-8 text-xs" />
+                <span className="min-w-0 flex-1 leading-tight">
+                  <span className="block truncate text-sm font-medium">{cuentas.cuenta.titulo}</span>
+                  {cuentas.cuenta.detalle && (
+                    <span className={cx('block truncate text-xs', destello ? 'text-ink/60' : 'text-white/50')}>{cuentas.cuenta.detalle}</span>
                   )}
-                >
-                  <Iniciales texto={cuentas.cuenta.iniciales} className="size-4 text-[8px]" />
-                  <span className="truncate">{cuentas.cuenta.linea}</span>
-                  {cuentas.varias && <ChevronDown className="size-3 shrink-0 opacity-70" />}
-                </button>
-              </div>
+                </span>
+                {cuentas.varias && <ChevronDown className="size-4 shrink-0 opacity-60" />}
+              </button>
             </div>
           ) : (
             <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
