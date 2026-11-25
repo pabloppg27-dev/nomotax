@@ -20,6 +20,7 @@ import {
   X,
   PieChart,
   Wallet,
+  Banknote,
   Settings,
   CreditCard,
   type LucideIcon,
@@ -48,7 +49,7 @@ interface ItemNav {
 
 /** Mi espacio: lo personal de quien es trabajador (nóminas, documentos, ficha y tickets) */
 const ESPACIO: ItemNav[] = [
-  { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Wallet, corto: 'Nóminas' },
+  { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Banknote, corto: 'Nóminas' },
   { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard, corto: 'Ficha' },
   { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt, corto: 'Tickets' },
   { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen, corto: 'Documentos' },
@@ -60,7 +61,7 @@ function menu(rol: RolEnCuenta | null, puede: (p: Permiso) => boolean): ItemNav[
   if (rol === 'empleado') return ESPACIO
   const items: (ItemNav & { si: boolean })[] = [
     { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true, si: true },
-    { to: '/gastos', label: 'Gastos', icon: Receipt, si: puede('gastos') },
+    { to: '/gastos', label: 'Gastos', icon: Wallet, si: puede('gastos') },
     { to: '/facturas', label: 'Facturas', icon: FileText, si: puede('ventas') },
     { to: '/presupuestos', label: 'Presupuestos', icon: ClipboardList, corto: 'Presup.', si: puede('ventas') },
     { to: '/clientes', label: 'Clientes', icon: Users, si: puede('ventas') },

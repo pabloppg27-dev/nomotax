@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Receipt, Search } from 'lucide-react'
+import { Search, Wallet } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, trimestreActual, type Periodo } from '../lib/format'
@@ -134,7 +134,7 @@ export default function Gastos() {
           <Loading />
         ) : visibles.length === 0 ? (
           <Empty
-            icon={<Receipt className="size-5" />}
+            icon={<Wallet className="size-5" />}
             title={gastos.length ? 'No hay gastos en este periodo' : 'Todavía no has subido gastos'}
             text={gastos.length ? 'Cambia el trimestre o los filtros.' : 'Sube tu primera factura o haz una foto de un ticket.'}
           />

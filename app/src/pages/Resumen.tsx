@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, ArrowRight, CalendarClock, ClipboardList, FileText, Plus, Receipt } from 'lucide-react'
+import { AlertCircle, ArrowRight, CalendarClock, ClipboardList, FileText, Plus, Wallet } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, hoyISO, proximoPlazoTrimestral, rangoPeriodo, textoPeriodo, trimestreActual, type Periodo } from '../lib/format'
@@ -197,7 +197,7 @@ export default function Resumen() {
             )}
             {verGastos && (
             <Aviso
-              icon={<Receipt className="size-4" />}
+              icon={<Wallet className="size-4" />}
               titulo={calc.porRevisar ? `${calc.porRevisar} gasto${calc.porRevisar > 1 ? 's' : ''} por revisar` : 'Gastos al día'}
               texto={calc.porRevisar ? 'Confirma los datos leídos para que cuenten.' : 'No tienes gastos pendientes de revisar.'}
               to="/gastos"
@@ -273,7 +273,7 @@ export default function Resumen() {
               <p className="mb-4 text-sm text-muted">Lo que más vas a usar.</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {verGastos && (
-                  <Button variant="accent" icon={<Receipt className="size-4" />} onClick={() => navigate('/gastos')}>
+                  <Button variant="accent" icon={<Wallet className="size-4" />} onClick={() => navigate('/gastos')}>
                     Subir un gasto
                   </Button>
                 )}
