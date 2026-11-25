@@ -12,7 +12,7 @@ export default function Clientes() {
   const [filtro, setFiltro] = useState<'todos' | 'nomotax' | 'externo'>('todos')
   const [nuevo, setNuevo] = useState(false)
   const n = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
-  const lista = clientes.filter((c) => (filtro === 'todos' || c.origen === filtro) && n(c.nombre + ' ' + (c.nif ?? '')).includes(n(q)))
+  const lista = clientes.filter((c) => (filtro === 'todos' || c.origen === filtro) && n(`${c.nombre} ${c.nif ?? ''} ${c.email ?? ''}`).includes(n(q)))
 
   return (
     <>
@@ -43,7 +43,7 @@ export default function Clientes() {
                 <Link to={`/clientes/${c.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-paper">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{c.nombre}</p>
-                    <p className="truncate text-xs text-muted">{[c.tipo, c.pais, c.nif].filter(Boolean).join(' · ') || '—'}</p>
+                    <p className="truncate text-xs text-muted">{[c.tipo, c.pais, c.nif, c.email].filter(Boolean).join(' · ') || '—'}</p>
                   </div>
                   {c.origen === 'externo' && <span className="shrink-0 rounded-full bg-paper px-2 py-0.5 text-[11px] text-muted">Externo</span>}
                   <span className="shrink-0 text-right text-xs text-muted">{pend} tareas{proy ? ` · ${proy} proy.` : ''}</span>

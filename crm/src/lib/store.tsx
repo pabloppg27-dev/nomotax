@@ -28,9 +28,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       if (MODO === 'real' && !(await supabase.auth.getSession()).data.session) throw new Error('sin-sesion')
       const [c, p, t] = await Promise.all([db.clientes(), db.proyectos(), db.tareas()])
-      setClientes(c); setProyectos(p); setTareas(t); setError(null)
       // Reuniones aparte: si aún no se ha ejecutado reuniones.sql, el resto del CRM sigue funcionando
-      setReuniones(await db.reuniones().catch(() => []))
+      const rs = await db.reuniones().catch(() => [] as Reunion[])
+      // Cliente sin email guardado: el de su última reunión con invitado
+      const ultimo = new Map<string, string>()
+      for (const r of rs) if (r.cliente_id && r.email) ultimo.set(r.cliente_id, r.email)
+      setClientes(c.map((x) => (x.email || !ultimo.has(x.id) ? x : { ...x, email: ultimo.get(x.id), emailDeReunion: true })))
+      setProyectos(p); setTareas(t); setReuniones(rs); setError(null)
     } catch (e) {
       setError((e as Error).message ?? String(e))
     } finally { setCargando(false) }

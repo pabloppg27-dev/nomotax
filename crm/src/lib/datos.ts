@@ -97,27 +97,44 @@ export async function clientes(): Promise<Cliente[]> {
     const { data, error } = await supabase.from('profiles')
       .select('id, nombre, nombre_comercial, nif, email, telefono, pais').eq('role', 'client')
     if (error) throw error
-    nomotax = (data ?? []).map((p) => ({
+    nomotax = (data ?? []).map((p): Cliente => ({
       id: p.id, origen: 'nomotax', nombre: p.nombre_comercial || p.nombre || p.email || 'Sin nombre',
       nif: p.nif, email: p.email, telefono: p.telefono, pais: p.pais,
     }))
   }
   const ficha = new Map(propios.filter((f) => f.profile_id).map((f) => [f.profile_id as string, f]))
-  const lista: Cliente[] = nomotax.map((c) => ({ ...c, notas: (ficha.get(c.id)?.notas as string) ?? null }))
+  // Email de un cliente NomoTax: el que se haya guardado en el CRM y, si no, el de su perfil
+  // (las cuentas técnicas @sin-acceso no tienen buzón real).
+  const emailReal = (e?: string | null) => (e && !/@sin-acceso\.nomotax\.io$/i.test(e) ? e : null)
+  const lista: Cliente[] = nomotax.map((c) => {
+    const f = ficha.get(c.id)
+    return { ...c, notas: (f?.notas as string) ?? null, email: emailReal(f?.email as string) ?? emailReal(c.email) }
+  })
   for (const f of propios) if (!f.profile_id) lista.push({ ...(f as unknown as Cliente), origen: 'externo' })
   return lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
 }
 export const crearCliente = (c: Partial<Cliente>) => {
   const { origen: _o, id: _i, ...resto } = c
+  if (resto.email) resto.email = resto.email.trim().toLowerCase()
   return crear<Cliente>('crm_clientes', resto).then((n) => ({ ...n, origen: 'externo' as const }))
 }
 export async function guardarCliente(c: Cliente, cambios: Partial<Cliente>) {
   if (c.origen === 'externo') return cambiar('crm_clientes', c.id, cambios)
-  // Cliente de NomoTax: aquí solo se guardan las notas
-  const propios = await listar<Fila>('crm_clientes')
-  const f = propios.find((p) => p.profile_id === c.id)
-  if (f) return cambiar('crm_clientes', f.id, { notas: cambios.notas })
-  await crear('crm_clientes', { profile_id: c.id, nombre: c.nombre, notas: cambios.notas })
+  // Cliente de NomoTax: aquí solo se guardan las notas y el email (el resto viene de su perfil)
+  const propios: Partial<Cliente> = {}
+  if ('notas' in cambios) propios.notas = cambios.notas
+  if ('email' in cambios) propios.email = cambios.email
+  const f = (await listar<Fila>('crm_clientes')).find((p) => p.profile_id === c.id)
+  if (f) return cambiar('crm_clientes', f.id, propios)
+  await crear('crm_clientes', { profile_id: c.id, nombre: c.nombre, ...propios })
+}
+
+/** Recuerda el email de un cliente al usarlo (reunión, reserva…). Solo si aún no tenía uno. */
+export async function recordarEmail(c: Cliente | undefined, email?: string | null) {
+  const e = email?.trim().toLowerCase()
+  if (!c || !e || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) || (c.email && !c.emailDeReunion)) return false
+  await guardarCliente(c, { email: e })
+  return true
 }
 export const borrarCliente = (id: string) => borrar('crm_clientes', id)
 

@@ -13,7 +13,7 @@ export type BorradorReunion = Partial<Reunion> & { fecha?: string | null; hora?:
 /** Nueva reunión (sin id): revisar y «Confirmar y enviar» → Google Calendar + Meet + invitación.
  *  Existente: ver, notas, reprogramar (cancela y vuelve a crear el evento) o cancelar. */
 export default function ReunionDetalle({ reunion, onClose, onGuardada }: { reunion: BorradorReunion; onClose: () => void; onGuardada?: (r: Reunion) => void }) {
-  const { recargar, cliente } = useStore()
+  const { recargar, cliente, clientes } = useStore()
   const ir = useNavigate()
   const ini = reunion.inicio
   const [r, setR] = useState<BorradorReunion>({
@@ -33,13 +33,16 @@ export default function ReunionDetalle({ reunion, onClose, onGuardada }: { reuni
     setEnviando(true); setError(null)
     try {
       const inicio = aISO(r.fecha, r.hora)
-      const c = cliente(r.cliente_id)
+      const email = r.email?.trim().toLowerCase() || null
+      // Sin cliente elegido pero el email es de uno: se asocia solo
+      const cliente_id = r.cliente_id || (email ? clientes.find((x) => x.email?.toLowerCase() === email)?.id : null) || null
+      const c = cliente(cliente_id)
       let g: { evento_id?: string | null; evento_url?: string | null; meet_url?: string | null } = {}
       if (!existe || cambiaHora) {
         // En Google siempre «NomoTax <> Empresa»; el asunto va en la descripción
         const a = await agendar({ titulo: `NomoTax <> ${c?.nombre ?? r.titulo.trim()}`,
           descripcion: [r.titulo.trim(), r.descripcion].filter(Boolean).join('\n\n'), inicio, duracion: r.duracion ?? 60,
-          email: r.email?.trim() || null, nombre: c?.nombre, meet: !!r.meet, forzar })
+          email, nombre: c?.nombre, meet: !!r.meet, forzar })
         if (!a.ok) {
           if (a.error === 'ocupado') { setOcupado(true); return }
           throw new Error(a.error === 'no-autorizado' ? 'Google Calendar no acepta la clave (CRM_SECRETO)' : a.error ?? 'No se ha podido agendar')
@@ -47,11 +50,13 @@ export default function ReunionDetalle({ reunion, onClose, onGuardada }: { reuni
         if (existe && reunion.evento_id) await cancelar(reunion.evento_id).catch(() => null)
         g = { evento_id: a.evento_id ?? null, evento_url: a.evento_url ?? null, meet_url: a.meet || null }
       }
-      const datos = { titulo: r.titulo.trim(), descripcion: r.descripcion || null, cliente_id: r.cliente_id || null, proyecto_id: r.proyecto_id || null,
-        inicio, duracion: r.duracion ?? 60, email: r.email?.trim() || null, meet: !!r.meet, notas: r.notas || null, ...g }
+      const datos = { titulo: r.titulo.trim(), descripcion: r.descripcion || null, cliente_id, proyecto_id: r.proyecto_id || null,
+        inicio, duracion: r.duracion ?? 60, email, meet: !!r.meet, notas: r.notas || null, ...g }
       let guardada: Reunion
       if (existe) { await db.cambiarReunion(r.id!, datos); guardada = { ...(reunion as Reunion), ...datos } }
       else guardada = await db.crearReunion(datos)
+      // El email queda en la ficha del cliente: la próxima vez sale solo
+      await db.recordarEmail(c, email).catch(() => null)
       await recargar(); onGuardada?.(guardada); onClose()
     } catch (e) { setError((e as Error).message) } finally { setEnviando(false) }
   }

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { CalendarDays, CheckSquare, FolderKanban, Mic, Users, Video } from 'lucide-react'
 import Dictar from './components/Dictar'
+import { sincronizar } from './lib/agenda'
+import * as db from './lib/datos'
 import { MODO } from './lib/supabase'
 import { useStore } from './lib/store'
 import Tareas from './pages/Tareas'
@@ -22,8 +24,13 @@ const MENU = [
 ]
 
 export default function App() {
-  const { error, cargando } = useStore()
+  const { error, cargando, reuniones, clientes, recargar } = useStore()
   const [dictando, setDictando] = useState(false)
+  // Al abrir el CRM, trae en segundo plano las reservas nuevas de Google Calendar (y guarda sus emails)
+  useEffect(() => {
+    if (cargando || error) return
+    sincronizar(reuniones, clientes, db).then(() => recargar()).catch(() => null)
+  }, [cargando]) // eslint-disable-line react-hooks/exhaustive-deps
   // Atajo: ⌘K / Ctrl+K para dictar
   useEffect(() => {
     const f = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setDictando(true) } }

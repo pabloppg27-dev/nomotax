@@ -9,6 +9,8 @@ export interface Cliente {
   pais?: string | null
   nif?: string | null
   email?: string | null
+  /** el email no está en la ficha: se ha sacado de su última reunión */
+  emailDeReunion?: boolean
   telefono?: string | null
   notas?: string | null
 }

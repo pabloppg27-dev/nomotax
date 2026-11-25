@@ -58,8 +58,8 @@ export const ESQUEMA = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['nombre', 'tipo', 'pais', 'notas'],
-        properties: { nombre: { type: 'string' }, tipo: nulo('SL, LLC, autónomo, particular…'), pais: nulo('país'), notas: nulo('lo que se sepa') },
+        required: ['nombre', 'tipo', 'pais', 'email', 'notas'],
+        properties: { nombre: { type: 'string' }, tipo: nulo('SL, LLC, autónomo, particular…'), pais: nulo('país'), email: nulo('su email si lo dice, bien escrito; si no, null'), notas: nulo('lo que se sepa') },
       },
     },
     resumen: { type: 'string', description: 'Una frase corta confirmando lo creado' },
@@ -87,7 +87,7 @@ Reuniones (van a «reuniones», NO a tareas):
 - titulo: asunto corto; incluye el cliente. detalle: qué se va a tratar, redactado para que lo lea el cliente en la invitación (sin notas internas).
 - fecha y hora: deduce «mañana», «el jueves» (el próximo), «el lunes que viene»… duracion: la que diga («media hora» = 30), si no 60. meet: true salvo presencial o teléfono.
 - email: si dice un correo, ponlo bien escrito. El reconocedor de voz lo transcribe raro: «arroba» = @, «punto» = ., «guion» = -, «guion bajo» = _, sin espacios y en minúsculas (p. ej. «jorge arroba nova hiring punto com» = jorge@novahiring.com). Si no dice correo, null.
-- cliente_id / proyecto_id: igual que en las tareas.
+- cliente_id / proyecto_id: igual que en las tareas. Si la reunión es con alguien que no está en la lista de clientes, añádelo a clientes_nuevos (con su email si lo dice) y pon su nombre en cliente_nuevo.
 
 resumen: una frase corta tipo «2 tareas creadas para Nova Hiring» o «Reunión preparada con Xapa el jueves a las 11».`
 }
@@ -116,6 +116,11 @@ export async function pensar(anthropic: any, e: EntradaDictado) {
     if (t.proyecto_id && !ps.has(t.proyecto_id)) t.proyecto_id = null
     if (t.fecha && !/^\d{4}-\d{2}-\d{2}$/.test(t.fecha)) t.fecha = null
   }
+  const limpiarEmail = (m: unknown) => {
+    const x = typeof m === 'string' ? m.replace(/\s+/g, '').toLowerCase() : ''
+    return /^[^@]+@[^@]+\.[a-z]{2,}$/.test(x) ? x : null
+  }
+  for (const c of out.clientes_nuevos ?? []) c.email = limpiarEmail(c.email)
   out.reuniones ??= []
   for (const r of out.reuniones) {
     if (r.cliente_id && !cs.has(r.cliente_id)) r.cliente_id = null
@@ -124,8 +129,7 @@ export async function pensar(anthropic: any, e: EntradaDictado) {
     if (r.hora && !/^\d{1,2}:\d{2}$/.test(r.hora)) r.hora = null
     if (r.hora) r.hora = r.hora.padStart(5, '0')
     if (!(r.duracion > 0)) r.duracion = 60
-    r.email = typeof r.email === 'string' ? r.email.replace(/\s+/g, '').toLowerCase() : null
-    if (r.email && !/^[^@]+@[^@]+\.[a-z]{2,}$/.test(r.email)) r.email = null
+    r.email = limpiarEmail(r.email)
   }
   return out as Resultado
 }
@@ -141,7 +145,7 @@ export interface ReunionDictada {
 export interface Resultado {
   tareas: TareaDictada[]
   reuniones: ReunionDictada[]
-  clientes_nuevos: { nombre: string; tipo: string | null; pais: string | null; notas: string | null }[]
+  clientes_nuevos: { nombre: string; tipo: string | null; pais: string | null; email?: string | null; notas: string | null }[]
   resumen: string
 }
 

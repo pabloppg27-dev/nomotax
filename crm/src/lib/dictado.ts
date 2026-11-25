@@ -70,7 +70,8 @@ export function interpretarLocal(texto: string, clientes: Cliente[], proyectos: 
   const t = sinTildes(texto)
   if (/^(crea(r)?|nuevo|alta( de)?)( un)? cliente/.test(t)) {
     const nombre = texto.replace(/^.*?cliente( externo)?[:,]?\s*/i, '').split(/[,.]/)[0].trim()
-    return { tareas: [], reuniones: [], clientes_nuevos: [{ nombre, tipo: /llc/i.test(texto) ? 'LLC' : null, pais: null, notas: texto }], resumen: 'Cliente creado' }
+    const email = texto.match(/[\w.+-]+@[\w-]+\.[\w.]+/)?.[0]?.toLowerCase() ?? null
+    return { tareas: [], reuniones: [], clientes_nuevos: [{ nombre, tipo: /llc/i.test(texto) ? 'LLC' : null, pais: null, email, notas: texto }], resumen: 'Cliente creado' }
   }
   const prioridad: Prioridad = /prioridad alta|urgente/.test(t) ? 'alta' : /prioridad baja/.test(t) ? 'baja' : 'media'
   const cli = mejorCoincidencia(t, clientes)

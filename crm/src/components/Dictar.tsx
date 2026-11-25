@@ -53,7 +53,11 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
     try {
       const r = await interpretar(t, clientes, proyectos)
       const nuevos: Cliente[] = []
-      for (const c of r.clientes_nuevos) nuevos.push(await db.crearCliente(c))
+      for (const c of r.clientes_nuevos) {
+        // Su email: el que haya dictado para él o el de la reunión que se le agenda
+        const email = c.email ?? r.reuniones?.find((x) => x.email && x.cliente_nuevo?.toLowerCase() === c.nombre.toLowerCase())?.email ?? null
+        nuevos.push(await db.crearCliente({ ...c, email }))
+      }
       const idNuevo = (n: string | null) => (n ? nuevos.find((c) => c.nombre.toLowerCase() === n.toLowerCase())?.id ?? null : null)
       const tareas: Tarea[] = []
       for (const x of r.tareas) {
