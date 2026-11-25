@@ -162,7 +162,9 @@ function fecha(iso) {
 /** Líneas de la dirección. El país sale siempre, escrito en `idioma` (el de la factura; español por defecto) */
 function direccionCompleta(d, idioma = "es") {
 	const linea2 = [d.cp, d.ciudad].filter(Boolean).join(" ");
-	const linea3 = [d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(", ");
+	const plano = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+	const ciudad = plano(d.ciudad ?? "");
+	const linea3 = [Boolean(ciudad) && plano(d.provincia ?? "").split("/").some((p) => p.trim() === ciudad) ? null : d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(", ");
 	return [
 		d.direccion,
 		linea2,
@@ -1045,10 +1047,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	doc.setTextColor(...MUTED);
 	for (const l of [
 		c.nif ? `${T.nif} ${c.nif}` : "",
-		direccionCompleta({
-			...c,
-			provincia: c.provincia === c.ciudad ? null : c.provincia
-		}, idioma).join(", "),
+		direccionCompleta(c, idioma).join(", "),
 		c.email ?? ""
 	]) {
 		if (!l) continue;

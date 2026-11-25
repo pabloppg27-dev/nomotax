@@ -126,6 +126,10 @@ export function direccionCompleta(
   idioma = 'es',
 ): string[] {
   const linea2 = [d.cp, d.ciudad].filter(Boolean).join(' ')
-  const linea3 = [d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(', ')
+  // La provincia no se repite si es la misma ciudad («Valencia» y «Valencia/València»)
+  const plano = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+  const ciudad = plano(d.ciudad ?? '')
+  const repite = Boolean(ciudad) && plano(d.provincia ?? '').split('/').some((p) => p.trim() === ciudad)
+  const linea3 = [repite ? null : d.provincia, paisEnIdioma(d.pais, idioma)].filter(Boolean).join(', ')
   return [d.direccion, linea2, linea3].filter((x): x is string => Boolean(x && x.trim()))
 }

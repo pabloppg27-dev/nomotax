@@ -190,7 +190,7 @@ export async function construirPdf(
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8.5)
   doc.setTextColor(...MUTED)
-  for (const l of [c.nif ? `${T.nif} ${c.nif}` : '', direccionCompleta({ ...c, provincia: c.provincia === c.ciudad ? null : c.provincia }, idioma).join(', '), c.email ?? '']) {
+  for (const l of [c.nif ? `${T.nif} ${c.nif}` : '', direccionCompleta(c, idioma).join(', '), c.email ?? '']) {
     if (!l) continue
     const partes = doc.splitTextToSize(l, W - 2 * M - 4)
     doc.text(partes, M + 4, yc)
