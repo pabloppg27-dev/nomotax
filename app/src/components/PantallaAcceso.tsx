@@ -10,7 +10,7 @@ export default function PantallaAcceso({ children }: { children: ReactNode }) {
           <span className="text-lg font-semibold tracking-tight">NomoTax</span>
         </div>
         <div className="relative z-10 max-w-md">
-          <p className="mb-4 text-xs uppercase tracking-[0.14em] text-lima">Área de clientes</p>
+          <p className="mb-4 text-xs uppercase tracking-[0.14em] text-lima">Business Hub</p>
           <h1 className="font-display text-[44px] leading-[1.08] tracking-tight">
             Tu contabilidad, <span className="text-lima">al día</span> y en un solo sitio.
           </h1>
@@ -28,7 +28,7 @@ export default function PantallaAcceso({ children }: { children: ReactNode }) {
             <img src="/logo.png" alt="" className="size-10" />
             <div>
               <div className="font-semibold">NomoTax</div>
-              <div className="text-xs uppercase tracking-[0.12em] text-muted">Área de clientes</div>
+              <div className="text-xs uppercase tracking-[0.12em] text-muted">Business Hub</div>
             </div>
           </div>
           {children}

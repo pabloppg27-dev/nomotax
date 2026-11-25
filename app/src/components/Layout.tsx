@@ -203,15 +203,17 @@ function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
   )
 }
 
-function Logo({ dark = false }: { dark?: boolean }) {
+/** Lo que va debajo de «NomoTax»: los empleados entran a su Workspace; empresas y asesor, al Business Hub */
+const SUBTITULO_APP = 'Business Hub'
+const subtituloDe = (rol: RolEnCuenta | null) => (rol === 'empleado' ? 'Workspace' : SUBTITULO_APP)
+
+function Logo({ dark = false, sub }: { dark?: boolean; sub: string }) {
   return (
     <div className="flex items-center gap-2.5">
       <img src="/logo.png" alt="" className="size-9" />
       <div className="leading-tight">
         <div className={cx('text-[15px] font-semibold tracking-tight', dark ? 'text-white' : 'text-ink')}>NomoTax</div>
-        <div className={cx('text-[11px] uppercase tracking-[0.12em]', dark ? 'text-white/50' : 'text-muted')}>
-          Área de clientes
-        </div>
+        <div className={cx('text-[11px] uppercase tracking-[0.12em]', dark ? 'text-white/50' : 'text-muted')}>{sub}</div>
       </div>
     </div>
   )
@@ -221,6 +223,11 @@ export default function Layout() {
   const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede, miembro, viendoComo, verComoTrabajador } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const subtitulo = subtituloDe(rol)
+  // Pestaña del navegador: «NomoTax Workspace» o «NomoTax Business Hub»
+  useEffect(() => {
+    document.title = `NomoTax ${subtitulo}`
+  }, [subtitulo])
   const [mas, setMas] = useState(false)
   useEffect(() => setMas(false), [location.pathname])
   // Móvil: la cuenta en la que estás, siempre arriba; se cambia desde ahí o desde «Más»
@@ -276,7 +283,7 @@ export default function Layout() {
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto overscroll-contain bg-ink px-4 py-6 text-white [scrollbar-color:rgb(255_255_255/0.2)_transparent] [scrollbar-width:thin] lg:flex">
         <div className="px-2">
           <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
-            <Logo dark />
+            <Logo dark sub={subtitulo} />
           </NavLink>
         </div>
 
@@ -414,7 +421,7 @@ export default function Layout() {
             </div>
           ) : (
             <NavLink to="/" aria-label="Ir al resumen" className="rounded-lg">
-              <Logo dark />
+              <Logo dark sub={subtitulo} />
             </NavLink>
           )}
           <div className="flex shrink-0 items-center gap-1">

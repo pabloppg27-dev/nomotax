@@ -63,7 +63,7 @@ export interface DatosLibro {
 /** Libro Excel con todo: resumen, diario, mayor, sumas y saldos, PyG, balance e inmovilizado */
 export async function libroExcel(d: DatosLibro): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook()
-  wb.creator = 'NomoTax · Área de clientes'
+  wb.creator = 'NomoTax Business Hub'
   const periodo = `Del ${fmtFecha(d.desde)} al ${fmtFecha(d.hasta)} · generado el ${fmtFecha(new Date().toISOString())}`
   const delPeriodo = entre(d.asientos, d.desde, d.hasta)
   const delEjercicio = entre(d.asientos, `${d.ejercicio}-01-01`, d.hasta)
