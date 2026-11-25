@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { FileText, FileUp, MailCheck, Plus } from 'lucide-react'
-import { useAlCambiarSubidas, useSubidas } from '../lib/subidas'
+import { AlertCircle, CheckCircle2, FileText, FileUp, Loader2, MailCheck, Plus } from 'lucide-react'
+import { useAlCambiarSubidas, useSubidas, type Subida } from '../lib/subidas'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
@@ -32,7 +32,9 @@ export default function Facturas() {
   const [filtro, setFiltro] = useState<Filtro>('todas')
   const [subir, setSubir] = useState(false)
   const [externa, setExterna] = useState<Invoice | null>(null)
-  const { encolar } = useSubidas()
+  const { encolar, subidas } = useSubidas()
+  // Archivos añadidos desde que se abrió la ventana de subir (se queda abierta hasta pulsar OK)
+  const [añadidas, setAñadidas] = useState<Subida[]>([])
 
   const cargar = useCallback(async () => {
     if (!ownerId) return [] as Invoice[]
@@ -85,12 +87,23 @@ export default function Facturas() {
     }
   }, [lista, periodo, info])
 
-  // Se encolan y se procesan en segundo plano (panel flotante); la ventana se cierra enseguida
+  // Se encolan y se procesan en segundo plano (panel flotante). La ventana sigue abierta para ir
+  // añadiendo más; se cierra al pulsar OK
   const subirExternas = (files: File[]) => {
     if (!ownerId || !files.length) return
-    encolar('factura', ownerId, files)
-    setSubir(false)
+    const nuevas = encolar('factura', ownerId, files)
+    setAñadidas((a) => [...a, ...nuevas])
   }
+
+  // Estado al día de cada archivo añadido (si el panel ya lo quitó, se queda el último estado conocido)
+  useEffect(() => {
+    setAñadidas((a) => (a.length ? a.map((x) => subidas.find((s) => s.key === x.key) ?? x) : a))
+  }, [subidas])
+
+  const cerrarSubir = useCallback(() => {
+    setSubir(false)
+    setAñadidas([])
+  }, [])
 
   const abrir = (f: Invoice) => (f.origen === 'externa' ? setExterna(f) : navigate(`/facturas/${f.id}`))
 
@@ -216,13 +229,46 @@ export default function Facturas() {
         )}
       </Card>
 
-      <Modal open={subir} onClose={() => setSubir(false)} title="Subir facturas emitidas">
+      <Modal
+        open={subir}
+        onClose={cerrarSubir}
+        title="Subir facturas emitidas"
+        footer={<Button onClick={cerrarSubir}>OK</Button>}
+      >
         <UploadZone
           compacto
           onFiles={subirExternas}
           titulo="Arrastra aquí las facturas"
-          texto="Para facturas que hayas hecho con otro programa. Puedes subir varias a la vez: se leen en segundo plano y puedes seguir trabajando."
+          texto="Para facturas que hayas hecho con otro programa. Puedes ir añadiendo todas las que quieras y pulsar OK al acabar: se leen en segundo plano y puedes seguir trabajando."
         />
+        {añadidas.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-sm font-medium">
+              {añadidas.length === 1 ? '1 factura añadida' : `${añadidas.length} facturas añadidas`}
+            </p>
+            <ul className="divide-y divide-line rounded-xl border border-line">
+              {añadidas.map((s) => (
+                <li key={s.key} className="flex items-center gap-3 px-3 py-2 text-sm">
+                  {s.estado === 'hecho' ? (
+                    <CheckCircle2 className="size-4 shrink-0 text-verde" />
+                  ) : s.estado === 'error' ? (
+                    <AlertCircle className="size-4 shrink-0 text-rojo" />
+                  ) : (
+                    <Loader2 className={cx('size-4 shrink-0 text-muted', s.estado !== 'esperando' && 'animate-spin')} />
+                  )}
+                  <span className="min-w-0 flex-1 truncate">{s.nombre}</span>
+                  <span className="shrink-0 text-xs text-muted">
+                    {s.estado === 'esperando' && 'En cola'}
+                    {s.estado === 'subiendo' && 'Subiendo…'}
+                    {s.estado === 'leyendo' && 'Leyendo…'}
+                    {s.estado === 'hecho' && 'Lista'}
+                    {s.estado === 'error' && 'Revisar'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Modal>
 
       <IngresoExterno factura={externa} onClose={() => setExterna(null)} onChanged={cargar} />

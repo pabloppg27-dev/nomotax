@@ -128,8 +128,8 @@ export function useAlCambiarSubidas(cb: () => void) {
 
 interface Ctx {
   subidas: Subida[]
-  /** Pone los archivos en la cola y vuelve enseguida: se procesan en segundo plano */
-  encolar: (tipo: TipoSubida, ownerId: string, files: File[]) => void
+  /** Pone los archivos en la cola y vuelve enseguida: se procesan en segundo plano. Devuelve las subidas creadas */
+  encolar: (tipo: TipoSubida, ownerId: string, files: File[]) => Subida[]
   /** Quita del panel las ya terminadas */
   limpiar: () => void
 }
@@ -162,12 +162,13 @@ export function SubidasProvider({ children }: { children: ReactNode }) {
 
   const encolar = useCallback(
     (tipo: TipoSubida, ownerId: string, files: File[]) => {
-      if (!files.length) return
+      if (!files.length) return []
       const nuevas: Subida[] = files.map((f) => ({ key: nuevoId(), nombre: f.name, tipo, estado: 'esperando' }))
       // Al empezar un lote nuevo, las ya terminadas se quitan del panel
       setSubidas((ss) => [...ss.filter((s) => s.estado !== 'hecho' && s.estado !== 'error'), ...nuevas])
       nuevas.forEach((s, i) => cola.current.push({ key: s.key, tipo, ownerId, file: files[i] }))
       bombear()
+      return nuevas
     },
     [bombear],
   )
