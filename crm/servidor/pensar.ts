@@ -149,6 +149,46 @@ export interface Resultado {
   resumen: string
 }
 
+// ---------- Voz → texto (OpenAI) ----------
+// Más fiable que el reconocedor del navegador y acepta vocabulario (nombres de clientes, términos fiscales).
+// Para cambiar de modelo: 'gpt-4o-transcribe' (algo mejor, el doble de caro).
+export const MODELO_TRANSCRIPCION = 'gpt-4o-mini-transcribe'
+
+export interface EntradaTranscripcion {
+  audio: string // base64
+  tipo: string // audio/webm, audio/mp4…
+  clientes?: { nombre: string }[]
+  proyectos?: { nombre: string }[]
+}
+
+function vocabulario(e: EntradaTranscripcion) {
+  const nombres = [...(e.clientes ?? []), ...(e.proyectos ?? [])].map((x) => x.nombre).filter(Boolean)
+  let lista = ''
+  for (const n of nombres) { if (lista.length + n.length > 1500) break; lista += (lista ? ', ' : '') + n }
+  return `Pablo, de NomoTax (asesoría fiscal y contable), dicta tareas y reuniones para su CRM. ` +
+    `Términos habituales: NomoTax, Hacienda, AEAT, IRPF, IVA, modelo 303, 130, 111, 115, 200, 349, 390, 720, ` +
+    `Seguridad Social, autónomo, SL, LLC, EIN, IRS, ITIN, Airwallex, Stripe, Holded, Google Meet, arroba, punto com.` +
+    (lista ? ` Clientes y proyectos: ${lista}.` : '')
+}
+
+/** Devuelve el texto dictado. clave = OPENAI_API_KEY. */
+export async function transcribir(clave: string, e: EntradaTranscripcion) {
+  if (!clave) throw new Error('sin-clave')
+  if (!e?.audio) throw new Error('No hay audio')
+  const bytes = Uint8Array.from(atob(e.audio), (c) => c.charCodeAt(0))
+  const tipo = (e.tipo || 'audio/webm').split(';')[0]
+  const ext = tipo.includes('mp4') || tipo.includes('m4a') || tipo.includes('aac') ? 'mp4' : tipo.includes('ogg') ? 'ogg' : tipo.includes('wav') ? 'wav' : 'webm'
+  const form = new FormData()
+  form.append('file', new Blob([bytes], { type: tipo }), `dictado.${ext}`)
+  form.append('model', MODELO_TRANSCRIPCION)
+  form.append('language', 'es')
+  form.append('prompt', vocabulario(e))
+  const r = await fetch('https://api.openai.com/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${clave}` }, body: form })
+  const out = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(`Transcripción: ${out?.error?.message ?? r.status}`)
+  return { texto: String(out.text ?? '').trim() }
+}
+
 // ---------- Google Calendar (vía el Apps Script de reservas) ----------
 export const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzV2OYEZS3uIIHw5l8Xh8duZxgbzydO1ZdTsa6qtKR_sRxtNiZjF07rqmnIUyzjSmzAKQ/exec'
 

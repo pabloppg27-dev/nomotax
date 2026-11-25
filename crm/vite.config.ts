@@ -18,6 +18,17 @@ function dictadoLocal(): Plugin {
           enviar(200, await agenda(env.CRM_AGENDA_SECRETO, JSON.parse(cuerpo)))
         } catch (e) { enviar(502, { error: (e as Error).message }) }
       })
+      server.middlewares.use('/api/transcribir', async (req, res) => {
+        const enviar = (s: number, b: unknown) => { res.statusCode = s; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(b)) }
+        if (!env.OPENAI_API_KEY) return enviar(503, { error: 'sin-clave' })
+        let cuerpo = ''; for await (const c of req) cuerpo += c
+        try {
+          const b = JSON.parse(cuerpo)
+          if (b.comprobar) return enviar(200, { ok: true })
+          const { transcribir } = await server.ssrLoadModule('/servidor/pensar.ts')
+          enviar(200, await transcribir(env.OPENAI_API_KEY, b))
+        } catch (e) { enviar(502, { error: (e as Error).message }) }
+      })
       server.middlewares.use('/api/dictado', async (req, res) => {
         const enviar = (s: number, b: unknown) => { res.statusCode = s; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(b)) }
         if (!env.ANTHROPIC_API_KEY) return enviar(503, { error: 'sin-clave' })

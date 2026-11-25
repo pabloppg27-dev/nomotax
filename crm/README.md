@@ -13,6 +13,9 @@ CRM interno de Pablo: tareas por dictado, clientes, proyectos (normales e impues
 - **Publicado**: función de Supabase `crm-dictado`. Se edita `servidor/pensar.ts` (cerebro) o `servidor/funcion.ts`
   y se regenera con `node scripts/empaquetar.mjs`; luego se pega `supabase/functions/crm-dictado/index.ts` en el dashboard.
   Usa el secreto `ANTHROPIC_API_KEY` que ya existe.
+- **Voz → texto**: con el secreto `OPENAI_API_KEY` (y en local, en `.env.local`) el audio se transcribe con OpenAI
+  (`gpt-4o-mini-transcribe`, con los nombres de clientes y proyectos como vocabulario). Sin esa clave se usa el
+  reconocedor del navegador, como antes.
 
 ## Modo real (Supabase)
 1. Pegar `supabase/crm.sql` en el SQL Editor.

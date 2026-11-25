@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CalendarClock, Check, Keyboard, Loader2, Mic, Square, Undo2, UserPlus } from 'lucide-react'
 import * as db from '../lib/datos'
-import { escuchar, hayVoz, interpretar } from '../lib/dictado'
+import { escuchar, grabar, hayTranscripcion, hayVoz, interpretar, transcribir } from '../lib/dictado'
 import { corta } from '../lib/fechas'
 import { useStore } from '../lib/store'
 import type { Cliente, Tarea } from '../lib/tipos'
@@ -23,31 +23,65 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
   const textoRef = useRef('')
   const area = useRef<HTMLTextAreaElement>(null)
   const [teclado, setTeclado] = useState(false) // dictar con el micro del teclado (iPhone)
+  const [conOpenAI, setConOpenAI] = useState(false) // se graba y el texto llega al parar
+  const [transcribiendo, setTranscribiendo] = useState(false)
+  const grabacion = useRef<Promise<string> | null>(null) // transcripción en curso
+  const soltar = useRef<(() => void) | null>(null) // apaga el micro sin transcribir (al cerrar)
+  const sesion = useRef(0) // cambia al cerrar: lo que llegue tarde de una sesión anterior se descarta
 
   /** Sin micro del navegador (o falla): se dicta con el micro del teclado */
   function usarTeclado() { setOyendo(false); setTeclado(true); area.current?.focus() }
   const errorVoz = (m: string) => { if (/not-allowed|service-not-allowed|audio-capture|permiso/.test(m)) usarTeclado(); else { setError(m); setOyendo(false) } }
 
   function empezar() {
-    setError(null); setHecho(null); setTexto(''); textoRef.current = ''
-    if (!hayVoz()) return usarTeclado()
-    parar.current = escuchar((t) => { setTexto(t); textoRef.current = t }, () => setOyendo(false), errorVoz)
-    setOyendo(true)
+    setHecho(null); setTexto(''); textoRef.current = ''
+    void arrancar('')
   }
   /** Vuelve a escuchar y añade lo nuevo detrás de lo que ya hay (sin borrar lo editado) */
-  function seguir() {
+  function seguir() { void arrancar(textoRef.current.trim()) }
+
+  const poner = (v: string) => { setTexto(v); textoRef.current = v }
+  async function arrancar(previo: string) {
     setError(null)
+    const s = sesion.current
+    const openai = await hayTranscripcion()
+    if (s !== sesion.current) return
+    if (openai) return grabarConOpenAI(previo)
     if (!hayVoz()) return usarTeclado()
-    const previo = textoRef.current.trim()
-    parar.current = escuchar((t) => { const v = previo ? `${previo} ${t}` : t; setTexto(v); textoRef.current = v },
-      () => setOyendo(false), errorVoz)
+    setConOpenAI(false)
+    parar.current = escuchar((t) => poner(previo ? `${previo} ${t}` : t), () => setOyendo(false), errorVoz)
     setOyendo(true)
   }
+  /** Graba; al parar, OpenAI lo pasa a texto (con los nombres de clientes y proyectos como vocabulario) */
+  async function grabarConOpenAI(previo: string) {
+    const s = sesion.current
+    let fin: () => Promise<Blob>
+    try { fin = await grabar() } catch (e) {
+      const n = (e as Error).name
+      return errorVoz(n === 'NotAllowedError' || n === 'SecurityError' ? 'not-allowed' : n === 'NotFoundError' ? 'audio-capture' : (e as Error).message)
+    }
+    if (s !== sesion.current) { void fin(); return }
+    setConOpenAI(true); setOyendo(true)
+    soltar.current = () => { void fin() }
+    parar.current = () => {
+      parar.current = null; soltar.current = null
+      setOyendo(false); setTranscribiendo(true)
+      grabacion.current = fin()
+        .then((audio) => transcribir(audio, clientes, proyectos))
+        .then((t) => { const v = [previo, t].filter(Boolean).join(' '); poner(v); return v })
+        .catch((e) => { setError(`No he podido pasar la voz a texto: ${(e as Error).message}`); return textoRef.current })
+        .finally(() => { setTranscribiendo(false); grabacion.current = null })
+    }
+  }
   // En iPhone/iPad se abre el teclado (su micro es lo más fiable); en el ordenador, el micro del CRM.
-  useEffect(() => { if (esMovilApple()) usarTeclado(); else empezar(); return () => parar.current?.() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (esMovilApple()) usarTeclado(); else empezar()
+    return () => { sesion.current++; if (soltar.current) soltar.current(); else parar.current?.() }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function procesar(t = textoRef.current) {
+  async function procesar(dado?: string) {
     parar.current?.(); setOyendo(false)
+    const t = dado ?? (grabacion.current ? await grabacion.current : textoRef.current)
     if (!t.trim() || pensando) return
     setPensando(true); setError(null)
     try {
@@ -137,19 +171,20 @@ export default function Dictar({ onClose, contexto }: { onClose: () => void; con
       ) : (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <button onClick={oyendo ? () => { parar.current?.(); setOyendo(false) } : seguir} disabled={pensando}
+            <button onClick={oyendo ? () => { parar.current?.(); setOyendo(false) } : seguir} disabled={pensando || transcribiendo}
               className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${oyendo ? 'animate-pulse bg-rojo text-white' : 'bg-lima text-ink'}`}>
               {oyendo ? <Square size={20} /> : <Mic size={24} />}
             </button>
             <p className="text-sm text-muted">
-              {teclado && !oyendo && !pensando && !texto ? <span className="flex items-center gap-1.5"><Keyboard size={16} className="shrink-0" /> Pulsa el micrófono 🎤 del teclado y habla. Luego «Crear».</span> : pensando ? 'Claude está organizándolo…' : oyendo ? 'Te escucho. Pulsa el botón rojo para parar.' : texto ? 'Revisa o corrige el texto y pulsa «Crear». El micro añade más.' : 'Pulsa para hablar, o escríbelo abajo.'}
+              {teclado && !oyendo && !pensando && !texto ? <span className="flex items-center gap-1.5"><Keyboard size={16} className="shrink-0" /> Pulsa el micrófono 🎤 del teclado y habla. Luego «Crear».</span> : pensando ? 'Claude está organizándolo…' : transcribiendo ? <span className="flex items-center gap-1.5"><Loader2 size={16} className="shrink-0 animate-spin" /> Pasando tu voz a texto…</span>
+                : oyendo ? (conOpenAI ? 'Te escucho. Al terminar, pulsa el botón rojo (o «Crear») y aparecerá el texto.' : 'Te escucho. Pulsa el botón rojo para parar.') : texto ? 'Revisa o corrige el texto y pulsa «Crear». El micro añade más.' : 'Pulsa para hablar, o escríbelo abajo.'}
             </p>
           </div>
           <textarea ref={area} rows={4} className={entrada} value={texto} onChange={(e) => { setTexto(e.target.value); textoRef.current = e.target.value }}
             placeholder="Ej.: Oye, agéndame una llamada con Diego Fernández para arreglar lo de su Airwallex, a ser posible esta semana…"
             onKeyDown={(e) => e.key === 'Enter' && (e.metaKey || e.ctrlKey) && procesar()} />
           {error && <p className="text-sm text-rojo">{error}</p>}
-          <Boton className="w-full" onClick={() => procesar()} disabled={!texto.trim() || pensando}>
+          <Boton className="w-full" onClick={() => procesar()} disabled={(!texto.trim() && !(oyendo && conOpenAI)) || pensando || transcribiendo}>
             {pensando ? <><Loader2 size={16} className="animate-spin" /> Pensando…</> : 'Crear'}
           </Boton>
         </div>

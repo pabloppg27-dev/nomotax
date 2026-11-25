@@ -1,6 +1,7 @@
 // CRM NomoTax · función crm-dictado (Supabase). NO editar index.ts: se genera con
 // `node scripts/empaquetar.mjs` a partir de este archivo + servidor/pensar.ts.
-// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secretos: ANTHROPIC_API_KEY, CRM_AGENDA_SECRETO. Solo el asesor.
+// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secretos: ANTHROPIC_API_KEY, OPENAI_API_KEY, CRM_AGENDA_SECRETO. Solo el asesor.
+// { accion: 'transcribir', audio (base64), tipo, clientes, proyectos } → { texto } (voz → texto con OpenAI; { comprobar: true } solo mira si hay clave).
 // { accion: 'crm_agendar' | 'crm_cancelar', … } → crea/borra la reunión en Google Calendar (Apps Script).
 import Anthropic from 'npm:@anthropic-ai/sdk@^1.8.0'
 import { createClient } from 'npm:@supabase/supabase-js@^2.119.0'
@@ -30,6 +31,13 @@ Deno.serve(async (req) => {
   if (b?.accion === 'crm_agendar' || b?.accion === 'crm_cancelar' || b?.accion === 'crm_listar') {
     try { return json(await agenda(Deno.env.get('CRM_AGENDA_SECRETO') ?? '', b as unknown as Record<string, unknown>)) }
     catch (e) { return json({ ok: false, error: (e as Error).message }, 502) }
+  }
+  if (b?.accion === 'transcribir') {
+    const clave = Deno.env.get('OPENAI_API_KEY') ?? ''
+    if (!clave) return json({ error: 'sin-clave' }, 503)
+    if ((b as { comprobar?: boolean }).comprobar) return json({ ok: true })
+    try { return json(await transcribir(clave, b as unknown as EntradaTranscripcion)) }
+    catch (e) { return json({ error: (e as Error).message }, 502) }
   }
   if (!b?.texto?.trim()) return json({ error: 'No hay texto' }, 400)
   try {

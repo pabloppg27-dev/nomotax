@@ -1,6 +1,7 @@
 // CRM NomoTax · función crm-dictado (Supabase). NO editar index.ts: se genera con
 // `node scripts/empaquetar.mjs` a partir de este archivo + servidor/pensar.ts.
-// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secretos: ANTHROPIC_API_KEY, CRM_AGENDA_SECRETO. Solo el asesor.
+// Entrada (POST JSON): { texto, hoy, clientes, proyectos }. Secretos: ANTHROPIC_API_KEY, OPENAI_API_KEY, CRM_AGENDA_SECRETO. Solo el asesor.
+// { accion: 'transcribir', audio (base64), tipo, clientes, proyectos } → { texto } (voz → texto con OpenAI; { comprobar: true } solo mira si hay clave).
 // { accion: 'crm_agendar' | 'crm_cancelar', … } → crea/borra la reunión en Google Calendar (Apps Script).
 import Anthropic from 'npm:@anthropic-ai/sdk@^1.8.0'
 import { createClient } from 'npm:@supabase/supabase-js@^2.119.0'
@@ -30,6 +31,13 @@ Deno.serve(async (req) => {
   if (b?.accion === 'crm_agendar' || b?.accion === 'crm_cancelar' || b?.accion === 'crm_listar') {
     try { return json(await agenda(Deno.env.get('CRM_AGENDA_SECRETO') ?? '', b as unknown as Record<string, unknown>)) }
     catch (e) { return json({ ok: false, error: (e as Error).message }, 502) }
+  }
+  if (b?.accion === 'transcribir') {
+    const clave = Deno.env.get('OPENAI_API_KEY') ?? ''
+    if (!clave) return json({ error: 'sin-clave' }, 503)
+    if ((b as { comprobar?: boolean }).comprobar) return json({ ok: true })
+    try { return json(await transcribir(clave, b as unknown as EntradaTranscripcion)) }
+    catch (e) { return json({ error: (e as Error).message }, 502) }
   }
   if (!b?.texto?.trim()) return json({ error: 'No hay texto' }, 400)
   try {
@@ -189,6 +197,46 @@ export interface Resultado {
   reuniones: ReunionDictada[]
   clientes_nuevos: { nombre: string; tipo: string | null; pais: string | null; email?: string | null; notas: string | null }[]
   resumen: string
+}
+
+// ---------- Voz → texto (OpenAI) ----------
+// Más fiable que el reconocedor del navegador y acepta vocabulario (nombres de clientes, términos fiscales).
+// Para cambiar de modelo: 'gpt-4o-transcribe' (algo mejor, el doble de caro).
+export const MODELO_TRANSCRIPCION = 'gpt-4o-mini-transcribe'
+
+export interface EntradaTranscripcion {
+  audio: string // base64
+  tipo: string // audio/webm, audio/mp4…
+  clientes?: { nombre: string }[]
+  proyectos?: { nombre: string }[]
+}
+
+function vocabulario(e: EntradaTranscripcion) {
+  const nombres = [...(e.clientes ?? []), ...(e.proyectos ?? [])].map((x) => x.nombre).filter(Boolean)
+  let lista = ''
+  for (const n of nombres) { if (lista.length + n.length > 1500) break; lista += (lista ? ', ' : '') + n }
+  return `Pablo, de NomoTax (asesoría fiscal y contable), dicta tareas y reuniones para su CRM. ` +
+    `Términos habituales: NomoTax, Hacienda, AEAT, IRPF, IVA, modelo 303, 130, 111, 115, 200, 349, 390, 720, ` +
+    `Seguridad Social, autónomo, SL, LLC, EIN, IRS, ITIN, Airwallex, Stripe, Holded, Google Meet, arroba, punto com.` +
+    (lista ? ` Clientes y proyectos: ${lista}.` : '')
+}
+
+/** Devuelve el texto dictado. clave = OPENAI_API_KEY. */
+export async function transcribir(clave: string, e: EntradaTranscripcion) {
+  if (!clave) throw new Error('sin-clave')
+  if (!e?.audio) throw new Error('No hay audio')
+  const bytes = Uint8Array.from(atob(e.audio), (c) => c.charCodeAt(0))
+  const tipo = (e.tipo || 'audio/webm').split(';')[0]
+  const ext = tipo.includes('mp4') || tipo.includes('m4a') || tipo.includes('aac') ? 'mp4' : tipo.includes('ogg') ? 'ogg' : tipo.includes('wav') ? 'wav' : 'webm'
+  const form = new FormData()
+  form.append('file', new Blob([bytes], { type: tipo }), `dictado.${ext}`)
+  form.append('model', MODELO_TRANSCRIPCION)
+  form.append('language', 'es')
+  form.append('prompt', vocabulario(e))
+  const r = await fetch('https://api.openai.com/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${clave}` }, body: form })
+  const out = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(`Transcripción: ${out?.error?.message ?? r.status}`)
+  return { texto: String(out.text ?? '').trim() }
 }
 
 // ---------- Google Calendar (vía el Apps Script de reservas) ----------

@@ -1,4 +1,4 @@
-// Dictado: voz → texto (Web Speech API de Chrome) → interpretación (Claude en la función crm-dictado,
+// Dictado: voz → texto (OpenAI si hay clave; si no, Web Speech API del navegador) → interpretación (Claude en la función crm-dictado,
 // o un intérprete sencillo en modo demo).
 import { MODO, supabase } from './supabase'
 import { iso } from './fechas'
@@ -31,6 +31,63 @@ export function escuchar(onTexto: (texto: string) => void, onFin: () => void, on
   rec.onerror = (e) => onError(e.error === 'not-allowed' ? 'Chrome no tiene permiso para el micrófono' : e.error)
   rec.start()
   return () => rec.stop()
+}
+
+// ---------- Voz → texto con OpenAI (mejor que el reconocedor del navegador) ----------
+// Se graba el audio y, al parar, el servidor lo transcribe con el vocabulario de clientes y proyectos.
+
+export const hayGrabadora = () => typeof window !== 'undefined' && 'MediaRecorder' in window && !!navigator.mediaDevices?.getUserMedia
+
+let transcripcionDisponible: Promise<boolean> | null = null
+/** ¿Hay clave de OpenAI en el servidor? (se pregunta una vez por sesión) */
+export function hayTranscripcion() {
+  if (!hayGrabadora()) return Promise.resolve(false)
+  transcripcionDisponible ??= llamarTranscripcion({ comprobar: true }).then(() => true, () => false)
+  return transcripcionDisponible
+}
+
+async function llamarTranscripcion(body: Record<string, unknown>): Promise<{ texto?: string }> {
+  if (MODO === 'real') {
+    const { data, error } = await supabase.functions.invoke('crm-dictado', { body: { accion: 'transcribir', ...body } })
+    if (error) throw error
+    return data
+  }
+  const r = await fetch('/api/transcribir', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  const d = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(d.error ?? 'Error al transcribir')
+  return d
+}
+
+/** Empieza a grabar. Devuelve una función que para y entrega el audio. */
+export async function grabar(): Promise<() => Promise<Blob>> {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
+  const tipo = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((t) => MediaRecorder.isTypeSupported(t))
+  const rec = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined)
+  const trozos: Blob[] = []
+  rec.ondataavailable = (e) => { if (e.data.size) trozos.push(e.data) }
+  rec.start()
+  return () => new Promise((ok) => {
+    rec.onstop = () => { stream.getTracks().forEach((t) => t.stop()); ok(new Blob(trozos, { type: rec.mimeType || tipo || 'audio/webm' })) }
+    if (rec.state === 'inactive') rec.onstop(new Event('stop')); else rec.stop()
+  })
+}
+
+const aBase64 = (b: Blob) => new Promise<string>((ok, mal) => {
+  const r = new FileReader()
+  r.onload = () => ok(String(r.result).split(',')[1] ?? '')
+  r.onerror = () => mal(r.error)
+  r.readAsDataURL(b)
+})
+
+/** Audio → texto, con los nombres de clientes y proyectos como vocabulario */
+export async function transcribir(audio: Blob, clientes: Cliente[], proyectos: Proyecto[]) {
+  if (audio.size < 1000) return ''
+  const d = await llamarTranscripcion({
+    audio: await aBase64(audio), tipo: audio.type,
+    clientes: clientes.map((c) => ({ nombre: c.nombre })),
+    proyectos: proyectos.filter((p) => p.estado === 'activo').map((p) => ({ nombre: p.nombre })),
+  })
+  return d.texto ?? ''
 }
 
 /** Claude piensa el dictado. Local: /api/dictado (npm run dev con clave). Publicado: función crm-dictado. */
