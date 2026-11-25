@@ -396,7 +396,7 @@ export default function Layout() {
             esa zona, para que el difuminado sea negro sobre negro. Queda sobre el padding de la cabecera. */}
         <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[calc(env(safe-area-inset-top)+0.5rem)] bg-ink lg:hidden" />
         {/* Cabecera (móvil) */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/10 bg-ink px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-3 lg:hidden">
           {cuentas ? (
             <div className="flex min-w-0 items-center gap-2.5">
               <NavLink to="/" aria-label="Ir al resumen" className="shrink-0 rounded-lg">
