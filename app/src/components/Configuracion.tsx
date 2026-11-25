@@ -109,7 +109,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
         className="relative flex h-dvh w-full flex-col overflow-hidden shadow-2xl sm:h-[min(88dvh,860px)] sm:max-w-6xl sm:rounded-2xl"
       >
         {/* Cabecera blanca y una línea lima abajo. En el móvil, dentro de una sección, el título es «‹ Configuración» y vuelve a la lista */}
-        <div className="shrink-0 border-b-2 border-lima bg-white text-ink">
+        {/* En el móvil (iPhone con muesca / iOS 26) la ventana llega hasta arriba: la cabecera deja el hueco de la barra de estado para que «‹ Configuración» y la X se puedan pulsar */}
+        <div className="shrink-0 border-b-2 border-lima bg-white pt-[calc(env(safe-area-inset-top)+0.75rem)] text-ink sm:pt-0">
           <div className="flex items-center justify-between gap-3 py-3 pl-3 pr-3 sm:py-3.5 sm:pl-6 sm:pr-4">
             {verSeccion ? (
               <button
@@ -136,7 +137,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
           <aside
             data-guia="config-secciones"
             className={cx(
-              'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-paper sm:block sm:w-64 sm:flex-none sm:border-r sm:border-line sm:bg-paper/60',
+              'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-paper pb-[env(safe-area-inset-bottom)] sm:block sm:pb-0 sm:w-64 sm:flex-none sm:border-r sm:border-line sm:bg-paper/60',
               verSeccion && 'hidden',
             )}
           >
@@ -227,7 +228,7 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
           </aside>
 
           {/* Derecha: la sección elegida */}
-          <main ref={contenido} className={cx('min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:block sm:px-8 sm:py-6', !verSeccion && 'hidden')}>
+          <main ref={contenido} className={cx('min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:block sm:px-8 sm:py-6', !verSeccion && 'hidden')}>
             {actual && (
               <>
                 <div className="mb-6 flex items-center gap-3 border-b border-line pb-5">
