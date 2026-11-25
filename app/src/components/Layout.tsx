@@ -283,7 +283,7 @@ export default function Layout() {
   ]
 
   return (
-    <div className="min-h-dvh lg:flex">
+    <div className="min-h-dvh bg-paper lg:flex">
       {/* Barra lateral (escritorio) */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto overscroll-contain bg-ink px-4 py-6 text-white [scrollbar-color:rgb(255_255_255/0.2)_transparent] [scrollbar-width:thin] lg:flex">
         <div className="px-2">
