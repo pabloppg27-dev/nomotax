@@ -1,8 +1,8 @@
 /** Secciones de la ventana de Configuración (menú a la izquierda, contenido a la derecha). Se irán añadiendo más. */
-import { CreditCard, FileText, Mail, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
+import { CreditCard, FileText, Landmark, Mail, PieChart, Receipt, UserRound, UsersRound, type LucideIcon } from 'lucide-react'
 import type { Permiso, RolEnCuenta } from './types'
 
-export type IdSeccion = 'perfil' | 'correo' | 'plantillas' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
+export type IdSeccion = 'perfil' | 'bancos' | 'correo' | 'plantillas' | 'plan' | 'facturacion' | 'usuarios' | 'socio'
 
 /** Bloques del menú izquierdo, en este orden */
 export const GRUPOS_CONFIG = ['Tu cuenta', 'Equipo', 'Comunicación', 'Suscripción'] as const
@@ -34,6 +34,15 @@ export const SECCIONES_CONFIG: SeccionConfig[] = [
     label: ({ viewingOther, rol, puede }) => (viewingOther ? 'Perfil del cliente' : esMiembroSinEmpresa(rol, puede) ? 'Mi perfil' : 'Perfil'),
     detalle: ({ rol, puede }) =>
       esMiembroSinEmpresa(rol, puede) ? 'Tu nombre, tu contraseña y tus accesos' : 'Datos fiscales, logo, facturación y contraseña',
+  },
+  {
+    id: 'bancos',
+    to: '/configuracion/bancos',
+    icon: Landmark,
+    grupo: 'Tu cuenta',
+    permiso: 'empresa',
+    label: () => 'Cuentas bancarias',
+    detalle: () => 'Tus cuentas en euros, dólares, libras… para cobrar las facturas',
   },
   {
     id: 'usuarios',

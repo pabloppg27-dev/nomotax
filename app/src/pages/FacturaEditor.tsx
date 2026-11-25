@@ -16,6 +16,9 @@ import { snapshotDe } from '../components/ContactForm'
 import DocShell from '../components/DocShell'
 import LinesEditor from '../components/LinesEditor'
 import TotalsBox from '../components/TotalsBox'
+import CobroFactura, { type EleccionCobro } from '../components/CobroFactura'
+import { cambioBCE } from '../lib/divisas'
+import { cobroPropuesto, copiaCuentas, cuentaPorDefecto, cuentasDe, cuentasDeFactura, dinero, esEur, importesFactura } from '../lib/cuentasBancarias'
 import { Badge, Button, Card, Field, Input, Loading, Modal, Select, Textarea, confirmar, notify } from '../components/ui'
 
 export default function FacturaEditor() {
@@ -42,6 +45,14 @@ export default function FacturaEditor() {
   const [guardando, setGuardando] = useState(false)
   const [fechaCobro, setFechaCobro] = useState<string | null>(null)
   const [enviar, setEnviar] = useState(false)
+  // Cobro: moneda de la factura y cuentas que salen (supabase/cuentas-bancarias.sql)
+  const [cobro, setCobro] = useState<EleccionCobro>(() => ({
+    moneda: 'EUR',
+    cuentaLocal: null,
+    cuentaEur: cuentaPorDefecto(cuentasDe(owner), 'EUR')?.id ?? null,
+  }))
+  const [cambio, setCambio] = useState<{ tasa: number; fecha: string } | null>(null)
+  const [cargandoCambio, setCargandoCambio] = useState(false)
 
   const aplicar = (f: Invoice) => {
     setFactura(f)
@@ -54,6 +65,20 @@ export default function FacturaEditor() {
     setNotas(f.notas ?? '')
     setCausa(f.causa_rectificacion ?? 'R1')
     setMotivo(f.motivo_rectificacion ?? '')
+    const moneda = (f.moneda || 'EUR').toUpperCase()
+    const guardadas = Array.isArray(f.cuentas_cobro) ? f.cuentas_cobro : null
+    const disponibles = cuentasDe(owner)
+    const existe = (id: string | undefined) => (id && disponibles.some((c) => c.id === id) ? id : null)
+    setCobro({
+      moneda,
+      cuentaLocal: esEur(moneda)
+        ? null
+        : guardadas
+          ? existe(guardadas.find((c) => c.moneda === moneda)?.id)
+          : cuentaPorDefecto(disponibles, moneda)?.id ?? null,
+      cuentaEur: guardadas ? existe(guardadas.find((c) => esEur(c.moneda))?.id) : cuentaPorDefecto(disponibles, 'EUR')?.id ?? null,
+    })
+    setCambio(f.tipo_cambio && f.fecha_cambio ? { tasa: Number(f.tipo_cambio), fecha: f.fecha_cambio } : null)
   }
 
   useEffect(() => {
@@ -97,10 +122,72 @@ export default function FacturaEditor() {
 
   const totales = useMemo(() => calcularTotales(lineas, irpf), [lineas, irpf])
   const bloqueada = Boolean(factura && factura.estado !== 'borrador')
+  const otraMoneda = !esEur(cobro.moneda)
+
+  // Factura en otra moneda: cambio oficial del BCE del día de la factura (o el último publicado)
+  useEffect(() => {
+    if (bloqueada || !otraMoneda) {
+      if (!otraMoneda) setCambio(null)
+      return
+    }
+    let vivo = true
+    // Sin cambio mientras llega el nuevo: así nunca se guarda el de otra moneda u otro día
+    setCambio(null)
+    setCargandoCambio(true)
+    cambioBCE(cobro.moneda, fecha)
+      .then((c) => vivo && setCambio(c))
+      .catch((e) => {
+        if (!vivo) return
+        setCambio(null)
+        notify(e instanceof Error ? e.message : String(e), 'error')
+      })
+      .finally(() => vivo && setCargandoCambio(false))
+    return () => {
+      vivo = false
+    }
+  }, [bloqueada, otraMoneda, cobro.moneda, fecha])
+
+  // Factura nueva: si el perfil llega después de abrirla, su cuenta en euros por defecto
+  useEffect(() => {
+    if (id || !owner) return
+    setCobro((c) => (c.cuentaEur || c.cuentaLocal ? c : { ...c, cuentaEur: cuentaPorDefecto(cuentasDe(owner), 'EUR')?.id ?? null }))
+    // Solo al llegar el perfil (no en cada refresco: si quitaste la cuenta a mano, se respeta)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, owner?.id])
+
+  // Lo que sale en la factura en su moneda (de las líneas convertidas, para que cuadre)
+  const enMoneda = useMemo(
+    () => (otraMoneda && cambio ? importesFactura({ moneda: cobro.moneda, tipo_cambio: cambio.tasa, lineas, irpf_pct: irpf }).totales.total : null),
+    [otraMoneda, cambio, cobro.moneda, lineas, irpf],
+  )
 
   if (cargando || !ownerId || !owner) return <Loading />
 
   const faltanDatosPropios = !owner.nombre || !owner.nif || !owner.direccion
+  // Columnas de supabase/cuentas-bancarias.sql: hasta ejecutarlo, la factura se guarda como antes
+  const conCuentas = 'cuentas_bancarias' in owner
+  const cuentas = cuentasDe(owner)
+
+  /** Al cambiar de moneda, la cuenta de esa moneda por defecto */
+  const cambiarCobro = (v: EleccionCobro) =>
+    setCobro(
+      v.moneda !== cobro.moneda && !v.cuentaLocal && !esEur(v.moneda)
+        ? { ...v, cuentaLocal: cuentaPorDefecto(cuentas, v.moneda)?.id ?? null }
+        : v,
+    )
+
+  const columnasCobro = () => {
+    if (!conCuentas) return {}
+    const otra = otraMoneda && cambio
+    const elegidas = copiaCuentas(cuentas, [otra ? cobro.cuentaLocal : null, cobro.cuentaEur])
+    return {
+      moneda: otra ? cobro.moneda : 'EUR',
+      tipo_cambio: otra ? cambio.tasa : null,
+      fecha_cambio: otra ? cambio.fecha : null,
+      importe_original: otra ? enMoneda : null,
+      cuentas_cobro: elegidas.length ? elegidas : null,
+    }
+  }
   const esRectificativa = factura?.tipo === 'rectificativa'
 
   const payload = () => ({
@@ -117,6 +204,7 @@ export default function FacturaEditor() {
     total: totales.total,
     notas: notas.trim() || null,
     ...(esRectificativa ? { causa_rectificacion: causa, motivo_rectificacion: motivo.trim() || null } : {}),
+    ...columnasCobro(),
   })
 
   const validar = () => {
@@ -126,6 +214,10 @@ export default function FacturaEditor() {
     }
     if (!payload().lineas.length) {
       notify('Añade al menos un concepto', 'error')
+      return false
+    }
+    if (otraMoneda && conCuentas && !cambio) {
+      notify(cargandoCambio ? 'Espera un segundo: estamos consultando el cambio del BCE' : `No hay cambio del BCE para ${cobro.moneda}: prueba otra vez o factura en euros`, 'error')
       return false
     }
     return true
@@ -257,6 +349,8 @@ export default function FacturaEditor() {
         cuota_irpf: factura.cuota_irpf,
         total: factura.total,
         notas: factura.notas,
+        // Misma moneda y cuentas; el cambio se vuelve a consultar con la fecha nueva
+        ...(conCuentas ? { moneda: factura.moneda ?? 'EUR', cuentas_cobro: factura.cuentas_cobro ?? null } : {}),
       })
       .select()
       .single()
@@ -401,6 +495,8 @@ export default function FacturaEditor() {
             onPick={(c) => {
               setContactId(c.id)
               setCliente(snapshotDe(c))
+              // Cliente de EE. UU., Reino Unido…: si tienes cuenta en su moneda, la factura sale en ella
+              if (conCuentas) setCobro(cobroPropuesto(cuentas, c.pais))
             }}
           />
           {cliente.nombre && idiomaDePais(cliente.pais) !== 'es' && (
@@ -427,6 +523,22 @@ export default function FacturaEditor() {
         </div>
       }
       lineas={<LinesEditor lineas={lineas} onChange={setLineas} disabled={bloqueada} />}
+      cobro={
+        conCuentas ? (
+          <CobroFactura
+            owner={owner}
+            valor={cobro}
+            onChange={cambiarCobro}
+            cambio={cambio}
+            cargandoCambio={cargandoCambio}
+            totalEur={totales.total}
+            totalMoneda={enMoneda}
+            paisCliente={cliente.pais}
+            bloqueada={bloqueada}
+            cuentasEmitida={factura ? cuentasDeFactura(factura, factura.emisor as Emisor | null) : []}
+          />
+        ) : null
+      }
       notas={
         <Textarea
           placeholder="Texto que aparecerá en la factura (opcional)"
@@ -435,7 +547,17 @@ export default function FacturaEditor() {
           onChange={(e) => setNotas(e.target.value)}
         />
       }
-      totales={<TotalsBox totales={totales} irpfPct={irpf} onIrpf={setIrpf} disabled={bloqueada} />}
+      totales={
+        <>
+          <TotalsBox totales={totales} irpfPct={irpf} onIrpf={setIrpf} disabled={bloqueada} />
+          {otraMoneda && enMoneda !== null && (
+            <p className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-lima/40 px-4 py-2.5 text-[15px]">
+              <span>En la factura</span>
+              <span className="num font-semibold">{dinero(enMoneda, cobro.moneda)}</span>
+            </p>
+          )}
+        </>
+      }
       acciones={
         bloqueada && factura ? (
           <>

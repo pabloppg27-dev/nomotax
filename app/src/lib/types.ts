@@ -1,3 +1,5 @@
+import type { CuentaBancaria } from './cuentasBancarias'
+
 export type Role = 'client' | 'advisor' | 'member'
 
 /* ------------------------------------------------ Usuarios de la empresa (supabase/usuarios.sql) */
@@ -46,6 +48,8 @@ export interface Profile {
   pais: string | null
   telefono: string | null
   iban: string | null
+  /** Cuentas en varias monedas (supabase/cuentas-bancarias.sql); la de euros por defecto se copia en iban */
+  cuentas_bancarias?: CuentaBancaria[] | null
   logo_path: string | null
   serie_factura: string
   serie_presupuesto: string
@@ -183,6 +187,8 @@ export interface Invoice extends DocBase {
   importe_original?: number | null
   tipo_cambio?: number | null
   fecha_cambio?: string | null
+  /** Cuentas que salen en la factura para cobrarla (supabase/cuentas-bancarias.sql) */
+  cuentas_cobro?: CuentaBancaria[] | null
   rectifica_id: string | null
   rectifica_numero: string | null
   rectifica_fecha: string | null

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useConfig } from '../components/Configuracion'
-import { ImageUp, KeyRound, Palette, Trash2 } from 'lucide-react'
+import { ImageUp, KeyRound, Landmark, Palette, Trash2 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { BUCKET, errorMessage, signedUrl, supabase } from '../lib/supabase'
 import { limpiarNif } from '../lib/format'
 import type { Profile } from '../lib/types'
+import type { IdSeccion } from '../lib/configuracion'
+import { cuentasDe, resumenCuenta } from '../lib/cuentasBancarias'
 import { NOMBRE_ROL } from '../lib/permisos'
 import { Button, Card, Field, Input, Loading, Textarea, notify } from '../components/ui'
 import CamposDireccion from '../components/CamposDireccion'
@@ -28,15 +30,15 @@ type Editable = Pick<
   | 'email_facturacion'
 >
 
-export default function Perfil() {
+export default function Perfil({ irA }: { irA?: (s: IdSeccion) => void }) {
   const { rol, puede } = useAuth()
   // Admin sin «empresa», socio, comercial o empleado: solo su usuario (nombre, contraseña, accesos)
   const esMiembro = rol !== null && rol !== 'titular' && rol !== 'asesor'
   if (esMiembro && !puede('empresa')) return <MiCuenta />
-  return <PerfilEmpresa esMiembro={esMiembro} />
+  return <PerfilEmpresa esMiembro={esMiembro} irA={irA} />
 }
 
-function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
+function PerfilEmpresa({ esMiembro, irA }: { esMiembro: boolean; irA?: (s: IdSeccion) => void }) {
   const { owner, me, viewingOther, refresh } = useAuth()
   const { nuevaClave } = useConfig()
   const [form, setForm] = useState<Editable | null>(null)
@@ -96,20 +98,24 @@ function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
 
   if (!owner || !form) return <Loading />
 
+  const conCuentas = 'cuentas_bancarias' in owner
+  const cuentas = cuentasDe(owner)
+
   const set = (k: keyof Editable) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
 
   const guardar = async (e: FormEvent) => {
     e.preventDefault()
     setGuardando(true)
-    const { nombre_comercial, email_facturacion, ...resto } = form
+    const { nombre_comercial, email_facturacion, iban, ...resto } = form
     const { error } = await supabase
       .from('profiles')
       .update({
         ...resto,
+        // Con cuentas en varias monedas (supabase/cuentas-bancarias.sql) el IBAN se gestiona en «Cuentas bancarias»
+        ...(conCuentas ? {} : { iban: iban ? iban.toUpperCase().replace(/\s+/g, ' ').trim() : null }),
         ...(nombre_comercial !== undefined ? { nombre_comercial: nombre_comercial?.trim() || null } : {}),
         ...(email_facturacion !== undefined ? { email_facturacion: email_facturacion?.trim().toLowerCase() || null } : {}),
         nif: limpiarNif(form.nif),
-        iban: form.iban ? form.iban.toUpperCase().replace(/\s+/g, ' ').trim() : null,
         serie_factura: (form.serie_factura || 'F').toUpperCase().trim(),
         serie_presupuesto: (form.serie_presupuesto || 'P').toUpperCase().trim(),
         serie_rectificativa: (form.serie_rectificativa || 'R').toUpperCase().trim(),
@@ -185,9 +191,30 @@ function PerfilEmpresa({ esMiembro }: { esMiembro: boolean }) {
 
             <h2 className="mb-4 mt-8 font-semibold">Facturación</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="IBAN para cobros" className="sm:col-span-2" hint="Aparece en el pie de tus facturas.">
-                <Input value={form.iban ?? ''} onChange={set('iban')} placeholder="ES00 0000 0000 0000 0000 0000" />
-              </Field>
+              {conCuentas ? (
+                <div className="flex flex-col gap-3 rounded-xl border border-line p-4 sm:col-span-2 sm:flex-row sm:items-center">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-lima">
+                    <Landmark className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium text-ink/80">Cuentas para cobrar</p>
+                    <p className="truncate text-sm text-muted">
+                      {cuentas.length
+                        ? cuentas.map((c) => `${c.moneda} · ${resumenCuenta(c)}`).join('  ·  ')
+                        : 'Ninguna todavía: añade tu cuenta en euros y, si cobras fuera, en dólares o libras.'}
+                    </p>
+                  </div>
+                  {irA && (
+                    <Button type="button" variant="secondary" size="sm" onClick={() => irA('bancos')}>
+                      {cuentas.length ? 'Gestionar cuentas' : 'Añadir cuenta'}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <Field label="IBAN para cobros" className="sm:col-span-2" hint="Aparece en el pie de tus facturas.">
+                  <Input value={form.iban ?? ''} onChange={set('iban')} placeholder="ES00 0000 0000 0000 0000 0000" />
+                </Field>
+              )}
               <Field label="Serie de facturas" hint="Ej.: F → F2026-0001">
                 <Input value={form.serie_factura} onChange={set('serie_factura')} maxLength={6} />
               </Field>

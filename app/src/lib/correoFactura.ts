@@ -5,7 +5,8 @@
  * El asunto y el mensaje se editan en Configuración → Envío de facturas. Al pie, una marca discreta de NomoTax.
  * Sin navegador: lo usan la vista previa de la app y la función del servidor.
  */
-import { eur, fecha as fmtFecha } from './format'
+import { fecha as fmtFecha } from './format'
+import { dinero } from './cuentasBancarias'
 import { TEXTOS, idiomaDePais, type Idioma } from './idiomaFactura'
 import { calcularTotales, importeLinea } from './totals'
 import type { Linea } from './types'
@@ -46,6 +47,8 @@ export interface DatosFacturaCorreo {
   /** Conceptos y retención, para el detalle del correo */
   lineas?: Linea[] | null
   irpf_pct?: number | null
+  /** Moneda de la factura (USD, GBP…): total y líneas ya vienen en ella. Vacío = euros */
+  moneda?: string | null
 }
 
 /** Cambia {cliente}, {numero}… por los datos de la factura (las que no existen se quedan como están) */
@@ -53,7 +56,7 @@ export function rellenar(texto: string, d: DatosFacturaCorreo): string {
   const v: Record<string, string> = {
     cliente: d.cliente?.trim() || '',
     numero: d.numero,
-    total: eur(d.total),
+    total: dinero(d.total, d.moneda),
     fecha: fmtFecha(d.fecha),
     vencimiento: d.vencimiento ? fmtFecha(d.vencimiento) : '—',
     empresa: d.empresa,
@@ -73,6 +76,12 @@ export function correoDeFactura(
   const asunto = (propia && plantilla.asunto?.trim()) || def.asunto
   const mensaje = (propia && plantilla.mensaje?.trim()) || def.mensaje
   return { asunto: rellenar(asunto, d).replace(/\s+/g, ' ').trim(), mensaje: rellenar(mensaje, d) }
+}
+
+/** Un IBAN suelto, en mayúsculas; los datos de una cuenta de otra moneda («Account number …»), tal cual */
+function textoPago(v: string | null | undefined): string {
+  const t = (v ?? '').replace(/\s+/g, ' ').trim()
+  return /^[a-z]{2}\d{2}[a-z0-9 ]+$/i.test(t) ? t.toUpperCase() : t
 }
 
 export function esc(s: unknown): string {
@@ -164,7 +173,10 @@ export interface DisenoCorreo {
   /** Email al que van las respuestas (sale al pie) */
   respuesta?: string | null
   telefono?: string | null
+  /** Datos de la cuenta para pagar (IBAN, o número y código si es de otra moneda) */
   iban?: string | null
+  /** El PDF lleva QR de pago SEPA (solo facturas en euros a una cuenta con IBAN). Por defecto, sí */
+  qr?: boolean
   rectificativa?: boolean
 }
 
@@ -206,7 +218,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
       const detalle = resto.join(' ').trim()
       const cantidad = Number(l.cantidad || 0)
       const extra = [
-        cantidad !== 1 ? `${cantidad.toLocaleString('es-ES')} × ${eur(Number(l.precio))}` : '',
+        cantidad !== 1 ? `${cantidad.toLocaleString('es-ES')} × ${dinero(Number(l.precio), d.moneda)}` : '',
         Number(l.descuento) ? `−${Number(l.descuento)}%` : '',
       ]
         .filter(Boolean)
@@ -215,7 +227,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
       <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ''}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ''}
       </td>
-      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110;white-space:nowrap">${esc(eur(importeLinea(l)))}</td></tr>`
+      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT};color:#111110;white-space:nowrap">${esc(dinero(importeLinea(l), d.moneda))}</td></tr>`
     })
     .join('')
 
@@ -224,13 +236,13 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
     const irpf = Number(d.irpf_pct || 0)
     const t = calcularTotales(lineas, irpf)
     impuestos =
-      fila(esc(T.base), esc(eur(t.base))) +
-      t.desglose.map((x) => fila(`${esc(T.impuesto)} ${x.tipo}%`, esc(eur(x.cuota)))).join('') +
-      (t.cuota_irpf ? fila(`${esc(T.retencion)} ${irpf}%`, `−${esc(eur(t.cuota_irpf))}`) : '') +
-      fila(esc(T.total.charAt(0) + T.total.slice(1).toLowerCase()), esc(eur(d.total)), true)
+      fila(esc(T.base), esc(dinero(t.base, d.moneda))) +
+      t.desglose.map((x) => fila(`${esc(T.impuesto)} ${x.tipo}%`, esc(dinero(x.cuota, d.moneda)))).join('') +
+      (t.cuota_irpf ? fila(`${esc(T.retencion)} ${irpf}%`, `−${esc(dinero(t.cuota_irpf, d.moneda))}`) : '') +
+      fila(esc(T.total.charAt(0) + T.total.slice(1).toLowerCase()), esc(dinero(d.total, d.moneda)), true)
   }
 
-  const iban = diseno.iban?.toUpperCase().replace(/\s+/g, ' ').trim()
+  const iban = textoPago(diseno.iban)
   const contacto = [
     diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : '',
     diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ''))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : '',
@@ -264,7 +276,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
           </td>
           <td align="right" valign="top" style="font:14px/1.5 ${FONT};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${esc(T.total)}</span><br>
-            <strong style="font-family:Menlo,Consolas,monospace;font-size:18px;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(eur(d.total))}</strong>
+            <strong style="font-family:Menlo,Consolas,monospace;font-size:18px;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(dinero(d.total, d.moneda))}</strong>
           </td>
         </tr></table>
       </td></tr>
@@ -279,7 +291,7 @@ export function htmlCorreoFactura(mensaje: string, d: DatosFacturaCorreo, diseno
         : ''
     }
 
-    ${iban ? `<p style="margin:16px 0 0 0;font-size:14px;color:#6b6b66">${F.pago(esc(iban), esc(d.numero))} ${F.qr}</p>` : ''}
+    ${iban ? `<p style="margin:16px 0 0 0;font-size:14px;color:#6b6b66">${F.pago(esc(iban), esc(d.numero))}${diseno.qr === false ? '' : ` ${F.qr}`}</p>` : ''}
     <p style="margin:16px 0 22px 0;font-size:13px;color:#6b6b66">📎 ${F.adjunto}: ${esc(T.archivoFactura)}-${esc(d.numero)}.pdf</p>
   </td></tr>
   <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT};color:#111110;border-top:1px solid #efefea">
@@ -301,7 +313,7 @@ export function textoCorreoFactura(mensaje: string, d: DatosFacturaCorreo, disen
   const F = FRASES[lengua]
   const cliente = d.cliente?.trim() ?? ''
   const lineas = (d.lineas ?? []).filter((l) => l.concepto?.trim() || Number(l.precio))
-  const iban = diseno.iban?.toUpperCase().replace(/\s+/g, ' ').trim()
+  const iban = textoPago(diseno.iban)
   return [
     cliente ? F.atencion(cliente) : '',
     diseno.rectificativa ? F.tituloRect(diseno.empresa) : F.titulo(diseno.empresa),
@@ -309,8 +321,8 @@ export function textoCorreoFactura(mensaje: string, d: DatosFacturaCorreo, disen
     mensaje.trim(),
     '',
     `${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} · ${fmtFecha(d.fecha)}`,
-    ...lineas.map((l) => `· ${String(l.concepto).split('\n')[0]}: ${eur(importeLinea(l))}`),
-    `${T.total}: ${eur(d.total)}`,
+    ...lineas.map((l) => `· ${String(l.concepto).split('\n')[0]}: ${dinero(importeLinea(l), d.moneda)}`),
+    `${T.total}: ${dinero(d.total, d.moneda)}`,
     iban ? F.pago(iban, d.numero).replace(/<[^>]+>/g, '') : '',
     '',
     F.dudas,

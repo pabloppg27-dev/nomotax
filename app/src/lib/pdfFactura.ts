@@ -5,6 +5,7 @@ import { direccionCompleta, eur, fecha, num } from './format'
 import { CAUSAS_RECTIFICACION } from './estados'
 import type { Emisor, Invoice, Quote } from './types'
 import { TEXTOS, idiomaDePais } from './idiomaFactura'
+import { cuentasDeFactura, datosCuenta, dinero, esEur, importesFactura } from './cuentasBancarias'
 
 type Tipo = 'factura' | 'presupuesto'
 
@@ -148,8 +149,14 @@ export async function construirPdf(
   doc.setTextColor(...INK)
   doc.text(d.numero || T.borrador, W - M, 25.5, { align: 'right' })
 
-  const t = calcularTotales(d.lineas, Number(d.irpf_pct))
-  const conPago = esFactura && Boolean(emisor.iban) && t.total > 0
+  // Factura en otra moneda (USD, GBP…): precios y totales convertidos con el cambio guardado; contabilidad en euros
+  const imp = esFactura
+    ? importesFactura(inv)
+    : { moneda: 'EUR', tasa: 1, convertida: false, lineas: d.lineas, totales: calcularTotales(d.lineas, Number(d.irpf_pct)) }
+  const t = imp.totales
+  const $ = (n: number) => dinero(n, imp.moneda)
+  const cuentas = esFactura ? cuentasDeFactura(inv, emisor) : []
+  const conPago = esFactura && cuentas.length > 0 && t.total > 0
 
   // Franja de datos: fecha, vencimiento / validez, forma de pago
   let y = Math.max(yE, finLogo, 30) + 5
@@ -211,7 +218,7 @@ export async function construirPdf(
     startY: y,
     margin: { left: M, right: M, top: 18, bottom: 24 },
     head: [[T.concepto, T.cant, T.precio, T.impuesto, T.importe].map((h) => h.toUpperCase())],
-    body: d.lineas.map((l) => [l.concepto, num(l.cantidad), eur(l.precio), `${num(l.iva)}%`, eur(importeLinea(l))]),
+    body: imp.lineas.map((l) => [l.concepto, num(l.cantidad), $(l.precio), `${num(l.iva)}%`, $(importeLinea(l))]),
     theme: 'plain',
     styles: { font: 'helvetica', fontSize: 9.3, cellPadding: { top: pad, bottom: pad, left: 0, right: 0 }, textColor: INK },
     headStyles: { textColor: MUTED, fontStyle: 'bold', fontSize: 7, cellPadding: { top: 1.5, bottom: 2.4, left: 0, right: 0 } },
@@ -280,9 +287,9 @@ export async function construirPdf(
     y += 5.6
   }
   y += 3
-  fila(T.base, eur(t.base))
-  for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ''}`, eur(r.cuota))
-  if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, eur(-t.cuota_irpf))
+  fila(T.base, $(t.base))
+  for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${$(r.base)})` : ''}`, $(r.cuota))
+  if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, $(-t.cuota_irpf))
   y -= 1.5
   doc.setFillColor(...MARCA)
   doc.roundedRect(xl - 4, y, W - M - xl + 4, 12, 2.2, 2.2, 'F')
@@ -291,7 +298,7 @@ export async function construirPdf(
   doc.setFontSize(10)
   doc.text(T.total, xl, y + 7.6)
   doc.setFontSize(13)
-  doc.text(eur(t.total), xv, y + 7.8, { align: 'right' })
+  doc.text($(t.total), xv, y + 7.8, { align: 'right' })
   y += 12 + 10
 
   const asegurarHueco = (alto: number) => {
@@ -301,14 +308,14 @@ export async function construirPdf(
     }
   }
 
-  // Forma de pago: IBAN, referencia y QR SEPA
-  if (conPago && emisor.iban) {
-    const moneda = (inv.moneda || 'EUR').toUpperCase()
+  // Forma de pago: una o varias cuentas (euros, dólares, libras…), referencia y QR SEPA si se paga en euros
+  if (conPago) {
+    const ibanQr = cuentas.find((c) => esEur(c.moneda) && c.iban?.trim())?.iban
     let qr: string | null = null
-    if (moneda === 'EUR' && !borrador && d.numero) {
+    if (esEur(imp.moneda) && ibanQr && !borrador && d.numero) {
       try {
         const QR = await import('qrcode')
-        qr = await QR.toDataURL(payloadEpc(emisor.nombre || '', emisor.iban, t.total, d.numero), {
+        qr = await QR.toDataURL(payloadEpc(emisor.nombre || '', ibanQr, t.total, d.numero), {
           errorCorrectionLevel: 'M',
           margin: 0,
           width: 240,
@@ -317,24 +324,50 @@ export async function construirPdf(
         qr = null
       }
     }
-    const alto = qr ? 26 : 19
+    const ancho = W - 2 * M - 10 - (qr ? 26 : 0)
+    // Cada cuenta: «Transferencia · USD» y los datos para pagar en negrita; banco, dirección y titular debajo en gris
+    const bloquesCuenta = cuentas.map((c) => {
+      const { principales: principal, otros: resto } = datosCuenta(c, idioma)
+      const cabeza = cuentas.length > 1 || !esEur(c.moneda) ? `${T.transferenciaCorta} · ${c.moneda.toUpperCase()}` : T.transferenciaCorta
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9.3)
+      const l1: string[] = doc.splitTextToSize(principal.map(([k, v]) => `${k}\u00a0${v.replace(/ /g, '\u00a0')}`).join('  ·  '), ancho - doc.getTextWidth(cabeza) - 3)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.3)
+      const l2: string[] = resto.length ? doc.splitTextToSize(resto.map(([k, v]) => `${k}: ${v}`).join('  ·  '), ancho) : []
+      return { cabeza, l1, l2, alto: l1.length * 4.3 + l2.length * 3.7 + 2.2 }
+    })
+    const altoCuentas = bloquesCuenta.reduce((s, b) => s + b.alto, 0)
+    const alto = Math.max(qr ? 26 : 0, 8.5 + altoCuentas + (d.numero ? 4.6 : 0) + 2.5)
     asegurarHueco(alto)
     doc.setDrawColor(...LINE)
     doc.setLineWidth(0.25)
     doc.roundedRect(M, y, W - 2 * M, alto, 2, 2, 'S')
     etiqueta(T.formaPago, M + 5, y + 6)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9.3)
-    doc.setTextColor(...INK)
-    doc.text(`${T.transferenciaCorta} · IBAN`, M + 5, y + 11.5)
-    const xIban = M + 5 + doc.getTextWidth(`${T.transferenciaCorta} · IBAN`) + 1.6
-    doc.setFont('helvetica', 'bold')
-    doc.text(emisor.iban.toUpperCase().replace(/\s+/g, ' ').trim(), xIban, y + 11.5)
+    let yc = y + 11.5
+    for (const b of bloquesCuenta) {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9.3)
+      doc.setTextColor(...INK)
+      doc.text(b.cabeza, M + 5, yc)
+      const xDatos = M + 5 + doc.getTextWidth(b.cabeza) + 3
+      doc.setFont('helvetica', 'bold')
+      doc.text(b.l1, xDatos, yc, { lineHeightFactor: 1.3 })
+      yc += b.l1.length * 4.3
+      if (b.l2.length) {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8.3)
+        doc.setTextColor(...MUTED)
+        doc.text(b.l2, M + 5, yc - 0.4, { lineHeightFactor: 1.25 })
+        yc += b.l2.length * 3.7
+      }
+      yc += 2.2
+    }
     if (d.numero) {
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(8.3)
       doc.setTextColor(...MUTED)
-      doc.text(T.refPago(d.numero), M + 5, y + 16.2, { maxWidth: W - 2 * M - 40 })
+      doc.text(T.refPago(d.numero), M + 5, yc + 0.4, { maxWidth: ancho })
     }
     if (qr) doc.addImage(qr, 'PNG', W - M - 5 - 18, y + 4, 18, 18, undefined, 'FAST')
     y += alto + 8
@@ -349,6 +382,14 @@ export async function construirPdf(
       T.rectifica(inv.rectifica_numero ?? '', inv.rectifica_fecha ? fecha(inv.rectifica_fecha) : null) +
         (causa ? ` ${T.causa}: ${causa.id} · ${causa.nombre}.` : '') +
         (inv.motivo_rectificacion ? ` ${T.motivo}: ${inv.motivo_rectificacion}` : ''),
+      false,
+    ])
+  }
+  if (imp.convertida) {
+    // Con importes en otra moneda, la factura tiene que dar también el impuesto en euros (art. 12 RD 1619/2012)
+    bloques.push([
+      T.contravalor,
+      T.contravalorTexto(imp.moneda, fecha(inv.fecha_cambio ?? d.fecha), num(imp.tasa, 4), eur(inv.base), eur(inv.cuota_iva), eur(inv.total)),
       false,
     ])
   }

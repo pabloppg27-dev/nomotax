@@ -16,6 +16,7 @@ export default function DocShell({
   totales,
   acciones,
   aviso,
+  cobro,
 }: {
   back: string
   backLabel: string
@@ -28,6 +29,8 @@ export default function DocShell({
   totales: ReactNode
   acciones: ReactNode
   aviso?: ReactNode
+  /** Factura: moneda y cuentas en las que se cobra */
+  cobro?: ReactNode
 }) {
   return (
     <>
@@ -55,6 +58,7 @@ export default function DocShell({
             <h2 className="mb-4 font-semibold">Conceptos</h2>
             {lineas}
           </Card>
+          {cobro && <Card className="p-5 sm:p-6">{cobro}</Card>}
           <Card className="p-5 sm:p-6">
             <h2 className="mb-3 font-semibold">Notas</h2>
             {notas}

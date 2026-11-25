@@ -372,6 +372,8 @@ const TEXTOS = {
 		transferencia: (i) => `Transferencia bancaria a ${i}`,
 		transferenciaCorta: "Transferencia",
 		refPago: (n) => `Indica ${n} en el concepto de la transferencia.`,
+		contravalor: "Contravalor en euros",
+		contravalorTexto: (m, f, c, b, i, t) => `Factura emitida en ${m}. Al cambio del BCE del ${f} (1€ = ${c} ${m}): base imponible ${b}, IVA ${i}, total ${t}.`,
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE PRUEBAS",
 		avisoPruebas: "Documento generado en modo pruebas: no válido como factura.",
@@ -410,6 +412,8 @@ const TEXTOS = {
 		transferencia: (i) => `Bank transfer to ${i}`,
 		transferenciaCorta: "Bank transfer",
 		refPago: (n) => `Please quote ${n} as the payment reference.`,
+		contravalor: "Euro equivalent",
+		contravalorTexto: (m, f, c, b, i, t) => `Invoice issued in ${m}. At the ECB rate of ${f} (1 EUR = ${c} ${m}): subtotal ${b}, VAT ${i}, total ${t}.`,
 		pagina: (p, n) => `Page ${p} of ${n}`,
 		marcaPruebas: "TEST DOCUMENT",
 		avisoPruebas: "Generated in test mode: not valid as an invoice.",
@@ -448,6 +452,8 @@ const TEXTOS = {
 		transferencia: (i) => `Bonifico bancario a ${i}`,
 		transferenciaCorta: "Bonifico bancario",
 		refPago: (n) => `Indicare ${n} nella causale del bonifico.`,
+		contravalor: "Controvalore in euro",
+		contravalorTexto: (m, f, c, b, i, t) => `Fattura emessa in ${m}. Al cambio BCE del ${f} (1 EUR = ${c} ${m}): imponibile ${b}, IVA ${i}, totale ${t}.`,
 		pagina: (p, n) => `Pagina ${p} di ${n}`,
 		marcaPruebas: "DOCUMENTO DI PROVA",
 		avisoPruebas: "Generato in modalità di prova: non valido come fattura.",
@@ -486,6 +492,8 @@ const TEXTOS = {
 		transferencia: (i) => `Virement bancaire sur ${i}`,
 		transferenciaCorta: "Virement bancaire",
 		refPago: (n) => `Merci d’indiquer ${n} en référence du virement.`,
+		contravalor: "Contre-valeur en euros",
+		contravalorTexto: (m, f, c, b, i, t) => `Facture émise en ${m}. Au taux BCE du ${f} (1 EUR = ${c} ${m}) : total HT ${b}, TVA ${i}, total ${t}.`,
 		pagina: (p, n) => `Page ${p} sur ${n}`,
 		marcaPruebas: "DOCUMENT DE TEST",
 		avisoPruebas: "Généré en mode test : non valable comme facture.",
@@ -524,6 +532,8 @@ const TEXTOS = {
 		transferencia: (i) => `Banküberweisung an ${i}`,
 		transferenciaCorta: "Banküberweisung",
 		refPago: (n) => `Bitte geben Sie ${n} als Verwendungszweck an.`,
+		contravalor: "Gegenwert in Euro",
+		contravalorTexto: (m, f, c, b, i, t) => `Rechnung in ${m}. Zum EZB-Kurs vom ${f} (1 EUR = ${c} ${m}): Nettobetrag ${b}, MwSt. ${i}, Gesamt ${t}.`,
 		pagina: (p, n) => `Seite ${p} von ${n}`,
 		marcaPruebas: "TESTDOKUMENT",
 		avisoPruebas: "Im Testmodus erstellt: keine gültige Rechnung.",
@@ -562,6 +572,8 @@ const TEXTOS = {
 		transferencia: (i) => `Transferência bancária para ${i}`,
 		transferenciaCorta: "Transferência bancária",
 		refPago: (n) => `Indique ${n} na referência da transferência.`,
+		contravalor: "Contravalor em euros",
+		contravalorTexto: (m, f, c, b, i, t) => `Fatura emitida em ${m}. À taxa do BCE de ${f} (1 EUR = ${c} ${m}): base tributável ${b}, IVA ${i}, total ${t}.`,
 		pagina: (p, n) => `Página ${p} de ${n}`,
 		marcaPruebas: "DOCUMENTO DE TESTE",
 		avisoPruebas: "Gerado em modo de teste: não válido como fatura.",
@@ -570,6 +582,280 @@ const TEXTOS = {
 		archivoPresupuesto: "Orcamento"
 	}
 };
+// src/lib/cuentasBancarias.ts
+/**
+* Cuentas bancarias de la empresa en varias monedas (supabase/cuentas-bancarias.sql) y factura en otra moneda.
+*
+* - Las cuentas viven en profiles.cuentas_bancarias (Configuración → «Cuentas bancarias»).
+*   La cuenta en euros por defecto se copia también en profiles.iban (correos, facturación automática…).
+* - En la factura se teclea en euros. Si sale en otra moneda (USD, GBP…), cada precio se convierte al
+*   cambio del BCE del día de la factura; la contabilidad sigue en euros con los importes tecleados.
+* - invoices.cuentas_cobro guarda una copia de las cuentas elegidas para esa factura.
+*
+* Sin nada del navegador: lo usan también las funciones del servidor (enviar-factura).
+*/
+/** Las que publica el BCE (las únicas que se pueden convertir al día) */
+const MONEDAS = [
+	{
+		codigo: "EUR",
+		nombre: "Euro",
+		formato: "iban"
+	},
+	{
+		codigo: "USD",
+		nombre: "Dólar estadounidense",
+		formato: "local",
+		local: "Routing number (ACH)",
+		ejemploLocal: "026073150"
+	},
+	{
+		codigo: "GBP",
+		nombre: "Libra esterlina",
+		formato: "local",
+		local: "Sort code",
+		ejemploLocal: "23-14-70"
+	},
+	{
+		codigo: "CHF",
+		nombre: "Franco suizo",
+		formato: "iban"
+	},
+	{
+		codigo: "CAD",
+		nombre: "Dólar canadiense",
+		formato: "local",
+		local: "Institution + transit",
+		ejemploLocal: "621-16001"
+	},
+	{
+		codigo: "AUD",
+		nombre: "Dólar australiano",
+		formato: "local",
+		local: "BSB",
+		ejemploLocal: "802-985"
+	},
+	{
+		codigo: "NZD",
+		nombre: "Dólar neozelandés",
+		formato: "local"
+	},
+	{
+		codigo: "MXN",
+		nombre: "Peso mexicano",
+		formato: "local",
+		local: "CLABE",
+		ejemploLocal: "002010077777777771"
+	},
+	{
+		codigo: "BRL",
+		nombre: "Real brasileño",
+		formato: "local"
+	},
+	{
+		codigo: "JPY",
+		nombre: "Yen japonés",
+		formato: "local"
+	},
+	{
+		codigo: "SEK",
+		nombre: "Corona sueca",
+		formato: "iban"
+	},
+	{
+		codigo: "NOK",
+		nombre: "Corona noruega",
+		formato: "iban"
+	},
+	{
+		codigo: "DKK",
+		nombre: "Corona danesa",
+		formato: "iban"
+	},
+	{
+		codigo: "PLN",
+		nombre: "Esloti polaco",
+		formato: "iban"
+	},
+	{
+		codigo: "CZK",
+		nombre: "Corona checa",
+		formato: "iban"
+	},
+	{
+		codigo: "HUF",
+		nombre: "Forinto húngaro",
+		formato: "iban"
+	},
+	{
+		codigo: "RON",
+		nombre: "Leu rumano",
+		formato: "iban"
+	},
+	{
+		codigo: "SGD",
+		nombre: "Dólar de Singapur",
+		formato: "local"
+	},
+	{
+		codigo: "HKD",
+		nombre: "Dólar de Hong Kong",
+		formato: "local"
+	},
+	{
+		codigo: "CNY",
+		nombre: "Yuan chino",
+		formato: "local"
+	},
+	{
+		codigo: "INR",
+		nombre: "Rupia india",
+		formato: "local",
+		local: "IFSC",
+		ejemploLocal: "HDFC0000001"
+	},
+	{
+		codigo: "ZAR",
+		nombre: "Rand sudafricano",
+		formato: "local"
+	},
+	{
+		codigo: "ILS",
+		nombre: "Séquel israelí",
+		formato: "iban"
+	},
+	{
+		codigo: "TRY",
+		nombre: "Lira turca",
+		formato: "iban"
+	}
+];
+const infoMoneda = (codigo) => MONEDAS.find((m) => m.codigo === (codigo ?? "").toUpperCase()) ?? {
+	codigo: (codigo ?? "EUR").toUpperCase(),
+	nombre: codigo ?? "",
+	formato: "iban"
+};
+const esEur = (moneda) => !moneda || moneda.toUpperCase() === "EUR";
+/** 1.234,56€ en euros; 1.234,56 USD en cualquier otra moneda */
+function dinero(n, moneda = "EUR") {
+	const e = eur(n);
+	return esEur(moneda) ? e : `${e.slice(0, -1)} ${moneda.toUpperCase()}`;
+}
+const ibanBonito = (iban) => iban.toUpperCase().replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim();
+const ETIQUETAS = {
+	es: {
+		numero: "Nº de cuenta",
+		banco: "Banco",
+		titular: "Titular",
+		direccion: "Dirección del banco"
+	},
+	en: {
+		numero: "Account number",
+		banco: "Bank",
+		titular: "Beneficiary",
+		direccion: "Bank address"
+	},
+	it: {
+		numero: "Numero di conto",
+		banco: "Banca",
+		titular: "Beneficiario",
+		direccion: "Indirizzo della banca"
+	},
+	fr: {
+		numero: "N° de compte",
+		banco: "Banque",
+		titular: "Bénéficiaire",
+		direccion: "Adresse de la banque"
+	},
+	de: {
+		numero: "Kontonummer",
+		banco: "Bank",
+		titular: "Begünstigter",
+		direccion: "Adresse der Bank"
+	},
+	pt: {
+		numero: "Número da conta",
+		banco: "Banco",
+		titular: "Beneficiário",
+		direccion: "Morada do banco"
+	}
+};
+/**
+* Datos de la cuenta para la factura, en pares [etiqueta, valor]: los que hacen falta para pagar
+* (IBAN o número, código local y SWIFT) y los demás (banco, dirección, titular)
+*/
+function datosCuenta(c, idioma) {
+	const E = ETIQUETAS[idioma];
+	const m = infoMoneda(c.moneda);
+	const principales = [];
+	const otros = [];
+	if (c.iban?.trim()) principales.push(["IBAN", ibanBonito(c.iban)]);
+	if (c.numero?.trim()) principales.push([E.numero, c.numero.trim()]);
+	if (c.codigo_local?.trim()) principales.push([m.local ?? "Code", c.codigo_local.trim()]);
+	if (c.swift?.trim()) principales.push(["SWIFT/BIC", c.swift.trim().toUpperCase()]);
+	if (c.banco?.trim()) otros.push([E.banco, c.banco.trim()]);
+	if (c.direccion_banco?.trim()) otros.push([E.direccion, c.direccion_banco.trim()]);
+	if (c.titular?.trim()) otros.push([E.titular, c.titular.trim()]);
+	return {
+		principales,
+		otros
+	};
+}
+/** En una línea, para el correo: «IBAN ES12 3456 … · SWIFT/BIC BBVAESMM» */
+const textoCuenta = (c, idioma) => datosCuenta(c, idioma).principales.map(([k, v]) => `${k} ${v}`).join(" · ");
+/** Precios pasados a la moneda de la factura (redondeados a céntimos) */
+const lineasEnMoneda = (lineas, tasa) => lineas.map((l) => ({
+	...l,
+	precio: round2(Number(l.precio) * tasa)
+}));
+/**
+* Importes tal como salen en la factura: en su moneda si no es en euros (con el cambio guardado),
+* o en euros. Los totales salen de las líneas ya convertidas, para que la factura cuadre en esa moneda.
+*/
+function importesFactura(d) {
+	const moneda = (d.moneda || "EUR").toUpperCase();
+	const tasa = Number(d.tipo_cambio) || 0;
+	const convertir = !esEur(moneda) && tasa > 0;
+	const lineas = convertir ? lineasEnMoneda(d.lineas ?? [], tasa) : d.lineas ?? [];
+	const totales = calcularTotales(lineas, Number(d.irpf_pct));
+	return {
+		moneda: convertir ? moneda : "EUR",
+		tasa: convertir ? tasa : 1,
+		convertida: convertir,
+		lineas,
+		totales
+	};
+}
+/** Cuentas que salen en la factura: las elegidas o, en las de antes, el IBAN del emisor */
+function cuentasDeFactura(d, emisor) {
+	if (Array.isArray(d.cuentas_cobro) && d.cuentas_cobro.length) return d.cuentas_cobro;
+	const iban = emisor?.iban?.trim();
+	return iban ? [{
+		id: "iban-emisor",
+		moneda: "EUR",
+		alias: "",
+		iban
+	}] : [];
+}
+/**
+* Lo que necesita el correo de la factura: importes en su moneda y cómo pagar
+* (todas las cuentas elegidas en una línea) y si el PDF lleva QR SEPA.
+*/
+function cobroParaCorreo(inv, emisor) {
+	const imp = importesFactura(inv);
+	const cuentas = cuentasDeFactura(inv, emisor);
+	const lengua = idiomaDePais(inv.cliente?.pais) === "es" ? "es" : "en";
+	const textos = cuentas.map((c) => {
+		const t = textoCuenta(c, lengua);
+		return t && cuentas.length > 1 ? `${t} (${c.moneda})` : t;
+	}).filter(Boolean);
+	return {
+		moneda: imp.moneda,
+		total: imp.totales.total,
+		lineas: imp.lineas,
+		pago: textos.length ? textos.join(lengua === "es" ? " o " : " or ") : null,
+		qr: esEur(imp.moneda) && cuentas.some((c) => esEur(c.moneda) && Boolean(c.iban?.trim()))
+	};
+}
 // src/lib/pdfFactura.ts
 const INK = [
 	17,
@@ -717,8 +1003,17 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	doc.setFontSize(19);
 	doc.setTextColor(...INK);
 	doc.text(d.numero || T.borrador, 192, 25.5, { align: "right" });
-	const t = calcularTotales(d.lineas, Number(d.irpf_pct));
-	const conPago = esFactura && Boolean(emisor.iban) && t.total > 0;
+	const imp = esFactura ? importesFactura(inv) : {
+		moneda: "EUR",
+		tasa: 1,
+		convertida: false,
+		lineas: d.lineas,
+		totales: calcularTotales(d.lineas, Number(d.irpf_pct))
+	};
+	const t = imp.totales;
+	const $ = (n) => dinero(n, imp.moneda);
+	const cuentas = esFactura ? cuentasDeFactura(inv, emisor) : [];
+	const conPago = esFactura && cuentas.length > 0 && t.total > 0;
 	let y = Math.max(yE, finLogo, 30) + 5;
 	const celdas = [[T.fecha, fecha(d.fecha)]];
 	if (esFactura && d.vencimiento) celdas.push([T.vencimiento, fecha(d.vencimiento)]);
@@ -794,12 +1089,12 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			T.impuesto,
 			T.importe
 		].map((h) => h.toUpperCase())],
-		body: d.lineas.map((l) => [
+		body: imp.lineas.map((l) => [
 			l.concepto,
 			num(l.cantidad),
-			eur(l.precio),
+			$(l.precio),
 			`${num(l.iva)}%`,
-			eur(importeLinea(l))
+			$(importeLinea(l))
 		]),
 		theme: "plain",
 		styles: {
@@ -913,9 +1208,9 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		y += 5.6;
 	};
 	y += 3;
-	fila(T.base, eur(t.base));
-	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${eur(r.base)})` : ""}`, eur(r.cuota));
-	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, eur(-t.cuota_irpf));
+	fila(T.base, $(t.base));
+	for (const r of t.desglose) fila(`${T.impuesto} ${num(r.tipo)}%${t.desglose.length > 1 ? ` (${T.sobreBase} ${$(r.base)})` : ""}`, $(r.cuota));
+	if (t.cuota_irpf) fila(`${T.retencion} ${num(Number(d.irpf_pct))}%`, $(-t.cuota_irpf));
 	y -= 1.5;
 	doc.setFillColor(...MARCA);
 	doc.roundedRect(114, y, 78, 12, 2.2, 2.2, "F");
@@ -924,7 +1219,7 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 	doc.setFontSize(10);
 	doc.text(T.total, xl, y + 7.6);
 	doc.setFontSize(13);
-	doc.text(eur(t.total), xv, y + 7.8, { align: "right" });
+	doc.text($(t.total), xv, y + 7.8, { align: "right" });
 	y += 22;
 	const asegurarHueco = (alto) => {
 		if (y + alto > 271) {
@@ -932,11 +1227,11 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			y = 24;
 		}
 	};
-	if (conPago && emisor.iban) {
-		const moneda = (inv.moneda || "EUR").toUpperCase();
+	if (conPago) {
+		const ibanQr = cuentas.find((c) => esEur(c.moneda) && c.iban?.trim())?.iban;
 		let qr = null;
-		if (moneda === "EUR" && !borrador && d.numero) try {
-			qr = await (await import("npm:qrcode@^1.5.4")).toDataURL(payloadEpc(emisor.nombre || "", emisor.iban, t.total, d.numero), {
+		if (esEur(imp.moneda) && ibanQr && !borrador && d.numero) try {
+			qr = await (await import("npm:qrcode@^1.5.4")).toDataURL(payloadEpc(emisor.nombre || "", ibanQr, t.total, d.numero), {
 				errorCorrectionLevel: "M",
 				margin: 0,
 				width: 240
@@ -944,24 +1239,54 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 		} catch {
 			qr = null;
 		}
-		const alto = qr ? 26 : 19;
+		const ancho = 164 - (qr ? 26 : 0);
+		const bloquesCuenta = cuentas.map((c) => {
+			const { principales: principal, otros: resto } = datosCuenta(c, idioma);
+			const cabeza = cuentas.length > 1 || !esEur(c.moneda) ? `${T.transferenciaCorta} · ${c.moneda.toUpperCase()}` : T.transferenciaCorta;
+			doc.setFont("helvetica", "bold");
+			doc.setFontSize(9.3);
+			const l1 = doc.splitTextToSize(principal.map(([k, v]) => `${k}\u00a0${v.replace(/ /g, "\xA0")}`).join("  ·  "), ancho - doc.getTextWidth(cabeza) - 3);
+			doc.setFont("helvetica", "normal");
+			doc.setFontSize(8.3);
+			const l2 = resto.length ? doc.splitTextToSize(resto.map(([k, v]) => `${k}: ${v}`).join("  ·  "), ancho) : [];
+			return {
+				cabeza,
+				l1,
+				l2,
+				alto: l1.length * 4.3 + l2.length * 3.7 + 2.2
+			};
+		});
+		const altoCuentas = bloquesCuenta.reduce((s, b) => s + b.alto, 0);
+		const alto = Math.max(qr ? 26 : 0, 8.5 + altoCuentas + (d.numero ? 4.6 : 0) + 2.5);
 		asegurarHueco(alto);
 		doc.setDrawColor(...LINE);
 		doc.setLineWidth(.25);
 		doc.roundedRect(M, y, 174, alto, 2, 2, "S");
 		etiqueta(T.formaPago, 23, y + 6);
-		doc.setFont("helvetica", "normal");
-		doc.setFontSize(9.3);
-		doc.setTextColor(...INK);
-		doc.text(`${T.transferenciaCorta} · IBAN`, 23, y + 11.5);
-		const xIban = 23 + doc.getTextWidth(`${T.transferenciaCorta} · IBAN`) + 1.6;
-		doc.setFont("helvetica", "bold");
-		doc.text(emisor.iban.toUpperCase().replace(/\s+/g, " ").trim(), xIban, y + 11.5);
+		let yc = y + 11.5;
+		for (const b of bloquesCuenta) {
+			doc.setFont("helvetica", "normal");
+			doc.setFontSize(9.3);
+			doc.setTextColor(...INK);
+			doc.text(b.cabeza, 23, yc);
+			const xDatos = 23 + doc.getTextWidth(b.cabeza) + 3;
+			doc.setFont("helvetica", "bold");
+			doc.text(b.l1, xDatos, yc, { lineHeightFactor: 1.3 });
+			yc += b.l1.length * 4.3;
+			if (b.l2.length) {
+				doc.setFont("helvetica", "normal");
+				doc.setFontSize(8.3);
+				doc.setTextColor(...MUTED);
+				doc.text(b.l2, 23, yc - .4, { lineHeightFactor: 1.25 });
+				yc += b.l2.length * 3.7;
+			}
+			yc += 2.2;
+		}
 		if (d.numero) {
 			doc.setFont("helvetica", "normal");
 			doc.setFontSize(8.3);
 			doc.setTextColor(...MUTED);
-			doc.text(T.refPago(d.numero), 23, y + 16.2, { maxWidth: 134 });
+			doc.text(T.refPago(d.numero), 23, yc + .4, { maxWidth: ancho });
 		}
 		if (qr) doc.addImage(qr, "PNG", 169, y + 4, 18, 18, void 0, "FAST");
 		y += alto + 8;
@@ -975,6 +1300,11 @@ async function construirPdf(tipo, d, emisor, marca, logo, modoPruebas = false) {
 			false
 		]);
 	}
+	if (imp.convertida) bloques.push([
+		T.contravalor,
+		T.contravalorTexto(imp.moneda, fecha(inv.fecha_cambio ?? d.fecha), num(imp.tasa, 4), eur(inv.base), eur(inv.cuota_iva), eur(inv.total)),
+		false
+	]);
 	if (d.notas) bloques.push([
 		T.notas,
 		d.notas,
@@ -1054,12 +1384,17 @@ function rellenar(texto, d) {
 	const v = {
 		cliente: d.cliente?.trim() || "",
 		numero: d.numero,
-		total: eur(d.total),
+		total: dinero(d.total, d.moneda),
 		fecha: fecha(d.fecha),
 		vencimiento: d.vencimiento ? fecha(d.vencimiento) : "—",
 		empresa: d.empresa
 	};
 	return texto.replace(/\{\s*([a-zA-Z]+)\s*\}/g, (m, k) => k.toLowerCase() in v ? v[k.toLowerCase()] : m);
+}
+/** Un IBAN suelto, en mayúsculas; los datos de una cuenta de otra moneda («Account number …»), tal cual */
+function textoPago(v) {
+	const t = (v ?? "").replace(/\s+/g, " ").trim();
+	return /^[a-z]{2}\d{2}[a-z0-9 ]+$/i.test(t) ? t.toUpperCase() : t;
 }
 function esc(s) {
 	return String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -1148,20 +1483,20 @@ function htmlCorreoFactura(mensaje, d, diseno) {
 		const [titulo, ...resto] = String(l.concepto ?? "").split("\n");
 		const detalle = resto.join(" ").trim();
 		const cantidad = Number(l.cantidad || 0);
-		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${eur(Number(l.precio))}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" · ");
+		const extra = [cantidad !== 1 ? `${cantidad.toLocaleString("es-ES")} × ${dinero(Number(l.precio), d.moneda)}` : "", Number(l.descuento) ? `−${Number(l.descuento)}%` : ""].filter(Boolean).join(" · ");
 		return `
       <tr><td style="padding:12px 0;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110">
         <strong>${esc(titulo)}</strong>${detalle ? `<br><span style="color:#6b6b66">${esc(detalle)}</span>` : ""}${extra ? `<br><span style="color:#6b6b66">${esc(extra)}</span>` : ""}
       </td>
-      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110;white-space:nowrap">${esc(eur(importeLinea(l)))}</td></tr>`;
+      <td align="right" valign="top" style="padding:12px 0 12px 16px;border-bottom:1px solid #e7e7e2;font:14px/1.45 ${FONT$1};color:#111110;white-space:nowrap">${esc(dinero(importeLinea(l), d.moneda))}</td></tr>`;
 	}).join("");
 	let impuestos = "";
 	if (lineas.length) {
 		const irpf = Number(d.irpf_pct || 0);
 		const t = calcularTotales(lineas, irpf);
-		impuestos = fila(esc(T.base), esc(eur(t.base))) + t.desglose.map((x) => fila(`${esc(T.impuesto)} ${x.tipo}%`, esc(eur(x.cuota)))).join("") + (t.cuota_irpf ? fila(`${esc(T.retencion)} ${irpf}%`, `−${esc(eur(t.cuota_irpf))}`) : "") + fila(esc(T.total.charAt(0) + T.total.slice(1).toLowerCase()), esc(eur(d.total)), true);
+		impuestos = fila(esc(T.base), esc(dinero(t.base, d.moneda))) + t.desglose.map((x) => fila(`${esc(T.impuesto)} ${x.tipo}%`, esc(dinero(x.cuota, d.moneda)))).join("") + (t.cuota_irpf ? fila(`${esc(T.retencion)} ${irpf}%`, `−${esc(dinero(t.cuota_irpf, d.moneda))}`) : "") + fila(esc(T.total.charAt(0) + T.total.slice(1).toLowerCase()), esc(dinero(d.total, d.moneda)), true);
 	}
-	const iban = diseno.iban?.toUpperCase().replace(/\s+/g, " ").trim();
+	const iban = textoPago(diseno.iban);
 	const contacto = [diseno.respuesta ? `<a href="mailto:${esc(diseno.respuesta)}" style="color:#111110;font-weight:600">${esc(diseno.respuesta)}</a>` : "", diseno.telefono ? `<a href="tel:${esc(diseno.telefono.replace(/[^\d+]/g, ""))}" style="color:#111110;font-weight:600">${esc(diseno.telefono)}</a>` : ""].filter(Boolean).join(" &nbsp;·&nbsp; ");
 	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"></head><body style="margin:0;padding:0;background:#f7f7f5">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:32px 12px"><tr><td align="center">
@@ -1189,7 +1524,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
           </td>
           <td align="right" valign="top" style="font:14px/1.5 ${FONT$1};color:#111110">
             <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">${esc(T.total)}</span><br>
-            <strong style="font-family:Menlo,Consolas,monospace;font-size:18px;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(eur(d.total))}</strong>
+            <strong style="font-family:Menlo,Consolas,monospace;font-size:18px;background:${color};color:${textoSobre(color)};padding:2px 8px;border-radius:6px;white-space:nowrap">${esc(dinero(d.total, d.moneda))}</strong>
           </td>
         </tr></table>
       </td></tr>
@@ -1200,7 +1535,7 @@ function htmlCorreoFactura(mensaje, d, diseno) {
       ${impuestos}
     </table>` : ""}
 
-    ${iban ? `<p style="margin:16px 0 0 0;font-size:14px;color:#6b6b66">${F.pago(esc(iban), esc(d.numero))} ${F.qr}</p>` : ""}
+    ${iban ? `<p style="margin:16px 0 0 0;font-size:14px;color:#6b6b66">${F.pago(esc(iban), esc(d.numero))}${diseno.qr === false ? "" : ` ${F.qr}`}</p>` : ""}
     <p style="margin:16px 0 22px 0;font-size:13px;color:#6b6b66">📎 ${F.adjunto}: ${esc(T.archivoFactura)}-${esc(d.numero)}.pdf</p>
   </td></tr>
   <tr><td style="padding:8px 32px 30px 32px;font:14px/1.6 ${FONT$1};color:#111110;border-top:1px solid #efefea">
@@ -1219,7 +1554,7 @@ function textoCorreoFactura(mensaje, d, diseno) {
 	const F = FRASES$1[lengua];
 	const cliente = d.cliente?.trim() ?? "";
 	const lineas = (d.lineas ?? []).filter((l) => l.concepto?.trim() || Number(l.precio));
-	const iban = diseno.iban?.toUpperCase().replace(/\s+/g, " ").trim();
+	const iban = textoPago(diseno.iban);
 	return [
 		cliente ? F.atencion(cliente) : "",
 		diseno.rectificativa ? F.tituloRect(diseno.empresa) : F.titulo(diseno.empresa),
@@ -1227,8 +1562,8 @@ function textoCorreoFactura(mensaje, d, diseno) {
 		mensaje.trim(),
 		"",
 		`${diseno.rectificativa ? F.etiquetaRect : F.etiqueta} ${d.numero} · ${fecha(d.fecha)}`,
-		...lineas.map((l) => `· ${String(l.concepto).split("\n")[0]}: ${eur(importeLinea(l))}`),
-		`${T.total}: ${eur(d.total)}`,
+		...lineas.map((l) => `· ${String(l.concepto).split("\n")[0]}: ${dinero(importeLinea(l), d.moneda)}`),
+		`${T.total}: ${dinero(d.total, d.moneda)}`,
 		iban ? F.pago(iban, d.numero).replace(/<[^>]+>/g, "") : "",
 		"",
 		F.dudas,
@@ -1520,16 +1855,19 @@ Deno.serve(async (req) => {
 		nombreComercial: empresaPerfil.nombre_comercial
 	}, logo?.pdf ?? null, false);
 	const pdf = new Uint8Array(doc.output("arraybuffer"));
+	const cobro = cobroParaCorreo(inv, emisorPdf);
+	const enEuros = cobro.moneda === "EUR";
 	const datos = {
 		cliente: inv.cliente?.nombre ?? null,
 		numero: inv.numero,
 		fecha: inv.fecha,
 		vencimiento: inv.vencimiento,
-		total: Number(inv.total),
+		total: enEuros ? Number(inv.total) : cobro.total,
 		empresa,
 		pais: inv.cliente?.pais ?? null,
-		lineas: inv.lineas,
-		irpf_pct: Number(inv.irpf_pct)
+		lineas: enEuros ? inv.lineas : cobro.lineas,
+		irpf_pct: Number(inv.irpf_pct),
+		moneda: cobro.moneda
 	};
 	const asunto = linea(rellenar(asuntoRaw, datos));
 	const mensaje = rellenar(mensajeRaw, datos);
@@ -1540,7 +1878,8 @@ Deno.serve(async (req) => {
 		logo: logo ? "cid:logo-empresa" : null,
 		respuesta: responder || null,
 		telefono: emisorPdf.telefono ?? empresaPerfil.telefono ?? null,
-		iban: emisorPdf.iban ?? null,
+		iban: cobro.pago,
+		qr: cobro.qr,
 		rectificativa: inv.tipo === "rectificativa"
 	};
 	let propioSmtp = null;

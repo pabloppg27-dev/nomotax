@@ -40,6 +40,8 @@ export async function crearBorradorRectificativa(factura: Invoice, owner: Profil
       cuota_iva: t.cuota_iva,
       cuota_irpf: t.cuota_irpf,
       total: t.total,
+      // En la misma moneda y con las mismas cuentas que la factura (supabase/cuentas-bancarias.sql)
+      ...('cuentas_bancarias' in owner ? { moneda: factura.moneda ?? 'EUR', cuentas_cobro: factura.cuentas_cobro ?? null } : {}),
     })
     .select('id')
     .single()

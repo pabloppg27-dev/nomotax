@@ -11,6 +11,7 @@ import { GRUPOS_CONFIG, seccionesVisibles, type IdSeccion } from '../lib/configu
 import { cuotaCliente } from '../lib/planes'
 import Perfil from '../pages/Perfil'
 import CorreoEnvio from './CorreoEnvio'
+import CuentasBancarias from './CuentasBancarias'
 import Plantillas from './Plantillas'
 import Usuarios from '../pages/Usuarios'
 import VistaSocio from '../pages/VistaSocio'
@@ -238,7 +239,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
                     <p className="text-sm text-muted">{actual.detalle(ctx)}</p>
                   </div>
                 </div>
-                {actual.id === 'perfil' && <Perfil />}
+                {actual.id === 'perfil' && <Perfil irA={elegir} />}
+                {actual.id === 'bancos' && <CuentasBancarias />}
                 {actual.id === 'correo' && <CorreoEnvio />}
                 {actual.id === 'plantillas' && <Plantillas />}
                 {actual.id === 'plan' && <SeccionPlan />}

@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth'
 import { invocar, supabase } from '../lib/supabase'
 import { fecha as fmtFecha } from '../lib/format'
 import { correoDeFactura, htmlCorreoFactura, type DatosFacturaCorreo } from '../lib/correoFactura'
+import { cobroParaCorreo } from '../lib/cuentasBancarias'
 import type { Emisor, Invoice } from '../lib/types'
 import { VistaPreviaCorreo, nombreEmpresa, useLogoUrl, useRemitente } from './CorreoComun'
 import { Button, Field, Input, Modal, Textarea, notify } from './ui'
@@ -28,19 +29,23 @@ export default function EnviarFactura({
   const { owner, configCorreo } = useCorreoEmpresa()
   const empresa = nombreEmpresa(owner)
   const remitente = useRemitente()
+  // Factura en otra moneda (USD, GBP…): el correo da los importes en esa moneda y las cuentas elegidas
+  const cobro = useMemo(() => cobroParaCorreo(factura, (factura.emisor as Emisor | null) ?? owner), [factura, owner])
+  const enEuros = cobro.moneda === 'EUR'
   const datos: DatosFacturaCorreo = useMemo(
     () => ({
       cliente: factura.cliente?.nombre ?? null,
       numero: factura.numero ?? '',
       fecha: factura.fecha,
       vencimiento: factura.vencimiento,
-      total: Number(factura.total),
+      total: enEuros ? Number(factura.total) : cobro.total,
       empresa,
       pais: factura.cliente?.pais ?? null,
-      lineas: factura.lineas,
+      lineas: enEuros ? factura.lineas : cobro.lineas,
       irpf_pct: Number(factura.irpf_pct),
+      moneda: cobro.moneda,
     }),
-    [factura, empresa],
+    [factura, empresa, cobro, enEuros],
   )
   const inicial = useMemo(() => correoDeFactura(configCorreo, datos), [configCorreo, datos])
   const [para, setPara] = useState(factura.cliente?.email ?? '')
@@ -73,7 +78,8 @@ export default function EnviarFactura({
     logo,
     respuesta: responder,
     telefono: (factura.emisor as Emisor | null)?.telefono ?? owner.telefono,
-    iban: (factura.emisor as Emisor | null)?.iban ?? owner.iban,
+    iban: cobro.pago,
+    qr: cobro.qr,
     rectificativa: factura.tipo === 'rectificativa',
   })
 

@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { enPeriodo, eur, fecha, hoyISO, type Periodo } from '../lib/format'
 import { analizarFacturas } from '../lib/estados'
 import type { Invoice } from '../lib/types'
+import { dinero } from '../lib/cuentasBancarias'
 import IngresoExterno from '../components/IngresoExterno'
 import PeriodPicker from '../components/PeriodPicker'
 import UploadZone from '../components/UploadZone'
@@ -201,7 +202,12 @@ export default function Facturas() {
                         {f.contabilizado && <Badge tono="verde">Contab.</Badge>}
                       </span>
                     </td>
-                    <td className="num order-2 text-right font-medium sm:order-none sm:px-4 sm:py-3">{eur(f.total)}</td>
+                    <td className="num order-2 text-right font-medium sm:order-none sm:px-4 sm:py-3">
+                      {eur(f.total)}
+                      {f.moneda && f.moneda !== 'EUR' && f.importe_original !== null && f.importe_original !== undefined && (
+                        <span className="block text-xs font-normal text-muted">{dinero(f.importe_original, f.moneda)}</span>
+                      )}
+                    </td>
                   </tr>
                 )
               })}

@@ -30,6 +30,7 @@ import nodemailer from "nodemailer";
 import { construirPdf, type LogoPdf } from "../../../src/lib/pdfFactura";
 import { MODO_PRUEBAS_FACTURAS } from "../../../src/lib/config";
 import { htmlCorreoFactura, rellenar, textoCorreoFactura, type DatosFacturaCorreo } from "../../../src/lib/correoFactura";
+import { cobroParaCorreo } from "../../../src/lib/cuentasBancarias";
 import { htmlCorreoPlantilla, lenguaCorreo, rellenarVars, textoCorreoPlantilla, variablesPresupuesto } from "../../../src/lib/plantillasCorreo";
 import type { Emisor, Invoice, Quote } from "../../../src/lib/types";
 import { explicarErrorSmtp, smtpActivo, transporte as transporteSmtp } from "../_compartido/smtp";
@@ -154,16 +155,20 @@ Deno.serve(async (req) => {
   );
   const pdf = new Uint8Array(doc.output("arraybuffer"));
 
+  // Factura en otra moneda (USD, GBP…): importes en esa moneda y las cuentas elegidas (src/lib/cuentasBancarias.ts)
+  const cobro = cobroParaCorreo(inv, emisorPdf);
+  const enEuros = cobro.moneda === "EUR";
   const datos: DatosFacturaCorreo = {
     cliente: inv.cliente?.nombre ?? null,
     numero: inv.numero,
     fecha: inv.fecha,
     vencimiento: inv.vencimiento,
-    total: Number(inv.total),
+    total: enEuros ? Number(inv.total) : cobro.total,
     empresa,
     pais: inv.cliente?.pais ?? null,
-    lineas: inv.lineas,
+    lineas: enEuros ? inv.lineas : cobro.lineas,
     irpf_pct: Number(inv.irpf_pct),
+    moneda: cobro.moneda,
   };
   // Por si quedó alguna {variable} sin cambiar
   const asunto = linea(rellenar(asuntoRaw, datos));
@@ -175,7 +180,8 @@ Deno.serve(async (req) => {
     logo: logo ? "cid:logo-empresa" : null,
     respuesta: responder || null,
     telefono: emisorPdf.telefono ?? empresaPerfil.telefono ?? null,
-    iban: emisorPdf.iban ?? null,
+    iban: cobro.pago,
+    qr: cobro.qr,
     rectificativa: inv.tipo === "rectificativa",
   };
 
