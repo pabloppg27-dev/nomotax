@@ -33,11 +33,11 @@ type Vista = 'resumen' | 'bancos' | 'diario' | 'mayor' | 'sumas' | 'pyg' | 'bala
 
 const VISTAS: { id: Vista; label: string }[] = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'inventario', label: 'Inventario' },
   { id: 'bancos', label: 'Bancos' },
   { id: 'pyg', label: 'Pérdidas y ganancias' },
   { id: 'balance', label: 'Balance' },
   { id: 'inmovilizado', label: 'Inmovilizado' },
-  { id: 'inventario', label: 'Inventario' },
   { id: 'diario', label: 'Libro diario' },
   { id: 'mayor', label: 'Libro mayor' },
   { id: 'sumas', label: 'Sumas y saldos' },

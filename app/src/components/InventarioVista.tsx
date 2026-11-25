@@ -137,7 +137,13 @@ export default function InventarioVista({
           ) : (
             <p className="mt-1 text-xl font-semibold">{PERIODOS_EXISTENCIAS.find((p) => p.id === inv.periodo)?.nombre}</p>
           )}
-          <p className="mt-1 text-xs text-muted">Automático al cierre: 610 contra 300 (y 611/310, 612/325, 712/350)</p>
+          <p className="mt-1 text-xs text-muted">
+            {inv.periodo === 'momento'
+              ? 'Con cada compra, venta o ajuste: el PyG y el balance, siempre al día.'
+              : inv.periodo === 'no'
+                ? 'El stock se lleva, pero no pasa a la contabilidad.'
+                : 'Al cerrar cada periodo, el valor del almacén pasa a la contabilidad.'}
+          </p>
         </Card>
       </div>
 

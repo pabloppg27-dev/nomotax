@@ -7,7 +7,7 @@
  * (factura nueva, rectificativa, gasto revisado, nómina…) se refleja enseguida.
  */
 import type { Expense, Invoice, Nomina } from './types.ts'
-import { TIPOS_EXISTENCIA, cierresEntre, movimientosStock, nombreCierre, valorPorTipo, ventasDeProductos, type DatosInventario } from './inventario.ts'
+import { TIPOS_EXISTENCIA, aplicar, cierresEntre, movimientosStock, nombreCierre, valorPorTipo, ventasDeProductos, type DatosInventario, type EstadoProducto } from './inventario.ts'
 
 /* --------------------------------------------------------------- Tipos */
 
@@ -369,6 +369,69 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
 }
 
 /**
+ * Variación de existencias «al momento»: un asiento por cada documento que mueve stock (venta, compra
+ * confirmada, ajuste o recuento) que lleva la 300 (310, 325, 350) al valor del inventario justo después,
+ * contra la 610 (611, 612, 712). Una venta da de baja su coste; una compra lo da de alta, así que lo que
+ * sigue en el almacén no resta en el PyG. Como se ajusta al saldo contable, también cuadra con la apertura.
+ */
+function variacionesAlMomento(d: DatosContables, hasta: string, previos: Omit<Asiento, 'n'>[]): Omit<Asiento, 'n'>[] {
+  const inv = d.inventario!
+  const movs = movimientosStock(d.gastos, d.facturas, inv.ajustes).filter((m) => m.fecha <= hasta)
+  if (!movs.length) return []
+  const tipoDe = new Map(inv.productos.map((p) => [p.id, p.tipo]))
+  const cuentaDe = new Map<string, (typeof TIPOS_EXISTENCIA)[number]>(TIPOS_EXISTENCIA.map((t) => [t.id, t]))
+
+  // Apuntes de las cuentas de existencias que ya hay (apertura, asientos manuales), por fecha
+  const externos: { fecha: string; tipo: string; importe: number }[] = []
+  for (const a of previos)
+    for (const p of a.apuntes)
+      for (const t of TIPOS_EXISTENCIA) if (p.cuenta.startsWith(t.cuenta)) externos.push({ fecha: a.fecha, tipo: t.id, importe: Number(p.debe) - Number(p.haber) })
+  externos.sort((a, b) => a.fecha.localeCompare(b.fecha))
+  let ix = 0
+
+  const saldo = new Map<string, number>() // saldo contable de cada tipo
+  const valor = new Map<string, number>() // valor del inventario de cada tipo
+  const estado = new Map<string, EstadoProducto>()
+  const out: Omit<Asiento, 'n'>[] = []
+
+  for (let i = 0; i < movs.length; ) {
+    // Un documento = los movimientos seguidos del mismo grupo (las líneas de una factura, el recuento de un día)
+    const clave = movs[i].grupo
+    const grupo: typeof movs = []
+    while (i < movs.length && movs[i].grupo === clave) grupo.push(movs[i++])
+    const { fecha, origen, documento } = grupo[0]
+
+    while (ix < externos.length && externos[ix].fecha <= fecha) {
+      const e = externos[ix++]
+      saldo.set(e.tipo, r2((saldo.get(e.tipo) ?? 0) + e.importe))
+    }
+    for (const m of grupo) {
+      const tipo = tipoDe.get(m.producto_id) ?? 'mercaderias'
+      const antes = estado.get(m.producto_id) ?? { cantidad: 0, coste: 0, valor: 0 }
+      const despues = aplicar(antes, m)
+      estado.set(m.producto_id, despues)
+      valor.set(tipo, r2((valor.get(tipo) ?? 0) + despues.valor - antes.valor))
+    }
+
+    const apuntes: Apunte[] = []
+    for (const [tipo, v] of valor) {
+      const dif = r2(v - (saldo.get(tipo) ?? 0))
+      if (!dif) continue
+      const t = cuentaDe.get(tipo)!
+      const [debe, haber] = dif > 0 ? [subcuenta(t.cuenta), subcuenta(t.variacion)] : [subcuenta(t.variacion), subcuenta(t.cuenta)]
+      apuntes.push({ cuenta: debe, debe: Math.abs(dif), haber: 0 }, { cuenta: haber, debe: 0, haber: Math.abs(dif) })
+      saldo.set(tipo, v)
+    }
+    if (!apuntes.length) continue
+    const entra = grupo.reduce((x, m) => x + m.cantidad, 0) > 0
+    const que =
+      origen === 'venta' ? (entra ? 'Devolución al almacén' : 'Coste de ventas') : origen === 'compra' ? (entra ? 'Entrada en almacén' : 'Devolución a proveedor') : 'Existencias'
+    out.push({ fecha, concepto: `${que} · ${documento}`, origen: 'existencias', documento: origen === 'ajuste' ? undefined : documento.split(' · ')[0], apuntes })
+  }
+  return out
+}
+
+/**
  * Asiento de variación de existencias al cierre de cada periodo (mes, trimestre o año, según la cuenta):
  * da de baja lo que había en la 300 (o 310, 325, 350) contra la 610 (611, 612, 712) y da de alta
  * el valor del inventario a esa fecha (coste medio). Lo que había sale del saldo contable de la cuenta,
@@ -378,6 +441,7 @@ export function generarAsientos(d: DatosContables): ResultadoAsientos {
 function variacionesExistencias(d: DatosContables, hasta: string, previos: Omit<Asiento, 'n'>[]): Omit<Asiento, 'n'>[] {
   const inv = d.inventario!
   if (inv.periodo === 'no') return []
+  if (inv.periodo === 'momento') return variacionesAlMomento(d, hasta, previos)
   const movs = movimientosStock(d.gastos, d.facturas, inv.ajustes)
   if (!movs.length) return []
   const tope = hasta < hoy() ? hasta : hoy()

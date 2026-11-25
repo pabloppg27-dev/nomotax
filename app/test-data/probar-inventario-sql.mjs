@@ -22,7 +22,7 @@ create role authenticated;
 
 const files = ['schema', 'laboral', 'rectificativas', 'asesor', 'contabilidad', 'divisas', 'bienvenida', 'impuestos', 'bancos',
   'planes', 'planes-cobro', 'planes-laboral', 'marca', 'facturacion-automatica', 'numeracion-continua', 'usuarios', 'trabajador-cualquier-rol',
-  'fichajes', 'cuentas-titular', 'inventario', 'inventario']
+  'fichajes', 'cuentas-titular', 'inventario', 'inventario', 'inventario-al-momento']
 for (const f of files) {
   try {
     await db.exec(readFileSync(`${DIR}/${f}.sql`, 'utf8').replace(/create extension[^;]*;/i, ''))
@@ -31,7 +31,7 @@ for (const f of files) {
     process.exit(1)
   }
 }
-console.log('✓ SQL aplicado (inventario.sql dos veces)')
+console.log('✓ SQL aplicado (inventario.sql dos veces e inventario-al-momento.sql)')
 
 await db.exec(`
 grant usage on schema public, storage, auth to authenticated;
@@ -87,7 +87,7 @@ ok(await como(U.A, () => intenta(`insert into public.stock_ajustes (owner_id, pr
 ok((await como(U.C, () => n(`select 1 from public.stock_ajustes`))) === 0, 'el comercial no ve los ajustes')
 ok(!(await como(U.T, () => intenta(`insert into public.stock_ajustes (owner_id, producto_id, fecha, cantidad, motivo) values ('${U.T}', '${P}', '2026-01-01', 1, 'otro')`))), 'motivo no válido')
 ok((await como(U.T, () => db.query(`update public.expenses set lineas = '[{"referencia":"AB-12","descripcion":"Tornillo","cantidad":10,"importe":25,"producto_id":"${P}"}]' where owner_id = '${U.T}' returning id`))).rows.length === 1, 'las líneas de compra se guardan en el gasto')
-ok((await db.query(`select existencias_periodo from public.profiles where id = '${U.T}'`)).rows[0].existencias_periodo === 'trimestral', 'por defecto, variación trimestral')
+ok((await db.query(`select existencias_periodo from public.profiles where id = '${U.T}'`)).rows[0].existencias_periodo === 'momento', 'por defecto, variación al momento')
 ok(!(await como(U.T, () => intenta(`update public.profiles set existencias_periodo = 'anual' where id = '${U.T}'`))), 'el cliente no cambia la periodicidad')
 ok(await como(U.T, () => intenta(`update public.profiles set nombre = 'Empresa T' where id = '${U.T}'`)), 'el cliente sigue pudiendo editar sus datos')
 ok(await como(U.ADV, () => intenta(`update public.profiles set existencias_periodo = 'anual' where id = '${U.T}'`)), 'el asesor cambia la periodicidad')

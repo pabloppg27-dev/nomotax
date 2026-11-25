@@ -5,17 +5,20 @@
 --   + líneas de las facturas de compra revisadas (expenses.lineas, las lee la IA)
 --   − líneas de las facturas emitidas con producto (invoices.lineas[].producto_id)
 --   ± ajustes: stock inicial, recuentos, mermas (stock_ajustes)
--- Valoración a coste medio ponderado. Al cerrar cada periodo (mensual,
--- trimestral o anual: profiles.existencias_periodo) el motor contable hace
--- solo el asiento de variación de existencias (300/610, 310/611…).
+-- Valoración a coste medio ponderado. El motor contable hace solo el asiento de
+-- variación de existencias (300/610, 310/611…): al momento, con cada documento
+-- (por defecto), o al cierre de cada mes, trimestre o año (profiles.existencias_periodo).
 --
 -- Ejecutar una vez en Supabase → SQL Editor (después de usuarios.sql).
 -- =====================================================================
 
--- Cada cuánto se contabiliza la variación de existencias ('no' = nunca)
-alter table public.profiles
-  add column if not exists existencias_periodo text not null default 'trimestral'
-    check (existencias_periodo in ('mensual', 'trimestral', 'anual', 'no'));
+-- Cuándo se contabiliza la variación de existencias: 'momento' = con cada compra, venta o ajuste;
+-- o al cierre de cada mes, trimestre o año; 'no' = nunca
+alter table public.profiles add column if not exists existencias_periodo text not null default 'momento';
+alter table public.profiles alter column existencias_periodo set default 'momento';
+alter table public.profiles drop constraint if exists profiles_existencias_periodo_check;
+alter table public.profiles add constraint profiles_existencias_periodo_check
+  check (existencias_periodo in ('momento', 'mensual', 'trimestral', 'anual', 'no'));
 
 -- Catálogo de productos (referencias)
 create table if not exists public.productos (

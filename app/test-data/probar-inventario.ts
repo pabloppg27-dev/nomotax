@@ -119,4 +119,22 @@ assert.equal(sin.asientos.filter((a) => a.origen === 'existencias').length, 0)
 // Periodo «no»: tampoco
 assert.equal(generarAsientos({ ...datos, inventario: { ...datos.inventario, periodo: 'no' } }).asientos.filter((a) => a.origen === 'existencias').length, 0)
 
+// 7) Al momento: un asiento por documento, siempre al día
+const momento = generarAsientos({ ...datos, inventario: { ...datos.inventario, periodo: 'momento' } }).asientos
+const ex = momento.filter((a) => a.origen === 'existencias')
+// El stock inicial cuadra con la apertura: no hay asiento el 1/1
+assert.ok(!ex.some((a) => a.fecha === '2026-01-01'), 'sin asiento si el stock inicial cuadra con la apertura')
+const de = (doc: string) => ex.find((a) => a.concepto.includes(doc))!
+assert.equal(saldo([de('C1')], '300'), 2600) // entra la compra: 100 A a 26
+assert.equal(saldo([de('V1')], '300'), -3450) // sale el coste de la venta: 150 A a 23
+assert.equal(saldo([de('V1')], '610'), 3450)
+assert.equal(saldo([de('R1')], '300'), 230) // vuelven 10 A a 23
+assert.equal(saldo([de('Recuento')], '300'), -100) // faltan 5 B a 20
+// Cada día cuadra con el valor del inventario y el PyG del semestre da lo mismo que por trimestres
+assert.equal(saldo(entre(momento, '2026-01-01', '2026-04-15'), '300'), 2150)
+assert.equal(saldo(entre(momento, '2026-01-01', '2026-06-30'), '300'), 2280)
+assert.equal(perdidasYGanancias(entre(momento, '2026-01-01', '2026-06-30')).lineas.find((l) => l.codigo === '4')!.importe, -3420)
+assert.equal(balanceSituacion(entre(momento, '2026-01-01', '2026-06-30')).diferencia, 0)
+
+console.log('Al momento OK:', ex.map((a) => a.concepto).join(' | '))
 console.log('Inventario OK:', variaciones.map((a) => `${a.fecha} ${a.concepto}`).join(' | '))

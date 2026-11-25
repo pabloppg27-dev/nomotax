@@ -10,7 +10,7 @@
 import type { Expense, Invoice } from './types.ts'
 
 export type TipoExistencia = 'mercaderias' | 'materias_primas' | 'otros_aprovisionamientos' | 'productos_terminados'
-export type PeriodoExistencias = 'mensual' | 'trimestral' | 'anual' | 'no'
+export type PeriodoExistencias = 'momento' | 'mensual' | 'trimestral' | 'anual' | 'no'
 
 /** Cuentas de cada tipo de existencia (PGC PYMES): existencias, variación, compras y ventas */
 export const TIPOS_EXISTENCIA: { id: TipoExistencia; nombre: string; cuenta: string; variacion: string; compras: string | null; ventas: string }[] = [
@@ -21,6 +21,7 @@ export const TIPOS_EXISTENCIA: { id: TipoExistencia; nombre: string; cuenta: str
 ]
 
 export const PERIODOS_EXISTENCIAS: { id: PeriodoExistencias; nombre: string }[] = [
+  { id: 'momento', nombre: 'Al momento' },
   { id: 'mensual', nombre: 'Cada mes' },
   { id: 'trimestral', nombre: 'Cada trimestre' },
   { id: 'anual', nombre: 'Al cierre del año' },
@@ -81,6 +82,8 @@ export interface Movimiento {
   documento: string
   /** Para ordenar los del mismo día: entradas con coste primero */
   orden: string
+  /** Movimientos que van en el mismo asiento «al momento»: las líneas de una factura, los ajustes del mismo día y motivo */
+  grupo: string
 }
 
 export interface EstadoProducto {
@@ -137,6 +140,7 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
         origen: 'compra',
         documento: [g.numero, g.proveedor].filter(Boolean).join(' · ') || 'Factura de compra',
         orden: `${g.fecha}1${g.created_at}`,
+        grupo: `g${g.id}`,
       })
     }
   }
@@ -156,6 +160,7 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
         origen: 'venta',
         documento: [f.numero, f.cliente?.nombre].filter(Boolean).join(' · ') || 'Factura',
         orden: `${f.fecha}2${f.created_at}`,
+        grupo: `f${f.id}`,
       })
     }
   }
@@ -174,6 +179,7 @@ export function movimientosStock(gastos: Expense[], facturas: Invoice[], ajustes
       documento: MOTIVOS_AJUSTE.find((m) => m.id === a.motivo)?.nombre ?? 'Ajuste',
       // El stock inicial va antes que todo lo del día; los recuentos, después
       orden: `${a.fecha}${a.motivo === 'inicial' ? 0 : 3}${a.created_at}`,
+      grupo: `a${a.fecha}${a.motivo}`,
     })
   }
 
@@ -224,7 +230,7 @@ function finDeMes(anio: number, mes: number): string {
 
 /** Fechas de cierre (fin de mes, trimestre o año) entre dos fechas, ambas incluidas */
 export function cierresEntre(periodo: PeriodoExistencias, desde: string, hasta: string): string[] {
-  if (periodo === 'no' || desde > hasta) return []
+  if (periodo === 'no' || periodo === 'momento' || desde > hasta) return []
   const paso = periodo === 'mensual' ? 1 : periodo === 'trimestral' ? 3 : 12
   const out: string[] = []
   let anio = Number(desde.slice(0, 4))
