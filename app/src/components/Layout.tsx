@@ -20,7 +20,6 @@ import {
   X,
   PieChart,
   Wallet,
-  Building2,
   Settings,
   CreditCard,
   type LucideIcon,
@@ -82,36 +81,84 @@ const guiaDe = (to: string) => `nav-${to.split('/').pop() || 'inicio'}`
 /** Nombre corto de una empresa */
 const nombreDe = (p: Pick<Profile, 'nombre' | 'email'> & { nombre_comercial?: string | null }) => p.nombre_comercial || p.nombre || p.email || 'Empresa'
 
-type OpcionCuenta = { id: string; nombre: string; rol?: string }
+/**
+ * Una cuenta del selector, en dos líneas: arriba quién eres ahí, abajo el contexto.
+ * Empleado: «Roger Franch» / «Nova Hiring SL». Resto de roles: «Nova Hiring SL» / «Socio».
+ * Cuenta propia (titular): solo el nombre de la empresa.
+ */
+type OpcionCuenta = {
+  id: string
+  /** Nombre de la empresa (para avisos como «Ahora estás en…») */
+  empresa: string
+  titulo: string
+  detalle?: string
+  /** Para el circulito: iniciales de la persona o inicial de la empresa */
+  iniciales: string
+  /** Las dos líneas en una, donde no caben dos (opciones del desplegable, pastilla del móvil) */
+  linea: string
+}
 
 /** Inicial de la cuenta para su circulito */
 const inicial = (s: string) => s.trim().charAt(0).toUpperCase() || '·'
 
+/** Nombre y primer apellido: «Roger Franch Carreras» → «Roger Franch»; con 2 palabras o menos, tal cual */
+const nombreCorto = (s: string) => {
+  const p = s.trim().split(/\s+/).filter(Boolean)
+  return (p.length >= 3 ? p.slice(0, -1) : p).join(' ')
+}
+
+/** Iniciales del nombre corto: «Roger Franch» → «RF», «María de la Fuente» → «MF» */
+const inicialesDe = (s: string) => {
+  const p = nombreCorto(s).split(' ').filter(Boolean)
+  if (p.length < 2) return inicial(s)
+  return (p[0].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase()
+}
+
+/** Cuenta propia o vinculada (titular): solo la empresa */
+const opcionPropia = (p: Parameters<typeof nombreDe>[0] & { id: string }): OpcionCuenta => {
+  const empresa = nombreDe(p)
+  return { id: p.id, empresa, titulo: empresa, iniciales: inicial(empresa), linea: empresa }
+}
+
+/** Empresa en la que eres miembro: el empleado se ve a sí mismo; los demás roles ven la empresa y su rol */
+const opcionMiembro = (a: Acceso, me: Profile): OpcionCuenta => {
+  const empresa = nombreDe(a.empresa)
+  if (a.rol === 'empleado') {
+    const persona = nombreCorto(a.nombre || me.nombre || a.email || me.email || 'Mi espacio')
+    return { id: a.cuenta_id, empresa, titulo: persona, detalle: empresa, iniciales: inicialesDe(persona), linea: `${persona} en ${empresa}` }
+  }
+  const rol = NOMBRE_ROL[a.rol]
+  return { id: a.cuenta_id, empresa, titulo: empresa, detalle: rol, iniciales: inicial(empresa), linea: `${empresa} (${rol})` }
+}
+
 /**
  * Las cuentas entre las que puede moverse esta persona: las suyas (la propia y las vinculadas:
- * autónomo + SL…), solo con su nombre, y luego las empresas en las que es miembro, con su rol.
+ * autónomo + SL…), solo con su nombre, y luego las empresas en las que es miembro.
  * null si no aplica (asesor, o quien solo tiene una cuenta sin más accesos).
  */
 function useCuentas() {
-  const { me, owner, accesos, propias, rol } = useAuth()
+  const { me, owner, accesos, propias } = useAuth()
   if (!me || !owner || me.role === 'advisor') return null
   if (accesos.length === 0 && propias.length === 0) return null
   const propia = me.role !== 'member'
   const opciones: OpcionCuenta[] = [
-    ...(propia ? [{ id: me.id, nombre: nombreDe(me) }] : []),
-    ...propias.map((c) => ({ id: c.id, nombre: nombreDe(c) })),
-    ...accesos
-      .filter((a: Acceso) => !propias.some((c) => c.id === a.cuenta_id))
-      .map((a: Acceso) => ({ id: a.cuenta_id, nombre: nombreDe(a.empresa), rol: NOMBRE_ROL[a.rol] })),
+    ...(propia ? [opcionPropia(me)] : []),
+    ...propias.map(opcionPropia),
+    ...accesos.filter((a: Acceso) => !propias.some((c) => c.id === a.cuenta_id)).map((a) => opcionMiembro(a, me)),
   ]
+  const actual = opciones.find((o) => o.id === owner.id) ?? opcionPropia(owner)
   return {
     opciones,
     actual: owner.id,
-    nombre: nombreDe(owner),
-    rol: rol && rol !== 'titular' ? NOMBRE_ROL[rol] : null,
+    cuenta: actual,
     /** Hay a dónde cambiar */
     varias: opciones.length > 1,
   }
+}
+
+/** Circulito lima con las iniciales */
+function Iniciales({ texto, className }: { texto: string; className?: string }) {
+  return <span className={cx('grid shrink-0 place-items-center rounded-full bg-lima font-semibold text-ink', className)}>{texto}</span>
 }
 
 /** Escritorio: desplegable en la barra lateral para elegir qué empresa ver */
@@ -120,32 +167,35 @@ function SelectorEmpresa({ oscuro = false }: { oscuro?: boolean }) {
   const navigate = useNavigate()
   const cuentas = useCuentas()
   if (!cuentas) return null
-  if (!cuentas.varias)
-    return (
-      <div className={cx('flex items-center gap-2 rounded-xl px-3 py-2 text-sm', oscuro ? 'bg-white/5 text-white/80' : 'bg-paper')}>
-        <Building2 className="size-4 shrink-0" />
-        <span className="truncate">
-          {cuentas.nombre}
-          {cuentas.rol && <span className={oscuro ? 'text-white/50' : 'text-muted'}> · {cuentas.rol}</span>}
-        </span>
-      </div>
-    )
+  const { cuenta } = cuentas
+  const contenido = (
+    <>
+      <Iniciales texto={cuenta.iniciales} className="size-8 text-xs" />
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate font-medium">{cuenta.titulo}</span>
+        {cuenta.detalle && <span className={cx('block truncate text-xs', oscuro ? 'text-white/50' : 'text-muted')}>{cuenta.detalle}</span>}
+      </span>
+    </>
+  )
+  const caja = cx('flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm', oscuro ? 'bg-white/5 text-white' : 'bg-paper text-ink')
+  if (!cuentas.varias) return <div className={caja}>{contenido}</div>
+  // El desplegable nativo, invisible encima: se ve la caja en dos líneas y se abre la lista del sistema
   return (
-    <label className={cx('flex items-center gap-2 rounded-xl px-3 py-2 text-sm', oscuro ? 'bg-white/5 text-white' : 'bg-paper text-ink')}>
-      <Building2 className="size-4 shrink-0" />
-      <span className="sr-only">Empresa</span>
+    <label className={cx(caja, 'relative cursor-pointer', oscuro ? 'hover:bg-white/10' : 'hover:bg-ink/5')}>
+      {contenido}
+      <ChevronDown className="size-4 shrink-0 opacity-60" />
       <select
+        aria-label="Cambiar de cuenta"
         value={cuentas.actual}
         onChange={async (e) => {
           await setOwner(e.target.value)
           navigate('/')
         }}
-        className={cx('min-w-0 flex-1 truncate bg-transparent outline-none', oscuro && '[&>option]:text-ink')}
+        className="absolute inset-0 size-full cursor-pointer opacity-0 [&>option]:text-ink"
       >
         {cuentas.opciones.map((o) => (
           <option key={o.id} value={o.id}>
-            {o.nombre}
-            {o.rol ? ` · ${o.rol}` : ''}
+            {o.linea}
           </option>
         ))}
       </select>
@@ -182,7 +232,7 @@ export default function Layout() {
     if (!cuentas || o.id === cuentas.actual) return
     await setOwner(o.id)
     navigate('/')
-    notify(`Ahora estás en ${o.nombre}`)
+    notify(`Ahora estás en ${o.empresa}`)
     setDestello(true)
     setTimeout(() => setDestello(false), 1400)
   }
@@ -348,18 +398,15 @@ export default function Layout() {
                   type="button"
                   onClick={() => cuentas.varias && setVerCuentas(true)}
                   disabled={!cuentas.varias}
-                  aria-label={cuentas.varias ? `Estás en ${cuentas.nombre}. Cambiar de cuenta` : `Estás en ${cuentas.nombre}`}
+                  aria-label={cuentas.varias ? `Estás en ${cuentas.cuenta.linea}. Cambiar de cuenta` : `Estás en ${cuentas.cuenta.linea}`}
                   className={cx(
                     'mt-0.5 flex max-w-full items-center gap-1 rounded-full py-0.5 pl-0.5 pr-2 text-[12px] transition-colors duration-500',
                     destello ? 'bg-lima text-ink' : 'bg-white/10 text-white/85',
                     cuentas.varias && 'cursor-pointer active:bg-white/20',
                   )}
                 >
-                  <span className="grid size-4 shrink-0 place-items-center rounded-full bg-lima text-[9px] font-semibold text-ink">{inicial(cuentas.nombre)}</span>
-                  <span className="truncate">
-                    {cuentas.nombre}
-                    {cuentas.rol && <span className="opacity-60"> · {cuentas.rol}</span>}
-                  </span>
+                  <Iniciales texto={cuentas.cuenta.iniciales} className="size-4 text-[8px]" />
+                  <span className="truncate">{cuentas.cuenta.linea}</span>
                   {cuentas.varias && <ChevronDown className="size-3 shrink-0 opacity-70" />}
                 </button>
               </div>
@@ -500,10 +547,10 @@ export default function Layout() {
                       (itemsMas.length + 1) % 3 === 1 ? 'col-span-2' : 'col-span-3',
                     )}
                   >
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-lima text-sm font-semibold text-ink">{inicial(cuentas.nombre)}</span>
+                    <Iniciales texto={cuentas.cuenta.iniciales} className="size-8 text-xs" />
                     <span className="min-w-0 flex-1 leading-tight">
-                      <span className="block text-xs text-white/60">Estás en</span>
-                      <span className="block truncate text-sm font-medium">{cuentas.nombre}</span>
+                      <span className="block truncate text-sm font-medium">{cuentas.cuenta.titulo}</span>
+                      <span className="block truncate text-xs text-white/60">{cuentas.cuenta.detalle ?? 'Cambiar de cuenta'}</span>
                     </span>
                     <ArrowLeftRight className="size-5 shrink-0 text-lima" />
                   </button>
@@ -544,12 +591,12 @@ export default function Layout() {
                         activa ? 'border-2 border-ink' : 'border border-line active:bg-paper',
                       )}
                     >
-                      <span className={cx('grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold text-ink', activa ? 'bg-lima' : 'bg-paper')}>
-                        {inicial(o.nombre)}
+                      <span className={cx('grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold text-ink', activa ? 'bg-lima' : 'bg-paper')}>
+                        {o.iniciales}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[15px] font-medium">{o.nombre}</span>
-                        {o.rol && <span className="block text-xs text-muted">{o.rol}</span>}
+                        <span className="block truncate text-[15px] font-medium">{o.titulo}</span>
+                        {o.detalle && <span className="block truncate text-xs text-muted">{o.detalle}</span>}
                       </span>
                       {activa && <Check className="size-5 shrink-0" />}
                     </button>
