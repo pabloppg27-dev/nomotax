@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Building2, CheckCircle2, Copy, Link2, Plus, Scale, Search, Send, Sparkles, Users } from 'lucide-react'
+import { ArrowRight, Building2, CheckCircle2, Copy, Link2, Plus, Scale, Search, Send, Sparkles, Users, X, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import { errorMessage, supabase } from '../../lib/supabase'
 import { eur, fecha } from '../../lib/format'
@@ -24,6 +24,8 @@ export default function ClientesAsesor() {
   const [otraCuenta, setOtraCuenta] = useState<Fila | null>(null)
   const [editarPlan, setEditarPlan] = useState<Fila | null>(null)
   const [editarFiscal, setEditarFiscal] = useState<Fila | null>(null)
+  // Móvil: al tocar un cliente, menú con botones grandes (en el ordenador, la fila entra directamente)
+  const [acciones, setAcciones] = useState<Fila | null>(null)
 
   const cargar = useCallback(async () => {
     const anio = new Date().getFullYear()
@@ -123,7 +125,7 @@ export default function ClientesAsesor() {
                 {visibles.map((c) => (
                   <tr
                     key={c.id}
-                    onClick={() => entrar(c.id)}
+                    onClick={() => (window.matchMedia('(min-width: 768px)').matches ? entrar(c.id) : setAcciones(c))}
                     className="grid cursor-pointer grid-cols-[1fr_auto] gap-x-3 border-b border-line px-4 py-3 last:border-0 hover:bg-paper md:table-row md:p-0"
                   >
                     <td className={`min-w-0 md:px-4 md:py-3 ${c.titular_id ? 'md:pl-10' : ''}`}>
@@ -142,6 +144,7 @@ export default function ClientesAsesor() {
                         {c.bienvenida_enviada_at && (
                           <span className="text-verde">Bienvenida enviada el {fecha(c.bienvenida_enviada_at.slice(0, 10))}</span>
                         )}
+                        <span className="hidden md:contents">
                         {c.titular_id ? (
                           <span className="text-muted">Cuenta de {nombreTitular(c)}: entra con su email</span>
                         ) : (
@@ -188,6 +191,7 @@ export default function ClientesAsesor() {
                         >
                           <Scale className="size-3" /> Régimen fiscal
                         </button>
+                        </span>
                         {cuotaCliente(c) && (
                           <span className="num text-muted">
                             {cuotaCliente(c)!.texto}
@@ -221,12 +225,97 @@ export default function ClientesAsesor() {
         </>
       )}
 
+      {acciones && (
+        <AccionesCliente
+          c={acciones}
+          titular={acciones.titular_id ? nombreTitular(acciones) : null}
+          onClose={() => setAcciones(null)}
+          onEntrar={() => entrar(acciones.id)}
+          onReenviar={() => setReenviar(acciones)}
+          onOtra={() => setOtraCuenta(acciones)}
+          onPlan={() => setEditarPlan(acciones)}
+          onFiscal={() => setEditarFiscal(acciones)}
+        />
+      )}
+
       <AltaCliente open={alta} onClose={() => setAlta(false)} onCreated={cargar} />
       <ReenviarAcceso cliente={reenviar} onClose={() => setReenviar(null)} onDone={cargar} />
       <OtraCuenta titular={otraCuenta} onClose={() => setOtraCuenta(null)} onCreated={cargar} />
       <EditorPlan perfil={editarPlan} onClose={() => setEditarPlan(null)} onGuardado={cargar} />
       <EditorFiscal perfil={editarFiscal} onClose={() => setEditarFiscal(null)} onGuardado={cargar} />
     </>
+  )
+}
+
+/** Móvil: lo que se puede hacer con un cliente, en botones grandes y separados */
+function AccionesCliente({
+  c,
+  titular,
+  onClose,
+  onEntrar,
+  onReenviar,
+  onOtra,
+  onPlan,
+  onFiscal,
+}: {
+  c: Fila
+  titular: string | null
+  onClose: () => void
+  onEntrar: () => void
+  onReenviar: () => void
+  onOtra: () => void
+  onPlan: () => void
+  onFiscal: () => void
+}) {
+  const hacer = (f: () => void) => () => {
+    onClose()
+    f()
+  }
+  const opciones: { icon: LucideIcon; label: string; detalle: string; accion: () => void; si: boolean }[] = [
+    { icon: Send, label: 'Reenviar acceso', detalle: 'Nueva contraseña provisional por email', accion: onReenviar, si: !titular },
+    { icon: Building2, label: 'Otra empresa o actividad', detalle: 'Su SL, su actividad de autónomo…', accion: onOtra, si: !titular },
+    { icon: Sparkles, label: c.plan ? 'Editar plan' : 'Asignar plan', detalle: cuotaCliente(c)?.texto ?? 'Sin plan todavía', accion: onPlan, si: true },
+    { icon: Scale, label: 'Régimen fiscal', detalle: etiquetasFiscal(c.fiscal).join(' · ') || (c.fiscal ? 'Régimen general' : 'Sin indicar'), accion: onFiscal, si: true },
+  ]
+  return (
+    <div className="fixed inset-0 z-50 md:hidden">
+      <div className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-label={`Acciones de ${c.nombre ?? 'cliente'}`}
+        className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-white px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl"
+      >
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
+        <div className="mb-4 flex items-start gap-3 px-1">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-semibold">{c.nombre || 'Sin nombre'}</p>
+            <p className="truncate text-sm text-muted">{[c.nif, c.email].filter(Boolean).join(' · ')}</p>
+            {titular && <p className="text-sm text-muted">Cuenta de {titular}</p>}
+          </div>
+          <button onClick={onClose} className="grid size-10 shrink-0 place-items-center rounded-full bg-paper" aria-label="Cerrar">
+            <X className="size-5" />
+          </button>
+        </div>
+        <button onClick={hacer(onEntrar)} className="mb-3 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-[16px] font-medium text-white active:bg-ink-3">
+          Entrar en su cuenta <ArrowRight className="size-5" />
+        </button>
+        <div className="flex flex-col gap-2">
+          {opciones
+            .filter((o) => o.si)
+            .map(({ icon: Icon, label, detalle, accion }) => (
+              <button key={label} onClick={hacer(accion)} className="flex min-h-16 w-full items-center gap-3 rounded-2xl border border-line px-4 py-3 text-left active:bg-paper">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-paper">
+                  <Icon className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[16px] font-medium">{label}</span>
+                  <span className="block truncate text-sm text-muted">{detalle}</span>
+                </span>
+              </button>
+            ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
