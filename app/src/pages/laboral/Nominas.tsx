@@ -1,62 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, FileText, Loader2, Send, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
-import { BUCKET, abrirDocumento, errorMessage, invocar, supabase } from '../../lib/supabase'
+import { BUCKET, abrirDocumento, errorMessage, supabase } from '../../lib/supabase'
 import { eur, round2 } from '../../lib/format'
 import { nuevoId } from '../../lib/id'
-import { MESES, limpiarDni } from '../../lib/laboral'
-import type { Nomina, NominaOcr, Trabajador } from '../../lib/types'
+import { MESES } from '../../lib/laboral'
+import { datosDeOcr, leerNomina } from '../../lib/lecturaNominas'
+import type { Nomina, Trabajador } from '../../lib/types'
 import NumInput from '../../components/NumInput'
 import SelectBuscable from '../../components/SelectBuscable'
 import UploadZone from '../../components/UploadZone'
 import { Badge, Button, Card, Empty, Field, Loading, Modal, Select, confirmar, notify } from '../../components/ui'
 import LaboralTabs from './LaboralTabs'
-
-async function leerNomina(path: string): Promise<NominaOcr> {
-  const data = await invocar<{ datos?: NominaOcr }>('leer-nomina', { path })
-  if (!data?.datos) throw new Error('No se han podido leer los datos')
-  return data.datos
-}
-
-/** Pasa lo leído a los campos de la nómina */
-function datosDeOcr(o: NominaOcr, trabajadores: Trabajador[]) {
-  const bruto = Number(o.total_devengado ?? 0)
-  const ssEmp = Number(o.ss_empresa ?? 0)
-  return {
-    trabajador_id: buscarTrabajador(o, trabajadores),
-    nombre_leido: o.trabajador?.nombre ?? null,
-    dni_leido: limpiarDni(o.trabajador?.dni) || null,
-    tipo: o.tipo ?? 'mensual',
-    bruto,
-    neto: Number(o.liquido ?? 0),
-    irpf: Number(o.irpf_importe ?? 0),
-    irpf_pct: o.irpf_pct,
-    ss_trabajador: Number(o.ss_trabajador ?? 0),
-    ss_empresa: ssEmp,
-    variables: Number(o.variables ?? 0),
-    coste_total: round2(bruto + ssEmp),
-    conceptos: o.conceptos_variables,
-    ocr: o,
-  }
-}
-
-function buscarTrabajador(ocr: NominaOcr, lista: Trabajador[]): string | null {
-  const dni = limpiarDni(ocr.trabajador?.dni)
-  if (dni) {
-    const t = lista.find((w) => limpiarDni(w.dni) === dni)
-    if (t) return t.id
-  }
-  const nombre = (ocr.trabajador?.nombre ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  if (nombre) {
-    const palabras = nombre.split(/[\s,]+/).filter((p) => p.length > 2)
-    const t = lista.find((w) => {
-      const n = w.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-      return palabras.length > 1 && palabras.every((p) => n.includes(p))
-    })
-    if (t) return t.id
-  }
-  return null
-}
 
 export default function Nominas() {
   const { ownerId, isAdvisor } = useAuth()

@@ -62,6 +62,10 @@ export const PERIODOS: { id: string; nombre: string }[] = [
   { id: '3T', nombre: '3er trimestre' },
   { id: '4T', nombre: '4º trimestre' },
   { id: '0A', nombre: 'Anual' },
+  // Pagos fraccionados del Impuesto de Sociedades (modelo 202)
+  { id: '1P', nombre: '1er pago (abril)' },
+  { id: '2P', nombre: '2º pago (octubre)' },
+  { id: '3P', nombre: '3er pago (diciembre)' },
   ...Array.from({ length: 12 }, (_, i) => {
     const m = String(i + 1).padStart(2, '0')
     return { id: m, nombre: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][i] }
@@ -69,7 +73,8 @@ export const PERIODOS: { id: string; nombre: string }[] = [
 ]
 
 export const nombrePeriodo = (p: string) => PERIODOS.find((x) => x.id === p)?.nombre ?? p
-export const ordenPeriodo = (p: string) => ['1T', '2T', '3T', '4T'].includes(p) ? Number(p[0]) * 3 : p === '0A' ? 13 : Number(p)
+export const ordenPeriodo = (p: string) =>
+  ['1T', '2T', '3T', '4T'].includes(p) ? Number(p[0]) * 3 : p === '0A' ? 13 : ({ '1P': 4, '2P': 10, '3P': 12 } as Record<string, number>)[p] ?? Number(p)
 
 export const RESULTADOS: Record<Resultado, { label: string; tono: 'rojo' | 'verde' | 'gris' | 'ambar' }> = {
   ingresar: { label: 'A ingresar', tono: 'rojo' },

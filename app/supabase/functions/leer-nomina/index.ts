@@ -1,5 +1,7 @@
 // Lee una nómina (PDF) con Claude y devuelve sus importes. Solo para el asesor.
 // Entrada (POST JSON): { path: string }  → ruta del PDF en el bucket "documentos"
+//   { path, modo: "mapa" } → el PDF trae las nóminas de varios trabajadores: devuelve
+//   { mapa } con las páginas de cada uno (el panel del asesor lo parte y lee cada nómina aparte).
 // Secreto necesario: ANTHROPIC_API_KEY
 
 import Anthropic from "npm:@anthropic-ai/sdk@^1.8.0";
@@ -79,6 +81,50 @@ const SCHEMA = {
   },
 };
 
+// Modo "mapa": qué páginas son de cada trabajador
+const SCHEMA_MAPA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["nominas", "otras_paginas", "notas"],
+  properties: {
+    nominas: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["paginas", "nombre", "dni", "periodo_mes", "periodo_anio", "tipo"],
+        properties: {
+          paginas: { type: "array", items: { type: "integer" } },
+          nombre: texto,
+          dni: texto,
+          periodo_mes: enteroOpcional,
+          periodo_anio: enteroOpcional,
+          tipo: { type: "string", enum: ["mensual", "extra", "finiquito", "atrasos", "otro"] },
+        },
+      },
+    },
+    otras_paginas: { type: "array", items: { type: "integer" } },
+    notas: texto,
+  },
+};
+
+const SYSTEM_MAPA = [
+  "Eres el asistente laboral de NomoTax, una asesoría. Te llega un PDF con los recibos de salarios (nóminas) de varios trabajadores de una empresa española, uno detrás de otro.",
+  "",
+  "Tu trabajo es solo decir qué páginas forman cada nómina, para separarlas y entregar a cada trabajador la suya. No extraigas importes.",
+  "",
+  "Reglas:",
+  "- Las páginas se numeran desde 1, en el orden del PDF.",
+  "- Una nómina puede ocupar varias páginas (continuación, segunda hoja, pie con la aportación de la empresa): van todas en su lista \"paginas\".",
+  "- Si un mismo trabajador tiene dos recibos distintos (por ejemplo la mensual y una paga extra separada), son dos nóminas.",
+  "- nombre y dni: como aparecen en el recibo; DNI/NIE sin espacios, puntos ni guiones, en mayúsculas. \"\" si no aparece.",
+  "- periodo_mes (1-12) y periodo_anio: el periodo de liquidación de esa nómina.",
+  "- tipo: mensual, extra, finiquito, atrasos u otro.",
+  "- otras_paginas: páginas que no son el recibo de un trabajador (resúmenes de la empresa, relación de costes, RLC/RNT, portadas, páginas en blanco). Nunca van dentro de una nómina, porque cada trabajador solo debe ver lo suyo.",
+  "- Cada página va en una sola lista.",
+  "- notas: dudas que deba revisar una persona; \"\" si no hay.",
+].join("\n");
+
 const SYSTEM = [
   "Eres el asistente laboral de NomoTax, una asesoría. Extraes los importes de recibos de salarios (nóminas) españoles.",
   "",
@@ -127,7 +173,7 @@ Deno.serve(async (req) => {
   const { data: me } = await supabase.from("profiles").select("role").eq("id", userData.user.id).single();
   if (me?.role !== "advisor") return json({ error: "Solo el asesor puede leer nóminas" }, 403);
 
-  let body: { path?: string };
+  let body: { path?: string; modo?: string };
   try {
     body = await req.json();
   } catch {
@@ -142,6 +188,7 @@ Deno.serve(async (req) => {
 
   const data = encodeBase64(new Uint8Array(await file.arrayBuffer()));
   const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
+  const mapa = body.modo === "mapa";
 
   try {
     const response = await anthropic.beta.messages.create({
@@ -149,14 +196,14 @@ Deno.serve(async (req) => {
       max_tokens: 16000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
-      output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } },
-      system: SYSTEM,
+      output_config: { effort: "medium", format: { type: "json_schema", schema: mapa ? SCHEMA_MAPA : SCHEMA } },
+      system: mapa ? SYSTEM_MAPA : SYSTEM,
       messages: [
         {
           role: "user",
           content: [
             { type: "document", source: { type: "base64", media_type: "application/pdf", data } },
-            { type: "text", text: "Extrae los datos de esta nómina." },
+            { type: "text", text: mapa ? "Di qué páginas forman la nómina de cada trabajador." : "Extrae los datos de esta nómina." },
           ],
         },
       ],
@@ -167,7 +214,8 @@ Deno.serve(async (req) => {
 
     const text = response.content.find((b) => b.type === "text");
     if (!text || text.type !== "text") return json({ error: "Respuesta vacía" }, 502);
-    return json({ datos: vaciosANull(JSON.parse(text.text)) });
+    const datos = vaciosANull(JSON.parse(text.text));
+    return json(mapa ? { mapa: datos } : { datos });
   } catch (err) {
     if (err instanceof Anthropic.AuthenticationError) return json({ error: "La clave de Anthropic no es válida" }, 500);
     if (err instanceof Anthropic.RateLimitError) return json({ error: "Demasiadas nóminas a la vez. Espera un minuto." }, 429);

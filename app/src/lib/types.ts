@@ -89,6 +89,8 @@ export interface Profile {
   nomina_mensaje?: string | null
   presupuesto_asunto?: string | null
   presupuesto_mensaje?: string | null
+  /** Régimen fiscal (supabase/panel-asesor.sql, src/lib/regimenFiscal.ts): solo lo cambia el asesor */
+  fiscal?: import('./regimenFiscal').Fiscal | null
   created_at: string
 }
 

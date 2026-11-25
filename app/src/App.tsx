@@ -14,7 +14,11 @@ import FacturaEditor from './pages/FacturaEditor'
 import Presupuestos from './pages/Presupuestos'
 import PresupuestoEditor from './pages/PresupuestoEditor'
 import Clientes from './pages/Clientes'
-import Asesor from './pages/Asesor'
+import BandejaAsesor from './pages/asesor/Bandeja'
+import ClientesAsesor from './pages/asesor/Clientes'
+import CobrosAsesor from './pages/asesor/Cobros'
+import NominasAsesor from './pages/asesor/Nominas'
+import TrimestreAsesor from './pages/asesor/Trimestre'
 import Trabajadores from './pages/laboral/Trabajadores'
 import NuevaAlta from './pages/laboral/NuevaAlta'
 import FichaTrabajador from './pages/laboral/FichaTrabajador'
@@ -52,13 +56,17 @@ function Protegido({ children }: { children: ReactNode }) {
 
 /** Solo si tienes ese permiso en la empresa que estás viendo; si no, a la portada */
 function Requiere({ permiso, children }: { permiso: Permiso; children: ReactNode }) {
-  const { puede } = useAuth()
+  const { puede, isAdvisor, viewingOther } = useAuth()
+  // La cuenta del asesor no tiene gastos, facturas…: eso se trabaja dentro de cada cliente
+  if (isAdvisor && !viewingOther) return <Navigate to="/asesor" replace />
   return puede(permiso) ? <>{children}</> : <Navigate to="/" replace />
 }
 
 /** Portada según lo que eres en la empresa */
 function Inicio() {
-  const { rol } = useAuth()
+  const { rol, isAdvisor, viewingOther } = useAuth()
+  // El asesor, en su propia cuenta, solo tiene el panel
+  if (isAdvisor && !viewingOther) return <Navigate to="/asesor" replace />
   if (rol === 'socio') return <Navigate to="/socio" replace />
   if (rol === 'empleado') return <Navigate to="/mi-espacio/tickets" replace />
   return <Resumen />
@@ -183,14 +191,11 @@ export default function App() {
             <Route path="mi-espacio/:seccion?" element={<ConFicha><MiEspacio /></ConFicha>} />
             <Route path="perfil" element={<AbrirConfiguracion seccion="perfil" />} />
             <Route path="mi-asesor" element={<Requiere permiso="asesor"><MiAsesor /></Requiere>} />
-            <Route
-              path="asesor"
-              element={
-                <SoloAsesor>
-                  <Asesor />
-                </SoloAsesor>
-              }
-            />
+            <Route path="asesor" element={<SoloAsesor><BandejaAsesor /></SoloAsesor>} />
+            <Route path="asesor/clientes" element={<SoloAsesor><ClientesAsesor /></SoloAsesor>} />
+            <Route path="asesor/nominas" element={<SoloAsesor><NominasAsesor /></SoloAsesor>} />
+            <Route path="asesor/trimestre" element={<SoloAsesor><TrimestreAsesor /></SoloAsesor>} />
+            <Route path="asesor/cobros" element={<SoloAsesor><CobrosAsesor /></SoloAsesor>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

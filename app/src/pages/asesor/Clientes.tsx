@@ -1,23 +1,21 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Building2, CheckCircle2, Copy, Link2, Plus, Search, Send, Sparkles, Users } from 'lucide-react'
-import { useAuth } from '../lib/auth'
-import { errorMessage, supabase } from '../lib/supabase'
-import { eur, fecha } from '../lib/format'
-import { ESTADOS_TRABAJADOR, diasHabilesHasta } from '../lib/laboral'
-import type { EstadoTrabajador, Profile } from '../lib/types'
-import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, notify } from '../components/ui'
-import { cuotaCliente, importe, proximoCobro } from '../lib/planes'
-import { EditorPlan, OpcionesPlan } from '../components/Planes'
-import { GUIA_APP } from '../lib/plantillasCorreo'
+import { ArrowRight, Building2, CheckCircle2, Copy, Link2, Plus, Scale, Search, Send, Sparkles, Users } from 'lucide-react'
+import { useAuth } from '../../lib/auth'
+import { errorMessage, supabase } from '../../lib/supabase'
+import { eur, fecha } from '../../lib/format'
+import type { Profile } from '../../lib/types'
+import { etiquetasFiscal } from '../../lib/regimenFiscal'
+import { EditorFiscal } from '../../components/RegimenFiscal'
+import { Badge, Button, Card, Empty, Field, Input, Loading, Modal, PageHeader, Select, notify } from '../../components/ui'
+import { cuotaCliente, importe, proximoCobro } from '../../lib/planes'
+import { EditorPlan, OpcionesPlan } from '../../components/Planes'
+import { GUIA_APP } from '../../lib/plantillasCorreo'
 
 type Fila = Profile & { porRevisar: number; facturado: number; gastos: number; ultimo: string | null }
-type LlamadaPend = { id: string; owner_id: string; tipo: 'llamame' | 'cita'; inicio: string | null; modalidad: string | null; telefono: string | null; tema: string | null; franja: string | null; meet_link: string | null; created_at: string }
-type Amortizable = { id: string; owner_id: string; proveedor: string | null; concepto: string | null; base: number; fecha: string | null }
-type Pendiente = { id: string; owner_id: string; nombre: string; fecha_inicio: string; estado: EstadoTrabajador; created_at: string }
 
-export default function Asesor() {
-  const { me, setOwner } = useAuth()
+export default function ClientesAsesor() {
+  const { setOwner } = useAuth()
   const navigate = useNavigate()
   const [filas, setFilas] = useState<Fila[] | null>(null)
   const [q, setQ] = useState('')
@@ -25,27 +23,15 @@ export default function Asesor() {
   const [reenviar, setReenviar] = useState<Fila | null>(null)
   const [otraCuenta, setOtraCuenta] = useState<Fila | null>(null)
   const [editarPlan, setEditarPlan] = useState<Fila | null>(null)
-  const [pendientes, setPendientes] = useState<Pendiente[]>([])
-  const [llamadas, setLlamadas] = useState<LlamadaPend[]>([])
-  const [amortizables, setAmortizables] = useState<Amortizable[]>([])
+  const [editarFiscal, setEditarFiscal] = useState<Fila | null>(null)
 
   const cargar = useCallback(async () => {
     const anio = new Date().getFullYear()
-    const [p, g, f, w, ll, am] = await Promise.all([
+    const [p, g, f] = await Promise.all([
       supabase.from('profiles').select('*').eq('role', 'client').order('nombre'),
       supabase.from('expenses').select('owner_id, estado, base, fecha, created_at').gte('created_at', `${anio - 1}-01-01`),
       supabase.from('invoices').select('owner_id, estado, base, fecha, created_at').neq('estado', 'borrador').gte('fecha', `${anio}-01-01`),
-      supabase
-        .from('trabajadores')
-        .select('id, owner_id, nombre, fecha_inicio, estado, created_at')
-        .in('estado', ['solicitada', 'en_tramite'])
-        .order('fecha_inicio'),
-      supabase.from('llamadas').select('*').eq('estado', 'pendiente').order('created_at'),
-      supabase.from('expenses').select('id, owner_id, proveedor, concepto, base, fecha').eq('revision', 'pendiente').order('fecha'),
     ])
-    setAmortizables((am.data as Amortizable[]) ?? [])
-    setLlamadas((ll.data as LlamadaPend[]) ?? [])
-    setPendientes((w.data as Pendiente[]) ?? [])
     const gastos = (g.data ?? []) as { owner_id: string; estado: string; base: number; fecha: string | null; created_at: string }[]
     const facturas = (f.data ?? []) as { owner_id: string; base: number; created_at: string }[]
     setFilas(
@@ -88,132 +74,17 @@ export default function Asesor() {
     navigate('/')
   }
 
-  const abrirAlta = async (pend: Pendiente) => {
-    await setOwner(pend.owner_id)
-    navigate(`/laboral/trabajadores/${pend.id}`)
-  }
-
-  const marcarHecha = async (id: string) => {
-    const { error } = await supabase.from('llamadas').update({ estado: 'hecha' }).eq('id', id)
-    if (error) return notify(await errorMessage(error), 'error')
-    setLlamadas((ls) => ls.filter((l) => l.id !== id))
-    notify('Llamada marcada como hecha')
-  }
-
-  const nombreCliente = (id: string) => {
-    if (id === me?.id) return me.nombre || me.email || 'Tú'
-    const c = filas?.find((x) => x.id === id)
-    return c?.nombre || c?.email || 'Cliente'
-  }
-
   return (
     <>
       <PageHeader
-        title="Panel del asesor"
-        subtitle={`Hola${me?.nombre ? `, ${me.nombre.split(' ')[0]}` : ''}. Estos son tus clientes en el área privada.`}
+        title="Clientes"
+        subtitle="Entra en la cuenta de un cliente para trabajar en ella. Desde aquí le das de alta, le pones plan y su régimen fiscal."
         actions={
           <Button icon={<Plus className="size-4" />} onClick={() => setAlta(true)}>
             Dar de alta cliente
           </Button>
         }
       />
-
-      {llamadas.length > 0 && (
-        <Card className="mb-6 overflow-hidden">
-          <div className="border-b border-line bg-lima/30 px-4 py-3">
-            <h2 className="font-semibold">Llamadas pendientes ({llamadas.length})</h2>
-          </div>
-          <ul className="divide-y divide-line">
-            {llamadas.map((l) => (
-              <li key={l.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{nombreCliente(l.owner_id)}</span>
-                  <span className="block truncate text-sm text-muted">
-                    {l.tipo === 'cita' && l.inicio
-                      ? `Cita ${new Date(l.inicio).toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${l.modalidad === 'meet' ? 'Google Meet' : 'llamarle'}`
-                      : `Pide que le llames · ${l.franja ?? 'cuando puedas'}`}
-                    {l.tema ? ` · ${l.tema}` : ''}
-                  </span>
-                </span>
-                {l.telefono && (
-                  <a href={`tel:${l.telefono.replace(/\s/g, '')}`} className="num text-sm font-medium underline">
-                    {l.telefono}
-                  </a>
-                )}
-                {l.meet_link && (
-                  <a href={l.meet_link} target="_blank" rel="noreferrer" className="text-sm underline">
-                    Meet
-                  </a>
-                )}
-                <Button size="sm" variant="secondary" onClick={() => marcarHecha(l.id)}>
-                  Hecha
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {amortizables.length > 0 && (
-        <Card className="mb-6 overflow-hidden">
-          <div className="border-b border-line bg-ambar/10 px-4 py-3">
-            <h2 className="font-semibold">Posibles amortizaciones por revisar ({amortizables.length})</h2>
-            <p className="text-sm text-muted">Compras de más de 300 € que parecen inversión. Decide si son gasto o inmovilizado.</p>
-          </div>
-          <ul className="divide-y divide-line">
-            {amortizables.map((a) => (
-              <li key={a.id}>
-                <button
-                  onClick={async () => {
-                    await setOwner(a.owner_id)
-                    navigate(`/gastos?revisar=${a.id}`)
-                  }}
-                  className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-paper"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{a.concepto || a.proveedor || 'Gasto'}</span>
-                    <span className="block truncate text-sm text-muted">
-                      {nombreCliente(a.owner_id)} · {a.proveedor ?? ''} · {fecha(a.fecha)}
-                    </span>
-                  </span>
-                  <span className="num font-medium">{eur(a.base)}</span>
-                  <ArrowRight className="size-4 text-muted" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {pendientes.length > 0 && (
-        <Card className="mb-6 overflow-hidden">
-          <div className="border-b border-line bg-lima/30 px-4 py-3">
-            <h2 className="font-semibold">Altas pendientes ({pendientes.length})</h2>
-          </div>
-          <ul className="divide-y divide-line">
-            {pendientes.map((pend) => {
-              const dias = diasHabilesHasta(pend.fecha_inicio)
-              const est = ESTADOS_TRABAJADOR[pend.estado]
-              return (
-                <li key={pend.id}>
-                  <button onClick={() => abrirAlta(pend)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left hover:bg-paper">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{pend.nombre}</span>
-                      <span className="block truncate text-sm text-muted">{nombreCliente(pend.owner_id)}</span>
-                    </span>
-                    <span className={`text-sm ${dias < 3 ? 'font-medium text-rojo' : 'text-muted'}`}>
-                      Empieza el {fecha(pend.fecha_inicio)}
-                      {dias < 3 ? ` · ${dias <= 0 ? '¡ya!' : `${dias} día${dias === 1 ? '' : 's'} hábil${dias === 1 ? '' : 'es'}`}` : ''}
-                    </span>
-                    <Badge tono={est.tono}>{est.label}</Badge>
-                    <ArrowRight className="size-4 text-muted" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </Card>
-      )}
 
       {filas === null ? (
         <Loading />
@@ -256,10 +127,15 @@ export default function Asesor() {
                     className="grid cursor-pointer grid-cols-[1fr_auto] gap-x-3 border-b border-line px-4 py-3 last:border-0 hover:bg-paper md:table-row md:p-0"
                   >
                     <td className={`min-w-0 md:px-4 md:py-3 ${c.titular_id ? 'md:pl-10' : ''}`}>
-                      <p className="flex min-w-0 items-center gap-2">
+                      <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                         {c.titular_id && <Link2 className="size-4 shrink-0 text-muted" />}
                         <span className="truncate font-medium">{c.nombre || 'Sin nombre'}</span>
                         {cuotaCliente(c) && <Badge tono="lima">{cuotaCliente(c)!.plan.nombre}</Badge>}
+                        {etiquetasFiscal(c.fiscal).map((e) => (
+                          <Badge key={e} tono="negro">
+                            {e}
+                          </Badge>
+                        ))}
                       </p>
                       <p className="truncate text-sm text-muted">{[c.nif, c.email].filter(Boolean).join(' · ')}</p>
                       <p className="flex flex-wrap items-center gap-x-2 text-xs">
@@ -302,6 +178,16 @@ export default function Asesor() {
                         >
                           <Sparkles className="size-3" /> {c.plan ? 'Editar plan' : 'Asignar plan'}
                         </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditarFiscal(c)
+                          }}
+                          className="inline-flex items-center gap-1 text-muted underline-offset-2 hover:text-ink hover:underline"
+                        >
+                          <Scale className="size-3" /> Régimen fiscal
+                        </button>
                         {cuotaCliente(c) && (
                           <span className="num text-muted">
                             {cuotaCliente(c)!.texto}
@@ -339,6 +225,7 @@ export default function Asesor() {
       <ReenviarAcceso cliente={reenviar} onClose={() => setReenviar(null)} onDone={cargar} />
       <OtraCuenta titular={otraCuenta} onClose={() => setOtraCuenta(null)} onCreated={cargar} />
       <EditorPlan perfil={editarPlan} onClose={() => setEditarPlan(null)} onGuardado={cargar} />
+      <EditorFiscal perfil={editarFiscal} onClose={() => setEditarFiscal(null)} onGuardado={cargar} />
     </>
   )
 }

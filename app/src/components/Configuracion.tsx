@@ -64,7 +64,8 @@ function VentanaConfig({ inicial, onClose }: { inicial: IdSeccion | null; onClos
   const { rol, puede, viewingOther, owner, isAdvisor } = useAuth()
   const conGuia = tipoGuia(rol, isAdvisor, Boolean(verComoDev())) !== null
   const ctx = { viewingOther, rol, puede }
-  const secciones = seccionesVisibles(rol, puede)
+  // El asesor en su propia cuenta solo tiene el panel: aquí, su perfil (contraseña, datos)
+  const secciones = seccionesVisibles(rol, puede).filter((s) => !(isAdvisor && !viewingOther) || s.id === 'perfil')
   const [activa, setActiva] = useState<IdSeccion>(inicial && secciones.some((s) => s.id === inicial) ? inicial : secciones[0]?.id ?? 'perfil')
   const [q, setQ] = useState('')
   // En el móvil se ve una cosa u otra: la lista de secciones o la sección elegida (en el ordenador, las dos a la vez).

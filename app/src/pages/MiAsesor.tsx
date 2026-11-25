@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { CalendarClock, CheckCircle2, Loader2, Mail, MessageCircle, Phone, PhoneCall, Video } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Loader2, Mail, MessageCircle, Phone, PhoneCall, Send, Video } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
 import { ASESOR, cargarHuecos, enlaceEmail, enlaceWhatsapp, enviarAlMotor, mensajeError } from '../lib/asesor'
-import { Button, Card, Field, Input, Loading, Select, Textarea, cx, notify } from '../components/ui'
+import { Badge, Button, Card, Field, Input, Loading, Select, Textarea, cx, notify } from '../components/ui'
+import { TIPOS_PETICION, type Peticion, type TipoPeticion } from '../lib/bandeja'
+import { fecha } from '../lib/format'
 
 type Llamada = {
   id: string
@@ -125,6 +127,8 @@ export default function MiAsesor() {
         </Card>
       )}
 
+      <PedirAlgo />
+
       <div ref={agendaRef} className="scroll-mt-6">
         <Card className="p-5 sm:p-6">
           <h2 className="font-semibold">Agendar una llamada</h2>
@@ -156,6 +160,90 @@ export default function MiAsesor() {
         </Card>
       </div>
     </>
+  )
+}
+
+/** Peticiones al asesor (supabase/panel-asesor.sql): le llegan a su Bandeja */
+function PedirAlgo() {
+  const { ownerId, viewingOther } = useAuth()
+  const [tipo, setTipo] = useState<TipoPeticion>('consulta')
+  const [texto, setTexto] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [lista, setLista] = useState<Peticion[] | null>(null)
+
+  const cargar = useCallback(async () => {
+    if (!ownerId) return
+    const { data, error } = await supabase.from('peticiones').select('*').eq('owner_id', ownerId).order('created_at', { ascending: false }).limit(8)
+    setLista(error ? null : ((data as Peticion[]) ?? []))
+  }, [ownerId])
+
+  useEffect(() => {
+    cargar()
+  }, [cargar])
+
+  // Sin la tabla (falta panel-asesor.sql) no se enseña
+  if (lista === null || !ownerId) return null
+
+  const enviar = async (e: FormEvent) => {
+    e.preventDefault()
+    if (tipo !== 'renta' && !texto.trim()) return notify('Cuéntanos qué necesitas', 'error')
+    setEnviando(true)
+    const { error } = await supabase.from('peticiones').insert({ owner_id: ownerId, tipo, texto: texto.trim() || null })
+    setEnviando(false)
+    if (error) return notify(await errorMessage(error), 'error')
+    setTexto('')
+    notify('Enviado a tu asesor')
+    cargar()
+  }
+
+  return (
+    <Card className="mb-6 p-5 sm:p-6">
+      <h2 className="font-semibold">Pedir algo a tu asesor</h2>
+      {viewingOther ? (
+        <p className="mt-1 text-sm text-muted">Lo que pida este cliente te llega a la Bandeja del panel.</p>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-muted">La declaración de la renta, un certificado, una duda… Le llega al momento y aquí verás cuándo está hecho.</p>
+          <form onSubmit={enviar} className="mt-4 grid max-w-xl grid-cols-[minmax(0,1fr)] gap-4">
+            <Field label="¿Qué necesitas?">
+              <Select value={tipo} onChange={(e) => setTipo(e.target.value as TipoPeticion)}>
+                {Object.entries(TIPOS_PETICION).map(([id, nombre]) => (
+                  <option key={id} value={id}>
+                    {nombre}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={tipo === 'renta' ? 'Algo que debamos saber (opcional)' : 'Cuéntanos'}>
+              <Textarea
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder={tipo === 'renta' ? 'Ej.: este año he vendido un piso' : tipo === 'certificado' ? 'Ej.: certificado de estar al corriente con Hacienda' : 'Escribe aquí'}
+              />
+            </Field>
+            <div>
+              <Button type="submit" variant="accent" icon={<Send className="size-4" />} loading={enviando}>
+                Enviar a mi asesor
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
+      {lista.length > 0 && (
+        <ul className="mt-5 divide-y divide-line border-t border-line text-[15px]">
+          {lista.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">{TIPOS_PETICION[p.tipo] ?? p.tipo}</span>
+                {p.texto && <span className="block truncate text-sm text-muted">{p.texto}</span>}
+              </span>
+              <span className="text-sm text-muted">{fecha(p.created_at.slice(0, 10))}</span>
+              <Badge tono={p.estado === 'hecha' ? 'verde' : 'ambar'}>{p.estado === 'hecha' ? 'Hecho' : 'Pendiente'}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   )
 }
 

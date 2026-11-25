@@ -28,6 +28,8 @@ import {
   ArrowLeftRight,
   Check,
   ChevronDown,
+  Inbox,
+  HandCoins,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
@@ -37,6 +39,7 @@ import { cx, notify } from './ui'
 import { PlanLateral } from './Planes'
 import { TARJETAS_ACTIVAS } from '../lib/config'
 import { misTarjetas } from '../lib/tarjetas'
+import { useTotalBandeja } from '../lib/bandeja'
 
 interface ItemNav {
   to: string
@@ -45,7 +48,18 @@ interface ItemNav {
   end?: boolean
   /** Nombre corto para la barra de abajo del móvil */
   corto?: string
+  /** Número de pendientes (Bandeja del asesor) */
+  n?: number
 }
+
+/** Menú del asesor en su propia cuenta: solo el panel (cada cliente se trabaja entrando en su cuenta) */
+const MENU_ASESOR: ItemNav[] = [
+  { to: '/asesor', label: 'Bandeja', icon: Inbox, end: true },
+  { to: '/asesor/clientes', label: 'Clientes', icon: Users },
+  { to: '/asesor/nominas', label: 'Nóminas', icon: Banknote },
+  { to: '/asesor/trimestre', label: 'Trimestre', icon: Landmark },
+  { to: '/asesor/cobros', label: 'Planes y cobros', icon: HandCoins, corto: 'Cobros' },
+]
 
 /** Mi espacio: lo personal de quien es trabajador (nóminas, documentos, ficha y tickets) */
 const ESPACIO: ItemNav[] = [
@@ -224,7 +238,10 @@ export default function Layout() {
   const { me, owner, isAdvisor, viewingOther, setOwner, signOut, rol, puede, miembro, viendoComo, verComoTrabajador } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const subtitulo = subtituloDe(rol)
+  // El asesor en su cuenta (o en las páginas del panel): menú del panel, sin franja de «Estás viendo…»
+  const modoAsesor = isAdvisor && (!viewingOther || location.pathname.startsWith('/asesor'))
+  const subtitulo = modoAsesor ? 'Panel asesor' : subtituloDe(rol)
+  const pendientes = useTotalBandeja(modoAsesor, location.pathname)
   // Pestaña del navegador: «NomoTax Workspace» o «NomoTax Business Hub»
   useEffect(() => {
     document.title = `NomoTax ${subtitulo}`
@@ -259,13 +276,15 @@ export default function Layout() {
       .catch(() => setConTarjeta(false))
   }, [ownerId, me, location.pathname])
   const FICHAR: ItemNav[] = (miembro?.fichaje && miembro?.trabajador_id) || enDemo() ? [{ to: '/fichar', label: 'Registro de jornada', icon: Clock, corto: 'Fichar' }] : []
-  const NAV = [...(rol === 'empleado' ? FICHAR : []), ...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
+  const NAV: ItemNav[] = modoAsesor
+    ? MENU_ASESOR.map((i) => (i.to === '/asesor' ? { ...i, n: pendientes } : i))
+    : [...(rol === 'empleado' ? FICHAR : []), ...menu(rol, puede), ...(conTarjeta ? [{ to: '/mi-tarjeta', label: 'Mi tarjeta', icon: CreditCard }] : [])]
   // Quien además es trabajador (admin, socio o comercial con ficha) tiene su bloque «Mi espacio» aparte
-  const ESP = rol !== 'empleado' && miembro?.trabajador_id ? [...FICHAR, ...ESPACIO] : []
+  const ESP = !modoAsesor && rol !== 'empleado' && miembro?.trabajador_id ? [...FICHAR, ...ESPACIO] : []
   /** En el móvil: 4 fijas abajo y el resto en «Más» */
   const FIJAS = NAV.slice(0, 4).map((n) => n.to)
   const enMas = !FIJAS.includes(location.pathname) && !FIJAS.filter((r) => r !== '/').some((r) => location.pathname.startsWith(r + '/'))
-  const verAsesor = puede('asesor')
+  const verAsesor = !modoAsesor && puede('asesor')
   // Configuración: perfil, plan, usuarios y vista de socio, en una ventana con las secciones a la izquierda
   const { abrir: abrirConfig, abierta: enConfig } = useConfig()
 
@@ -280,7 +299,7 @@ export default function Layout() {
     ...NAV.filter((n) => !FIJAS.includes(n.to)),
     ...ESP.map((e) => ({ ...e, label: e.to.endsWith('tickets') ? 'Mis tickets' : e.label })),
     ...(verAsesor ? [{ to: '/mi-asesor', label: 'Mi asesor', icon: MessagesSquare }] : []),
-    ...(isAdvisor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
+    ...(isAdvisor && !modoAsesor ? [{ to: '/asesor', label: 'Panel asesor', icon: Briefcase }] : []),
   ]
 
   return (
@@ -298,7 +317,7 @@ export default function Layout() {
         </div>
 
         <nav className="mt-6 flex flex-col gap-1">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {NAV.map(({ to, label, icon: Icon, end, n }) => (
             <NavLink
               key={to}
               to={to}
@@ -312,7 +331,8 @@ export default function Layout() {
               }
             >
               <Icon className="size-[18px]" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {n ? <span className="num min-w-6 rounded-full bg-white/15 px-1.5 text-center text-xs font-medium">{n}</span> : null}
             </NavLink>
           ))}
           {ESP.length > 0 && (
@@ -339,7 +359,7 @@ export default function Layout() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-4">
-          {puede('empresa') && <PlanLateral perfil={owner} />}
+          {!modoAsesor && puede('empresa') && <PlanLateral perfil={owner} />}
           {verAsesor && (
           <NavLink
             to="/mi-asesor"
@@ -355,9 +375,10 @@ export default function Layout() {
             Mi asesor
           </NavLink>
           )}
-          {isAdvisor && (
+          {isAdvisor && !modoAsesor && (
             <NavLink
               to="/asesor"
+              onClick={() => setOwner(null)}
               className={({ isActive }) =>
                 cx(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors',
@@ -436,8 +457,8 @@ export default function Layout() {
                 <MessagesSquare className="size-5" />
               </NavLink>
             )}
-            {isAdvisor && (
-              <NavLink to="/asesor" className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Panel del asesor">
+            {isAdvisor && !modoAsesor && (
+              <NavLink to="/asesor" onClick={() => setOwner(null)} className="rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Panel del asesor">
                 <Briefcase className="size-5" />
               </NavLink>
             )}
@@ -466,7 +487,7 @@ export default function Layout() {
           </div>
         )}
 
-        {viewingOther && (
+        {viewingOther && !modoAsesor && (
           <div className="flex flex-wrap items-center justify-between gap-2 bg-lima px-4 py-2 text-sm text-ink lg:px-10">
             <span>
               Estás viendo la cuenta de <strong>{nombreCuenta}</strong>
@@ -488,7 +509,7 @@ export default function Layout() {
             ['grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5'][Math.min(FIJAS.length, 4) - 1],
           )}
         >
-          {NAV.filter((n) => FIJAS.includes(n.to)).map(({ to, label, corto, icon: Icon, end }) => (
+          {NAV.filter((n) => FIJAS.includes(n.to)).map(({ to, label, corto, icon: Icon, end, n }) => (
             <NavLink
               key={to}
               to={to}
@@ -499,8 +520,9 @@ export default function Layout() {
             >
               {({ isActive }) => (
                 <>
-                  <span className={cx('grid h-8 w-14 place-items-center rounded-full transition-colors', isActive && 'bg-lima')}>
+                  <span className={cx('relative grid h-8 w-14 place-items-center rounded-full transition-colors', isActive && 'bg-lima')}>
                     <Icon className="size-5" />
+                    {n ? <span className="num absolute -top-1 right-1.5 min-w-5 rounded-full bg-ink px-1 text-[11px] font-semibold leading-5 text-white">{n}</span> : null}
                   </span>
                   <span className="w-full truncate px-0.5">{corto ?? label}</span>
                 </>
