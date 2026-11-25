@@ -42,7 +42,7 @@ export function textoFactura(d: DatosCorreoFactura) {
     `Total: ${eur(d.total)} (IVA incluido, retención descontada)`,
     "",
     d.iban ? `Pago por transferencia a ${d.iban}, indicando ${d.numero}.` : "",
-    `También la tienes en tu Área de clientes, en Gastos: ${APP_URL}/gastos`,
+    `También la tienes en NomoTax Business Hub, en Gastos: ${APP_URL}/gastos`,
     "",
     `¿Dudas? WhatsApp ${WHATSAPP} · ${TELEFONO} · info@nomotax.io`,
     "",
@@ -111,7 +111,7 @@ export function htmlFactura(d: DatosCorreoFactura) {
     ${d.iban ? `<p style="margin:14px 0 0 0;font-size:14px;color:#6b6b66">Pago por transferencia a <strong style="color:#111110">${esc(d.iban)}</strong>, indicando <strong style="color:#111110">${esc(d.numero)}</strong>. En el PDF tienes un código QR para pagar desde la app de tu banco.</p>` : ""}
 
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0"><tr><td style="background:#111110;border-radius:999px">
-      <a href="${APP_URL}/gastos" style="display:inline-block;padding:14px 28px;font:600 15px Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none">Verla en el Área de clientes →</a>
+      <a href="${APP_URL}/gastos" style="display:inline-block;padding:14px 28px;font:600 15px Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none">Verla en Business Hub →</a>
     </td></tr></table>
     <p style="margin:0 0 18px 0;font-size:14px;color:#6b6b66">Ya está guardada en tus Gastos, lista para tu contabilidad: no tienes que subirla.</p>
   </td></tr>

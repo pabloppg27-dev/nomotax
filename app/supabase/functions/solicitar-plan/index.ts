@@ -1,4 +1,4 @@
-// Un cliente pide cambiar de plan desde el comparador del Área de clientes.
+// Un cliente pide cambiar de plan desde el comparador de Business Hub.
 // Entrada (POST JSON): { plan: 'empresa_max' | ..., cuenta?: <id> }
 //   cuenta: la cuenta para la que se pide (por defecto la propia). Si es otra, tiene que ser
 //   una cuenta vinculada de quien lo pide (supabase/cuentas-titular.sql: mi_rol = 'titular').
@@ -104,12 +104,12 @@ Deno.serve(async (req) => {
       auth: { user: Deno.env.get("SMTP_USER") ?? "info@nomotax.io", pass },
     });
     await t.sendMail({
-      from: '"NomoTax · Área de clientes" <info@nomotax.io>',
+      from: '"NomoTax Business Hub" <info@nomotax.io>',
       to: ASESOR,
       replyTo: email || undefined,
       subject: `Cambio de plan: ${cliente} quiere ${pedido.split(" (")[0]}`,
       text: [
-        `${cliente} ha solicitado un cambio de plan desde el Área de clientes.`,
+        `${cliente} ha solicitado un cambio de plan desde Business Hub.`,
         "",
         `Plan actual: ${actual}`,
         `Plan solicitado: ${pedido}`,
@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
         "Responde a este correo para escribirle directamente.",
       ].join("\n"),
       html: `<div style="font:15px/1.6 Helvetica,Arial,sans-serif;color:#111110">
-<p><strong>${esc(cliente)}</strong> ha solicitado un cambio de plan desde el Área de clientes.</p>
+<p><strong>${esc(cliente)}</strong> ha solicitado un cambio de plan desde Business Hub.</p>
 <table cellpadding="0" cellspacing="0" style="margin:12px 0;border-collapse:collapse">
 <tr><td style="padding:4px 16px 4px 0;color:#6b6b66">Plan actual</td><td>${esc(actual)}</td></tr>
 <tr><td style="padding:4px 16px 4px 0;color:#6b6b66">Plan solicitado</td><td><strong style="background:#CDF564;padding:2px 6px;border-radius:6px">${esc(pedido)}</strong></td></tr>

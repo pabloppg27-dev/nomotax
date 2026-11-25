@@ -516,7 +516,7 @@ function OtraCuenta({ titular, onClose, onCreated }: { titular: Profile | null; 
 
 function MensajeAcceso({ resultado, nombre, aviso }: { resultado: Acceso; nombre: string; aviso: string }) {
   const mensaje =
-    `Hola${nombre.trim() ? ` ${nombre.trim()}` : ''}, ya tienes acceso al área de clientes de NomoTax.\n\n` +
+    `Hola${nombre.trim() ? ` ${nombre.trim()}` : ''}, ya tienes acceso a NomoTax Business Hub.\n\n` +
     `Entra en ${window.location.origin}\nUsuario: ${resultado.email}\nContraseña provisional: ${resultado.password}\n\n` +
     'Al entrar, cámbiala en «Mi perfil».\n\n' +
     `Tenla como app en tu móvil u ordenador: ${GUIA_APP}`

@@ -107,7 +107,7 @@ export function informeSocio(v: VistaSocio, empresa: string): Blob {
   doc.setFontSize(8)
   doc.setTextColor(...MUTED)
   const nota = doc.splitTextToSize(
-    'Cifras calculadas con la contabilidad del Área de clientes de NomoTax (facturas, gastos revisados, nóminas, asientos e inmovilizado registrados hasta la fecha). ' +
+    'Cifras calculadas con la contabilidad de NomoTax Business Hub (facturas, gastos revisados, nóminas, asientos e inmovilizado registrados hasta la fecha). ' +
       'Son orientativas hasta el cierre del ejercicio.' +
       (v.balance.cuadra ? '' : ' El balance aún no cuadra: falta el asiento de apertura del ejercicio.'),
     W - 2 * M,

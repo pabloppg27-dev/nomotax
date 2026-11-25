@@ -16,7 +16,7 @@ export default function TarjetasProximamente() {
             <Badge tono="lima">Próximamente</Badge>
             <h2 className="mt-3 text-xl font-semibold tracking-tight">Muy pronto, tus tarjetas de empresa en NomoTax</h2>
             <p className="mt-2 text-[15px] text-muted">
-              Podrás emitir tarjetas virtuales y físicas, ponerles un límite de gasto al mes y ver cada compra registrada en tu contabilidad, sin salir del área de clientes.
+              Podrás emitir tarjetas virtuales y físicas, ponerles un límite de gasto al mes y ver cada compra registrada en tu contabilidad, sin salir de Business Hub.
             </p>
             <p className="mt-3 text-sm text-muted">Te avisaremos en cuanto esté disponible.</p>
           </div>

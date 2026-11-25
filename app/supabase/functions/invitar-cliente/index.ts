@@ -192,7 +192,7 @@ async function enviarBienvenida(email: string, nombre: string | null, password: 
       from: '"NomoTax" <info@nomotax.io>',
       to: email,
       bcc: "pablo@nomotax.io",
-      subject: "Bienvenido/a al Área de clientes de NomoTax",
+      subject: "Bienvenido/a a NomoTax Business Hub",
       html: html({ nombre, email, password }),
       text: texto({ nombre, email, password }),
     });
@@ -207,7 +207,7 @@ function texto(d: { nombre: string | null; email: string; password: string }) {
   return [
     `Hola${d.nombre ? " " + d.nombre : ""},`,
     "",
-    "Ya tienes acceso al Área de clientes de NomoTax.",
+    "Ya tienes acceso a NomoTax Business Hub.",
     "",
     `Entra en: ${APP_URL}`,
     `Usuario: ${d.email}`,
@@ -248,12 +248,12 @@ function html(d: { nombre: string | null; email: string; password: string }) {
     <table role="presentation" cellpadding="0" cellspacing="0"><tr>
       <td><img src="${LOGO}" width="40" height="40" alt="NomoTax" style="display:block;border-radius:8px"></td>
       <td style="padding-left:12px;font:600 18px Helvetica,Arial,sans-serif;color:#ffffff">NomoTax<br>
-        <span style="font:500 11px Helvetica,Arial,sans-serif;letter-spacing:2px;color:#CDF564">ÁREA DE CLIENTES</span></td>
+        <span style="font:500 11px Helvetica,Arial,sans-serif;letter-spacing:2px;color:#CDF564">BUSINESS HUB</span></td>
     </tr></table>
   </td></tr>
   <tr><td style="padding:32px 32px 8px 32px;font:15px/1.6 Helvetica,Arial,sans-serif;color:#111110">
     <h1 style="margin:0 0 12px 0;font:600 24px/1.25 Helvetica,Arial,sans-serif;color:#111110">Hola${nombre}, ¡bienvenido/a!</h1>
-    <p style="margin:0 0 22px 0">Ya tienes acceso a tu Área de clientes de NomoTax: tus gastos, facturas y contabilidad, siempre al día y en un solo sitio.</p>
+    <p style="margin:0 0 22px 0">Ya tienes acceso a NomoTax Business Hub: tus gastos, facturas y contabilidad, siempre al día y en un solo sitio.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;border-radius:14px">
       <tr><td style="padding:18px 20px;font:15px/1.7 Helvetica,Arial,sans-serif;color:#111110">
         <span style="color:#6b6b66;font-size:12px;letter-spacing:1px">TUS ACCESOS</span><br>
@@ -262,7 +262,7 @@ function html(d: { nombre: string | null; email: string; password: string }) {
       </td></tr>
     </table>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0"><tr><td style="background:#111110;border-radius:999px">
-      <a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none">Entrar en el Área de clientes →</a>
+      <a href="${APP_URL}" style="display:inline-block;padding:14px 28px;font:600 15px Helvetica,Arial,sans-serif;color:#ffffff;text-decoration:none">Entrar en Business Hub →</a>
     </td></tr></table>
     <p style="margin:-6px 0 26px 0;font:14px/1.6 Helvetica,Arial,sans-serif;color:#6b6b66">📱 Tenla como app en tu móvil u ordenador: <a href="${GUIA_APP}" style="color:#111110;font-weight:600">así se hace, en 1 minuto</a>.</p>
     <p style="margin:0 0 16px 0;font-weight:600">Para empezar</p>
