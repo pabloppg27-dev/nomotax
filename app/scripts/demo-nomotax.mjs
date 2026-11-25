@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 import { generarPdfs } from './demo-pdfs.mjs'
 
 const APP = join(dirname(fileURLToPath(import.meta.url)), '..')
-const HOY = '2026-11-24'
+const HOY = '2026-11-25'
 const r2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100
 
 // ------------------------------------------------------------------ utilidades
@@ -537,6 +537,13 @@ begin
     pais = ${q(EMPRESA.pais)}, telefono = ${q(EMPRESA.telefono)}, iban = ${q(EMPRESA.iban)}, pie_factura = ${q(EMPRESA.pie_factura)},
     serie_factura = 'F', serie_presupuesto = 'P'
   where id = o;
+  -- Cuentas bancarias (cuentas-bancarias.sql): euros por defecto y una en dólares para los clientes de EE. UU.
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'cuentas_bancarias') then
+    execute 'update public.profiles set cuentas_bancarias = $2::jsonb where id = $1' using o, ${q(JSON.stringify([
+      { id: 'de300000-0000-4000-8000-0000000002a1', moneda: 'EUR', alias: 'Cuenta principal', banco: 'Banco de ejemplo', titular: 'NomoTax Demo, S.L.', iban: 'ES9121000418450200051332', predeterminada: true },
+      { id: 'de300000-0000-4000-8000-0000000002a2', moneda: 'USD', alias: 'Cuenta en dólares', banco: 'Example Bank (USD)', titular: 'NomoTax Demo, S.L.', numero: '000123456789', codigo_local: '000000000', swift: 'DEMOUS33XXX', direccion_banco: '1 Example Plaza, New York, NY 10001', predeterminada: true },
+    ]))};
+  end if;
 `)
 out('  -- ---------------------------------------------------------- Clientes')
 for (const c of CLIENTES) {
@@ -761,7 +768,7 @@ const DIR = join(APP, 'test-data/demo-extractos')
 mkdirSync(DIR, { recursive: true })
 const eurCsv = (x) => x.toFixed(2).replace('.', ',')
 const fmt = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
-const tramos = [['2026-01-01', '2026-03-31', 'T1'], ['2026-04-01', '2026-06-30', 'T2'], ['2026-07-01', '2026-09-30', 'T3'], ['2026-10-01', HOY, 'T4 (hasta 24-11)']]
+const tramos = [['2026-01-01', '2026-03-31', 'T1'], ['2026-04-01', '2026-06-30', 'T2'], ['2026-07-01', '2026-09-30', 'T3'], ['2026-10-01', HOY, `T4 (hasta ${HOY.slice(8, 10)}-${HOY.slice(5, 7)})`]]
 let anterior = SALDO_INICIAL
 for (const [desde, hasta, nombre] of tramos) {
   const ms = mov.filter((x) => x.fecha >= desde && x.fecha <= hasta)
