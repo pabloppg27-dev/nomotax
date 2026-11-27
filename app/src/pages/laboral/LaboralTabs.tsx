@@ -30,7 +30,7 @@ export default function LaboralTabs({ actions, subtitle }: { actions?: ReactNode
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
-      <div className="mt-5 flex gap-1 border-b border-line">
+      <div className="mt-5 flex gap-1 overflow-x-auto border-b border-line">
         {TABS.filter((t) => puede(t.permiso)).map((t) => (
           <NavLink
             key={t.to}
@@ -38,7 +38,7 @@ export default function LaboralTabs({ actions, subtitle }: { actions?: ReactNode
             end={t.end}
             className={({ isActive }) =>
               cx(
-                '-mb-px border-b-2 px-3 py-2 text-[15px] transition-colors',
+                '-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-[15px] transition-colors',
                 isActive ? 'border-ink font-medium text-ink' : 'border-transparent text-muted hover:text-ink',
               )
             }

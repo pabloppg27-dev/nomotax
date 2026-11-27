@@ -26,6 +26,14 @@
   }
   body {
     font-family: var(--font-sans);
+    /* Correos, IBAN o nombres muy largos se parten en vez de salirse por la derecha en el móvil */
+    overflow-wrap: break-word;
+  }
+  /* Móvil: un campo con texto largo (p. ej. la categoría del convenio en un desplegable) ensanchaba
+     toda la columna de la rejilla y la página se iba de lado. Así la columna nunca pasa del ancho
+     disponible y el texto se recorta o se parte dentro de su caja. */
+  .grid > * {
+    min-width: 0;
   }
   /* Dentro de la app en móvil (Layout pone la clase): <html> y <body> en negro para que iOS 26 tiña de negro
      el difuminado de la zona de la hora, a juego con la cabecera. El fondo claro lo pone el contenedor de Layout. */
