@@ -270,7 +270,11 @@ export default function Ausencias() {
         tipoInicial="vacaciones"
         admin
         festivos={cal.festivos}
-        saldoDe={(id) => saldos.get(id) ?? null}
+        saldoDe={(id, y) => {
+          const t = trabajadores.find((x) => x.id === id)
+          if (!t) return null
+          return y === anio ? (saldos.get(id) ?? null) : saldoVacaciones(t, ausencias.filter((a) => a.trabajador_id === id), y, cal.festivos, hoy)
+        }}
         onHecho={() => {
           setApuntar(false)
           cargar()

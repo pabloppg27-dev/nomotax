@@ -146,8 +146,8 @@ export function ModalAusencia({
   tipoInicial: TipoAusencia
   admin: boolean
   festivos: Map<string, string>
-  /** Saldo de vacaciones del trabajador (para «te quedarán…») */
-  saldoDe?: (trabajadorId: string) => SaldoVacaciones | null
+  /** Saldo de vacaciones del trabajador en un año (para «te quedarán…» y el tope) */
+  saldoDe?: (trabajadorId: string, anio: number) => SaldoVacaciones | null
   onHecho: (a: Ausencia) => void
 }) {
   const [tipo, setTipo] = useState<TipoAusencia>(tipoInicial)
@@ -177,7 +177,21 @@ export function ModalAusencia({
 
   const fin = tipo === 'baja' && sinAlta ? null : hasta || desde
   const dias = desde && (fin ?? desde) >= desde ? diasLaborables(desde, fin ?? desde, festivos).length : 0
-  const saldo = tipo === 'vacaciones' && trab && saldoDe ? saldoDe(trab) : null
+  // Vacaciones: por cada año que toca, los días que pide frente a los que le quedan (el trabajador no puede pasarse)
+  const porAnio =
+    tipo === 'vacaciones' && trab && saldoDe && desde && fin && fin >= desde
+      ? Array.from({ length: Number(fin.slice(0, 4)) - Number(desde.slice(0, 4)) + 1 }, (_, i) => Number(desde.slice(0, 4)) + i).flatMap((anio) => {
+          const s = saldoDe(trab, anio)
+          const d0 = desde > `${anio}-01-01` ? desde : `${anio}-01-01`
+          const d1 = fin < `${anio}-12-31` ? fin : `${anio}-12-31`
+          return s ? [{ anio, dias: diasLaborables(d0, d1, festivos).length, quedan: s.quedan, derecho: s.derecho }] : []
+        })
+      : []
+  const excesos = porAnio.filter((x) => x.dias > x.quedan)
+  const bloqueado = !admin && excesos.length > 0
+  const textoExceso = excesos
+    .map((x) => (x.quedan > 0 ? `en ${x.anio} solo te quedan ${x.quedan} ${x.quedan === 1 ? 'día' : 'días'} de ${x.derecho}` : `en ${x.anio} ya no te quedan días (tienes ${x.derecho})`))
+    .join(' y ')
   const ayuda = tipo === 'permiso' ? SUBTIPOS_PERMISO.find((s) => s.id === subtipo)?.ayuda : null
 
   const enviar = async () => {
@@ -187,6 +201,7 @@ export function ModalAusencia({
     if (tipo === 'permiso' && !subtipo) return notify('Elige el tipo de permiso', 'error')
     if (tipo === 'permiso' && subtipo === 'otro' && !motivo.trim()) return notify('Explica el motivo del permiso', 'error')
     if (tipo !== 'baja' && dias === 0) return notify('Esas fechas no tienen ningún día laborable', 'error')
+    if (bloqueado) return notify(`No puedes pedir tantos días: ${textoExceso}.`, 'error')
     setEnviando(true)
     try {
       const a = await pedirAusencia({ cuenta, trabajadorId: trab, tipo, subtipo: subtipo || null, desde, hasta: fin, motivo, archivo }, admin)
@@ -219,7 +234,7 @@ export function ModalAusencia({
           <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={enviar} loading={enviando}>
+          <Button onClick={enviar} loading={enviando} disabled={bloqueado}>
             {admin ? 'Apuntar' : tipo === 'baja' ? 'Comunicar la baja' : 'Enviar solicitud'}
           </Button>
         </>
@@ -308,11 +323,26 @@ export function ModalAusencia({
             <strong>
               {dias} {dias === 1 ? 'día laborable' : 'días laborables'}
             </strong>
-            {saldo && (
+            {porAnio.length === 1 && !excesos.length && (
               <span className="text-muted">
                 {' '}
-                · {saldo.quedan - dias >= 0 ? `te quedarán ${saldo.quedan - dias} de ${saldo.derecho}` : `te pasas en ${dias - saldo.quedan} de los ${saldo.derecho} del año`}
+                · {admin ? 'le quedarán' : 'te quedarán'} {porAnio[0].quedan - porAnio[0].dias} de {porAnio[0].derecho}
               </span>
+            )}
+          </p>
+        )}
+        {excesos.length > 0 && (
+          <p className={cx('rounded-xl px-4 py-3 text-sm', bloqueado ? 'bg-rojo/10 text-rojo' : 'bg-ambar/10 text-ambar')}>
+            {bloqueado ? (
+              <>
+                <strong>No puedes pedir tantos días:</strong> {textoExceso}. Cuentan las vacaciones aprobadas y las pendientes de aprobar. Si crees que te
+                corresponden más, habla con la empresa.
+              </>
+            ) : (
+              <>
+                <strong>Se pasa de sus días:</strong> {textoExceso.replace(/te quedan/g, 'le quedan').replace(/no te quedan/g, 'no le quedan')}. Como empresa
+                puedes apuntarlo igualmente (por ejemplo, días pendientes del año anterior o que da el convenio).
+              </>
             )}
           </p>
         )}

@@ -106,7 +106,7 @@ export default function MisAusencias({ ficha }: { ficha: Trabajador | null }) {
         tipoInicial={pedir ?? 'vacaciones'}
         admin={false}
         festivos={cal.festivos}
-        saldoDe={() => saldo}
+        saldoDe={(_, y) => (y === anio ? saldo : saldoVacaciones(t, ausencias, y, cal.festivos, hoy))}
         onHecho={() => {
           setPedir(null)
           cargar()
