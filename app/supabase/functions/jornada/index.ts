@@ -1780,34 +1780,61 @@ async function aviso(admin, asUser, userId, ausenciaId, evento) {
 			if (r.error) errores.push(r.error);
 		}
 	} else {
-		const m = ms.find((x) => x.trabajador_id === aus.trabajador_id);
-		if (!m || !conBuzon(m.email)) return json({
-			ok: true,
-			enviado: false,
-			motivo: "el trabajador no tiene usuario"
-		});
+		const { data: rev } = aus.revisado_por ? await admin.from("profiles").select("id, nombre, role").eq("id", aus.revisado_por).maybeSingle() : { data: null };
+		const quien = ms.find((x) => x.user_id === aus.revisado_por)?.nombre || (rev && rev.id !== aus.owner_id && rev.role !== "advisor" ? rev.nombre : null) || null;
+		const pilaQ = quien ? quien.split(/\s+/)[0] : null;
 		const apuntada = aus.estado === "aprobada" && aus.solicitado_por === aus.revisado_por;
-		const tit = evento === "anulada" ? `Se ha anulado tu ausencia ${textoFechas(aus)}` : apuntada ? `La empresa ha apuntado tus ${aus.tipo === "vacaciones" ? "vacaciones" : "días de permiso"}` : aus.estado === "aprobada" ? aus.tipo === "vacaciones" ? "Tus vacaciones están aprobadas" : "Tu permiso está aprobado" : aus.tipo === "vacaciones" ? "Tus vacaciones no se han aprobado" : "Tu permiso no se ha aprobado";
-		const d = {
+		const fechas = textoFechas(aus, true);
+		const cosa = aus.tipo === "vacaciones" ? "tus vacaciones" : "tu permiso";
+		const decision = evento === "anulada" ? "anulado" : apuntada ? "apuntado" : aus.estado === "aprobada" ? "aprobado" : "rechazado";
+		const m = ms.find((x) => x.trabajador_id === aus.trabajador_id);
+		const avisado = Boolean(m && conBuzon(m.email));
+		if (m && avisado) {
+			const tit = evento === "anulada" ? `${pilaQ ?? "La empresa"} ha anulado ${nombreAusencia(aus, true).toLowerCase() === "vacaciones" ? "tus vacaciones" : "tu ausencia"} ${textoFechas(aus)}` : apuntada ? `${pilaQ ?? "La empresa"} ha apuntado ${aus.tipo === "vacaciones" ? "tus vacaciones" : "tus días de permiso"}` : aus.estado === "aprobada" ? pilaQ ? `${pilaQ} ha aprobado ${cosa}` : aus.tipo === "vacaciones" ? "Tus vacaciones están aprobadas" : "Tu permiso está aprobado" : pilaQ ? `${pilaQ} no ha aprobado ${cosa}` : aus.tipo === "vacaciones" ? "Tus vacaciones no se han aprobado" : "Tu permiso no se ha aprobado";
+			const por = quien ? esc(quien) : esc(empresa);
+			const d = {
+				empresa,
+				etiqueta: "AUSENCIAS",
+				titulo: tit,
+				parrafo: evento === "anulada" ? `${por} ha anulado ${esc(nombreAusencia(aus).toLowerCase())} ${esc(fechas)}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Esos días vuelven a ser de trabajo: hay que fichar.` : aus.estado === "aprobada" ? `${esc(pilaT)}, ${por} lo ha ${apuntada ? "registrado" : "aprobado"}: ${esc(fechas)} no tienes que fichar.${aus.tipo === "vacaciones" ? " ¡Que las disfrutes!" : ""}` : `${esc(pilaT)}, ${por} no ha aprobado tu solicitud ${esc(fechas)}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Si quieres, pide otras fechas o habla con tu responsable.`,
+				detalle,
+				boton: {
+					href: `${APP_URL}/mi-espacio/ausencias`,
+					texto: "Ver mis ausencias"
+				},
+				pie: `${esc(empresa)} te avisa con NomoTax`
+			};
+			const r = await enviar({
+				para: m.email,
+				asunto: tit,
+				html: htmlAviso(d),
+				texto: textoAviso(d),
+				responderA: conBuzon(p.email_respuesta) ? p.email_respuesta : conBuzon(p.email) ? p.email : null
+			});
+			if (r.error) errores.push(r.error);
+		}
+		const tit2 = `${aus.tipo === "vacaciones" ? "Vacaciones" : aus.tipo === "permiso" ? "Permiso" : "Baja"} de ${nombre} ${aus.tipo === "vacaciones" ? decision.replace(/o$/, "as") : aus.tipo === "baja" ? decision.replace(/o$/, "a") : decision}`;
+		const d2 = {
 			empresa,
 			etiqueta: "AUSENCIAS",
-			titulo: tit,
-			parrafo: evento === "anulada" ? `${esc(empresa)} ha anulado ${esc(nombreAusencia(aus).toLowerCase())} ${esc(textoFechas(aus, true))}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Esos días vuelven a ser de trabajo: hay que fichar.` : aus.estado === "aprobada" ? `${esc(pilaT)}, ${apuntada ? "ya está registrado" : "está aprobado"}: ${esc(textoFechas(aus, true))} no tienes que fichar.${aus.tipo === "vacaciones" ? " ¡Que las disfrutes!" : ""}` : `${esc(pilaT)}, la empresa no ha aprobado tu solicitud ${esc(textoFechas(aus, true))}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Si quieres, pide otras fechas o habla con tu responsable.`,
+			titulo: tit2,
+			parrafo: `${quien ? esc(quien) : "Se"} ha ${decision} ${aus.tipo === "vacaciones" ? "las vacaciones" : aus.tipo === "permiso" ? "el permiso" : "la baja"} de ${esc(nombre)} ${esc(fechas)}${aus.respuesta && decision !== "aprobado" ? ` (motivo: «${esc(aus.respuesta)}»)` : ""}. ${avisado ? `${esc(pilaT)} ya lo sabe: le hemos avisado por correo.` : `${esc(pilaT)} no tiene usuario en NomoTax: díselo tú.`}`,
 			detalle,
 			boton: {
-				href: `${APP_URL}/mi-espacio/ausencias`,
-				texto: "Ver mis ausencias"
+				href: `${APP_URL}/laboral/ausencias`,
+				texto: "Ver en Laboral"
 			},
-			pie: `${esc(empresa)} te avisa con NomoTax`
+			pie: `Te llega porque llevas Laboral en ${esc(empresa)} · NomoTax`
 		};
-		const r = await enviar({
-			para: m.email,
-			asunto: tit,
-			html: htmlAviso(d),
-			texto: textoAviso(d),
-			responderA: conBuzon(p.email_respuesta) ? p.email_respuesta : conBuzon(p.email) ? p.email : null
-		});
-		if (r.error) errores.push(r.error);
+		for (const dest of destinatariosEmpresa(p, ms)) {
+			const r = await enviar({
+				para: dest.email,
+				asunto: tit2,
+				html: htmlAviso(d2),
+				texto: textoAviso(d2)
+			});
+			if (r.error) errores.push(r.error);
+		}
 	}
 	return json({
 		ok: errores.length === 0,
