@@ -123,6 +123,7 @@ function resumenDias(fs, ahora = /* @__PURE__ */ new Date(), diaDe = diaLocal, c
 	}
 	if (actual && (desde !== null || pausaDesde !== null)) {
 		actual.abierto = true;
+		if (actual.dia !== diaDe(ahora.toISOString())) cerrarAbierto = false;
 		if (cerrarAbierto && desde !== null) actual.trabajadoMin += (ahora.getTime() - desde) / 6e4;
 		if (cerrarAbierto && pausaDesde !== null) actual.pausaMin += (ahora.getTime() - pausaDesde) / 6e4;
 	}
@@ -1251,7 +1252,7 @@ function htmlInformeTrabajador({ empresa, inf, prueba }) {
     ${cajaLegal("Fichar es obligatorio", "La ley exige registrar cada día tu hora real de entrada y salida (art. 34.9 del Estatuto de los Trabajadores) y la Inspección de Trabajo puede revisarlo. No fichar cuando la empresa lo pide puede ser un incumplimiento laboral (arts. 5 y 58 del Estatuto).")}` : boton(`${APP_URL}/fichar`, "Ver mi registro")}
   </td></tr>
   <tr><td style="padding:14px 28px 26px 28px;font:13px/1.6 ${F};color:${GRIS}">
-    Vacaciones, permisos y bajas: pídelos o comunícalos en NomoTax, en <a href="${APP_URL}/mi-espacio/ausencias" style="color:#111110;font-weight:600">Vacaciones y ausencias</a>. Esos días no hay que fichar.
+    Vacaciones, permisos y bajas: pídelos o comunícalos en NomoTax, en <a href="${APP_URL}/mi-espacio/ausencias" style="color:#111110;font-weight:600">Ausencias</a>. Esos días no hay que fichar.
   </td></tr>`, `${esc(empresa)} te envía este resumen cada lunes con NomoTax. Si todo está en orden, el correo solo te lo confirma.`, prueba);
 }
 function textoInformeTrabajador({ empresa, inf }) {
@@ -1758,7 +1759,7 @@ async function aviso(admin, asUser, userId, ausenciaId, evento) {
 	if (evento === "nueva") {
 		const d = {
 			empresa,
-			etiqueta: "VACACIONES Y AUSENCIAS",
+			etiqueta: "AUSENCIAS",
 			titulo: aus.tipo === "baja" ? `${nombre} ha comunicado una baja` : `${nombre} pide ${que}`,
 			parrafo: aus.tipo === "baja" ? `${esc(pilaT)} estará de baja ${esc(textoFechas(aus, true))}. No hay que aprobarla: queda registrada y esos días no cuentan como «sin fichar». Tu asesor la tendrá en cuenta en la nómina.` : `${esc(pilaT)} ha pedido ${que} ${esc(textoFechas(aus, true))}. Apruébalo o recházalo en NomoTax: le avisaremos por correo.`,
 			detalle,
@@ -1789,13 +1790,13 @@ async function aviso(admin, asUser, userId, ausenciaId, evento) {
 		const tit = evento === "anulada" ? `Se ha anulado tu ausencia ${textoFechas(aus)}` : apuntada ? `La empresa ha apuntado tus ${aus.tipo === "vacaciones" ? "vacaciones" : "días de permiso"}` : aus.estado === "aprobada" ? aus.tipo === "vacaciones" ? "Tus vacaciones están aprobadas" : "Tu permiso está aprobado" : aus.tipo === "vacaciones" ? "Tus vacaciones no se han aprobado" : "Tu permiso no se ha aprobado";
 		const d = {
 			empresa,
-			etiqueta: "VACACIONES Y AUSENCIAS",
+			etiqueta: "AUSENCIAS",
 			titulo: tit,
 			parrafo: evento === "anulada" ? `${esc(empresa)} ha anulado ${esc(nombreAusencia(aus).toLowerCase())} ${esc(textoFechas(aus, true))}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Esos días vuelven a ser de trabajo: hay que fichar.` : aus.estado === "aprobada" ? `${esc(pilaT)}, ${apuntada ? "ya está registrado" : "está aprobado"}: ${esc(textoFechas(aus, true))} no tienes que fichar.${aus.tipo === "vacaciones" ? " ¡Que las disfrutes!" : ""}` : `${esc(pilaT)}, la empresa no ha aprobado tu solicitud ${esc(textoFechas(aus, true))}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Si quieres, pide otras fechas o habla con tu responsable.`,
 			detalle,
 			boton: {
 				href: `${APP_URL}/mi-espacio/ausencias`,
-				texto: "Ver mis vacaciones y ausencias"
+				texto: "Ver mis ausencias"
 			},
 			pie: `${esc(empresa)} te avisa con NomoTax`
 		};

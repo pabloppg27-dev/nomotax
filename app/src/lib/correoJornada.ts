@@ -230,7 +230,7 @@ export function htmlInformeTrabajador({ empresa, inf, prueba }: DatosInformeTrab
     }
   </td></tr>
   <tr><td style="padding:14px 28px 26px 28px;font:13px/1.6 ${F};color:${GRIS}">
-    Vacaciones, permisos y bajas: pídelos o comunícalos en NomoTax, en <a href="${APP_URL}/mi-espacio/ausencias" style="color:#111110;font-weight:600">Vacaciones y ausencias</a>. Esos días no hay que fichar.
+    Vacaciones, permisos y bajas: pídelos o comunícalos en NomoTax, en <a href="${APP_URL}/mi-espacio/ausencias" style="color:#111110;font-weight:600">Ausencias</a>. Esos días no hay que fichar.
   </td></tr>`,
     `${esc(empresa)} te envía este resumen cada lunes con NomoTax. Si todo está en orden, el correo solo te lo confirma.`,
     prueba,

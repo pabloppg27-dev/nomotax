@@ -407,7 +407,7 @@ async function aviso(admin: Cliente, asUser: Cliente, userId: string, ausenciaId
   if (evento === "nueva") {
     const d: DatosAviso = {
       empresa,
-      etiqueta: "VACACIONES Y AUSENCIAS",
+      etiqueta: "AUSENCIAS",
       titulo: aus.tipo === "baja" ? `${nombre} ha comunicado una baja` : `${nombre} pide ${que}`,
       parrafo:
         aus.tipo === "baja"
@@ -446,11 +446,11 @@ async function aviso(admin: Cliente, asUser: Cliente, userId: string, ausenciaId
           : `${esc(pilaT)}, la empresa no ha aprobado tu solicitud ${esc(textoFechas(aus, true))}${aus.respuesta ? `. Motivo: «${esc(aus.respuesta)}»` : ""}. Si quieres, pide otras fechas o habla con tu responsable.`;
     const d: DatosAviso = {
       empresa,
-      etiqueta: "VACACIONES Y AUSENCIAS",
+      etiqueta: "AUSENCIAS",
       titulo: tit,
       parrafo: par,
       detalle,
-      boton: { href: `${APP_URL}/mi-espacio/ausencias`, texto: "Ver mis vacaciones y ausencias" },
+      boton: { href: `${APP_URL}/mi-espacio/ausencias`, texto: "Ver mis ausencias" },
       pie: `${esc(empresa)} te avisa con NomoTax`,
     };
     const r = await enviar({ para: m.email, asunto: tit, html: htmlAviso(d), texto: textoAviso(d), responderA: conBuzon(p.email_respuesta) ? p.email_respuesta : conBuzon(p.email) ? p.email : null });

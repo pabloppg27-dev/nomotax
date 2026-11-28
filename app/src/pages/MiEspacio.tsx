@@ -96,11 +96,11 @@ export default function MiEspacio() {
 
   if (!SECCIONES.includes(seccion ?? '')) return <Navigate to="/mi-espacio/tickets" replace />
 
-  const titulo = { tickets: 'Mis tickets de gasto', nominas: 'Mis nóminas', ausencias: 'Vacaciones y ausencias', documentos: 'Mis documentos', ficha: 'Mi ficha' }[seccion as string]
+  const titulo = { tickets: 'Mis tickets de gasto', nominas: 'Mis nóminas', ausencias: 'Ausencias', documentos: 'Mis documentos', ficha: 'Mi ficha' }[seccion as string]
   const sub = {
     tickets: 'Haz una foto al ticket o sube el PDF: lo leemos solo y administración lo revisa.',
     nominas: `Tus nóminas en ${owner.nombre_comercial || owner.nombre}: elige el mes para ver el desglose.`,
-    ausencias: 'Pide vacaciones o un permiso y comunica una baja: la empresa lo aprueba aquí y queda registrado.',
+    ausencias: 'Vacaciones, permisos y bajas: pídelos o comunícalos aquí; la empresa los aprueba y quedan registrados.',
     documentos: 'Contrato, alta en la Seguridad Social, certificado de retenciones para la renta y el resto de papeles que tiene la empresa de ti.',
     ficha: 'Los datos de tu contrato.',
   }[seccion as string]

@@ -59,7 +59,7 @@ writeFileSync(
 writeFileSync(
   `${out}/Muestra correo jornada - aviso vacaciones.html`,
   htmlAviso({
-    empresa, etiqueta: 'VACACIONES Y AUSENCIAS', titulo: 'Pau Raset Valls pide vacaciones',
+    empresa, etiqueta: 'AUSENCIAS', titulo: 'Pau Raset Valls pide vacaciones',
     parrafo: 'Pau ha pedido vacaciones del 21 al 31 de diciembre de 2026. Apruébalo o recházalo en NomoTax: le avisaremos por correo.',
     detalle: [['Tipo', 'Vacaciones'], ['Fechas', 'Del 21 al 31 de diciembre de 2026'], ['Días laborables', '8'], ['Comentario', 'Navidad en familia']],
     boton: { href: 'https://clientes.nomotax.io/laboral/ausencias', texto: 'Revisar la solicitud' },
