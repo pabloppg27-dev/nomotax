@@ -4,7 +4,7 @@
 //
 // 1) Informe semanal (cada lunes, cron de supabase/informe-jornada.sql, cabecera x-cron-secret = CRON_SECRET):
 //      { "accion": "informe" }
-//    A cada trabajador que ficha, el resumen de su semana (lunes a domingo anterior, hora de Madrid):
+//    A cada trabajador con la semana incompleta (o bastante por debajo de su jornada), el resumen de su semana (lunes a domingo anterior, hora de Madrid):
 //    lo fichado frente a su jornada, días sin fichar o sin salida; vacaciones, permisos, bajas y festivos no
 //    cuentan. Al propietario y a quien lleva Laboral, el resumen del equipo y lo pendiente de aprobar.
 //    Solo empresas con perfil_laboral.informe_jornada = true. Cada envío queda en informes_jornada (no se repite).
@@ -316,6 +316,8 @@ async function informeEmpresa(admin: Cliente, ownerId: string, lunes: string, pa
 
   // A cada trabajador
   for (const { inf, m } of informes) {
+    // Solo a quien tiene algo que arreglar: con la semana completa no se le escribe
+    if (inf.estado === "completo") continue;
     if (!conBuzon(m.email)) continue;
     if (yaEnviados.has(m.email.toLowerCase())) continue;
     const d = { empresa, inf, prueba: Boolean(paraPrueba) };

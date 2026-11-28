@@ -46,7 +46,6 @@ const equipo = [
 const empresa = 'Nova Hiring, S.L.'
 const out = 'test-data'
 writeFileSync(`${out}/Muestra correo jornada - trabajador incompleto.html`, htmlInformeTrabajador({ empresa, inf: equipo[2] }))
-writeFileSync(`${out}/Muestra correo jornada - trabajador completo.html`, htmlInformeTrabajador({ empresa, inf: equipo[0] }))
 writeFileSync(`${out}/Muestra correo jornada - trabajador con permiso.html`, htmlInformeTrabajador({ empresa, inf: equipo[1] }))
 writeFileSync(
   `${out}/Muestra correo jornada - propietario.html`,
