@@ -29,6 +29,7 @@ import {
   ChevronDown,
   Inbox,
   HandCoins,
+  Umbrella,
 } from 'lucide-react'
 import { useAuth, type Acceso } from '../lib/auth'
 import { NOMBRE_ROL } from '../lib/permisos'
@@ -63,6 +64,7 @@ const MENU_ASESOR: ItemNav[] = [
 /** Mi espacio: lo personal de quien es trabajador (nóminas, documentos, ficha y tickets) */
 const ESPACIO: ItemNav[] = [
   { to: '/mi-espacio/nominas', label: 'Mis nóminas', icon: Banknote, corto: 'Nóminas' },
+  { to: '/mi-espacio/ausencias', label: 'Vacaciones y ausencias', icon: Umbrella, corto: 'Vacaciones' },
   { to: '/mi-espacio/ficha', label: 'Mi ficha', icon: IdCard, corto: 'Ficha' },
   { to: '/mi-espacio/tickets', label: 'Tickets de gasto', icon: Receipt, corto: 'Tickets' },
   { to: '/mi-espacio/documentos', label: 'Mis documentos', icon: FolderOpen, corto: 'Documentos' },

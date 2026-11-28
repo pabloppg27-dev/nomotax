@@ -25,6 +25,7 @@ export type Alta = { id: string; owner_id: string; nombre: string; fecha_inicio:
 export type CambioIrpf = { id: string; owner_id: string; trabajador_id: string; pct_actual: number | null; pct_solicitado: number; desde: string; comentario: string | null; created_at: string; trabajador: { nombre: string } | null }
 export type GastosPorRevisar = { owner_id: string; cuantos: number; desde: string }
 export type Amortizable = { id: string; owner_id: string; proveedor: string | null; concepto: string | null; base: number; fecha: string | null }
+export type BajaNueva = { id: string; owner_id: string; trabajador_id: string; subtipo: string | null; desde: string; hasta: string | null; trabajador: { nombre: string } | null }
 export type Notificacion = { id: string; owner_id: string; titulo: string; organismo: string | null; fecha_limite: string; tipo: string }
 
 export interface Bandeja {
@@ -35,6 +36,8 @@ export interface Bandeja {
   gastos: GastosPorRevisar[]
   amortizables: Amortizable[]
   notificaciones: Notificacion[]
+  /** Bajas comunicadas que el asesor aún no ha visto (supabase/ausencias.sql): afectan a la nómina */
+  bajas: BajaNueva[]
   /** id → nombre de cada cuenta */
   nombres: Map<string, string>
 }
@@ -42,7 +45,7 @@ export interface Bandeja {
 const lista = <T,>(r: { data: unknown; error: unknown }): T[] => (r.error ? [] : ((r.data as T[]) ?? []))
 
 export async function cargarBandeja(): Promise<Bandeja> {
-  const [perfiles, pe, ll, al, ir, ga, am, no] = await Promise.all([
+  const [perfiles, pe, ll, al, ir, ga, am, no, bj] = await Promise.all([
     supabase.from('profiles').select('id, nombre, nombre_comercial, email'),
     supabase.from('peticiones').select('*').eq('estado', 'pendiente').order('created_at'),
     supabase.from('llamadas').select('*').eq('estado', 'pendiente').order('created_at'),
@@ -51,6 +54,7 @@ export async function cargarBandeja(): Promise<Bandeja> {
     supabase.from('expenses').select('owner_id, created_at').eq('estado', 'pendiente').order('created_at'),
     supabase.from('expenses').select('id, owner_id, proveedor, concepto, base, fecha').eq('revision', 'pendiente').order('fecha'),
     supabase.from('archivo').select('id, owner_id, titulo, organismo, fecha_limite, tipo').eq('atendida', false).not('fecha_limite', 'is', null).order('fecha_limite'),
+    supabase.from('ausencias').select('id, owner_id, trabajador_id, subtipo, desde, hasta, trabajador:trabajadores(nombre)').eq('tipo', 'baja').eq('estado', 'aprobada').eq('asesor_visto', false).order('desde'),
   ])
   const nombres = new Map(
     lista<{ id: string; nombre: string | null; nombre_comercial: string | null; email: string | null }>(perfiles).map((p) => [
@@ -73,13 +77,14 @@ export async function cargarBandeja(): Promise<Bandeja> {
     gastos: [...porCliente.values()].sort((a, b) => b.cuantos - a.cuantos),
     amortizables: lista(am),
     notificaciones: lista(no),
+    bajas: lista(bj),
     nombres,
   }
 }
 
 /** Cuántas cosas hay pendientes (los gastos cuentan por cliente, no uno a uno) */
 export const totalBandeja = (b: Bandeja) =>
-  b.peticiones.length + b.llamadas.length + b.altas.length + b.irpf.length + b.gastos.length + b.amortizables.length + b.notificaciones.length
+  b.peticiones.length + b.llamadas.length + b.altas.length + b.irpf.length + b.bajas.length + b.gastos.length + b.amortizables.length + b.notificaciones.length
 
 /** Avisar al menú de que algo ha cambiado (para el número de la Bandeja) */
 export const avisarBandeja = () => window.dispatchEvent(new Event('nt-bandeja'))

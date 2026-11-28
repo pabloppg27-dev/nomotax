@@ -35,6 +35,7 @@ import MiEspacio from './pages/MiEspacio'
 import { enDemo } from './lib/demoFichaje'
 import Fichar from './pages/Fichar'
 import Fichajes from './pages/laboral/Fichajes'
+import AusenciasEmpresa from './pages/laboral/Ausencias'
 import VistaPreviaTrabajadores from './pages/VistaPreviaTrabajadores'
 import AbrirConfiguracion from './pages/Configuracion'
 import { ConfigProvider } from './components/Configuracion'
@@ -183,6 +184,7 @@ export default function App() {
             <Route path="laboral/trabajadores/:id" element={<Requiere permiso="laboral"><FichaTrabajador /></Requiere>} />
             <Route path="laboral/nominas" element={<Requiere permiso="nominas"><Nominas /></Requiere>} />
             <Route path="laboral/fichajes" element={<Requiere permiso="laboral"><Fichajes /></Requiere>} />
+            <Route path="laboral/ausencias" element={<Requiere permiso="laboral"><AusenciasEmpresa /></Requiere>} />
             <Route path="fichar" element={<ConFicha><Fichar /></ConFicha>} />
             <Route path="laboral/empresa" element={<Requiere permiso="laboral"><Empresa /></Requiere>} />
             <Route path="usuarios" element={<AbrirConfiguracion seccion="usuarios" />} />

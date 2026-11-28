@@ -5,6 +5,7 @@
 //   node scripts/empaquetar-facturar.mjs             → supabase/functions/facturar-planes/index.ts
 //   node scripts/empaquetar-facturar.mjs --muestra   → además, un PDF de ejemplo en test-data/
 //   node scripts/empaquetar-facturar.mjs vista-socio → supabase/functions/vista-socio/index.ts
+//   node scripts/empaquetar-facturar.mjs jornada [--muestra] → supabase/functions/jornada/index.ts (+ correos de ejemplo)
 
 import { rolldown } from 'rolldown'
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
@@ -59,6 +60,8 @@ await empaquetar(`supabase/functions/${FUNCION}/fuente.ts`, `supabase/functions/
 console.log(`✓ supabase/functions/${FUNCION}/index.ts`)
 
 if (process.argv.includes('--muestra')) {
-  await empaquetar('scripts/muestra-factura.ts', 'node_modules/.cache/muestra-factura.mjs', false)
-  execFileSync(process.execPath, [resolve(raiz, 'node_modules/.cache/muestra-factura.mjs')], { stdio: 'inherit', cwd: raiz })
+  // jornada: correos de ejemplo (informe del trabajador, del equipo y avisos) en test-data/
+  const muestra = FUNCION === 'jornada' ? 'muestra-jornada' : 'muestra-factura'
+  await empaquetar(`scripts/${muestra}.ts`, `node_modules/.cache/${muestra}.mjs`, false)
+  execFileSync(process.execPath, [resolve(raiz, `node_modules/.cache/${muestra}.mjs`)], { stdio: 'inherit', cwd: raiz })
 }

@@ -58,8 +58,12 @@ export interface Dia {
   fichajes: Fichaje[]
 }
 
-/** Agrupa por día (el de la entrada) y suma el tiempo trabajado y de pausa. `ahora` cierra el tramo abierto. */
-export function resumenDias(fs: Fichaje[], ahora = new Date()): Dia[] {
+/**
+ * Agrupa por día (el de la entrada) y suma el tiempo trabajado y de pausa. `ahora` cierra el tramo abierto
+ * (con `cerrarAbierto = false` no se cuenta: informe semanal). `diaDe` da el día de un instante (el informe
+ * usa la hora de Madrid aunque el servidor esté en UTC).
+ */
+export function resumenDias(fs: Fichaje[], ahora = new Date(), diaDe: (iso: string) => string = diaLocal, cerrarAbierto = true): Dia[] {
   const dias = new Map<string, Dia>()
   let actual: Dia | null = null
   let desde: number | null = null
@@ -68,7 +72,7 @@ export function resumenDias(fs: Fichaje[], ahora = new Date()): Dia[] {
     const t = new Date(f.momento).getTime()
     if (f.tipo === 'entrada' && actual && (desde !== null || pausaDesde !== null)) actual.abierto = true
     if (f.tipo === 'entrada' || !actual) {
-      const d = diaLocal(f.momento)
+      const d = diaDe(f.momento)
       actual = dias.get(d) ?? { dia: d, entrada: null, salida: null, trabajadoMin: 0, pausaMin: 0, abierto: false, fichajes: [] }
       dias.set(d, actual)
     }
@@ -94,8 +98,10 @@ export function resumenDias(fs: Fichaje[], ahora = new Date()): Dia[] {
   }
   if (actual && (desde !== null || pausaDesde !== null)) {
     actual.abierto = true
-    if (desde !== null) actual.trabajadoMin += (ahora.getTime() - desde) / 60000
-    if (pausaDesde !== null) actual.pausaMin += (ahora.getTime() - pausaDesde) / 60000
+    // Solo cuenta hasta ahora si el día abierto es hoy: un día pasado sin salida no suma horas ni pausa infinitas
+    if (actual.dia !== diaDe(ahora.toISOString())) cerrarAbierto = false
+    if (cerrarAbierto && desde !== null) actual.trabajadoMin += (ahora.getTime() - desde) / 60000
+    if (cerrarAbierto && pausaDesde !== null) actual.pausaMin += (ahora.getTime() - pausaDesde) / 60000
   }
   return [...dias.values()].sort((a, b) => b.dia.localeCompare(a.dia))
 }

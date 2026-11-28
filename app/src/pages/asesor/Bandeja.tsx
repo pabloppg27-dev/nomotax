@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Bell, CheckCircle2, FileWarning, Inbox, PhoneCall, Receipt, TrendingUp, UserPlus, Percent } from 'lucide-react'
+import { ArrowRight, Bell, CheckCircle2, FileWarning, Inbox, PhoneCall, Receipt, TrendingUp, UserPlus, Percent, Stethoscope } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import { errorMessage, supabase } from '../../lib/supabase'
 import { eur, fecha, num } from '../../lib/format'
@@ -8,6 +8,7 @@ import { ESTADOS_TRABAJADOR, diasHabilesHasta } from '../../lib/laboral'
 import { diasHasta } from '../../lib/impuestos'
 import { ASESOR } from '../../lib/asesor'
 import { TIPOS_PETICION, avisarBandeja, cargarBandeja, totalBandeja, type Bandeja } from '../../lib/bandeja'
+import { SUBTIPOS_BAJA } from '../../lib/ausencias'
 import { Badge, Button, Card, Empty, Loading, PageHeader, cx, notify } from '../../components/ui'
 
 const fCita = (iso: string) =>
@@ -47,6 +48,13 @@ export default function BandejaAsesor() {
     cargar()
   }
 
+  const marcarBajaVista = async (id: string) => {
+    const { error } = await supabase.rpc('baja_vista', { p_id: id })
+    if (error) return notify(await errorMessage(error), 'error')
+    avisarBandeja()
+    cargar()
+  }
+
   if (!b) return <Loading />
   const nombre = (id: string) => (id === me?.id ? 'NomoTax' : b.nombres.get(id) ?? 'Cliente')
   const total = totalBandeja(b)
@@ -55,7 +63,7 @@ export default function BandejaAsesor() {
     { n: b.notificaciones.length, label: 'Plazos de Hacienda', id: 'plazos' },
     { n: b.peticiones.length, label: 'Peticiones', id: 'peticiones' },
     { n: b.llamadas.length, label: 'Llamadas', id: 'llamadas' },
-    { n: b.altas.length + b.irpf.length, label: 'Laboral', id: 'laboral' },
+    { n: b.altas.length + b.irpf.length + b.bajas.length, label: 'Laboral', id: 'laboral' },
     { n: b.gastos.length + b.amortizables.length, label: 'Gastos', id: 'gastos' },
   ]
 
@@ -144,7 +152,7 @@ export default function BandejaAsesor() {
             ))}
           </Seccion>
 
-          <Seccion id="laboral" icon={<UserPlus className="size-4" />} titulo="Laboral: altas y cambios de IRPF" n={b.altas.length + b.irpf.length}>
+          <Seccion id="laboral" icon={<UserPlus className="size-4" />} titulo="Laboral: altas, bajas médicas y cambios de IRPF" n={b.altas.length + b.irpf.length + b.bajas.length}>
             {b.altas.map((a) => {
               const dias = diasHabilesHasta(a.fecha_inicio)
               const est = ESTADOS_TRABAJADOR[a.estado]
@@ -158,6 +166,38 @@ export default function BandejaAsesor() {
                 </Fila>
               )
             })}
+            {b.bajas.map((x) => (
+              <Fila
+                key={x.id}
+                onClick={() => ir(x.owner_id, '/laboral/ausencias')}
+                titulo={`Baja de ${x.trabajador?.nombre ?? 'un trabajador'}`}
+                detalle={`${nombre(x.owner_id)} · ${SUBTIPOS_BAJA.find((t) => t.id === x.subtipo)?.nombre ?? 'Baja'}`}
+                icono={<Stethoscope className="size-4 text-muted" />}
+              >
+                <span className="num text-sm">
+                  Desde el {fecha(x.desde)}
+                  {x.hasta ? ` hasta el ${fecha(x.hasta)}` : ' · sin alta'}
+                </span>
+                {/* Dentro del botón de la fila: no puede ser otro <button> */}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="inline-flex h-8 items-center rounded-full border border-line bg-white px-3 text-sm font-medium hover:border-ink/30"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    marcarBajaVista(x.id)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return
+                    e.preventDefault()
+                    e.stopPropagation()
+                    marcarBajaVista(x.id)
+                  }}
+                >
+                  Ya la tengo en cuenta
+                </span>
+              </Fila>
+            ))}
             {b.irpf.map((s) => (
               <Fila
                 key={s.id}

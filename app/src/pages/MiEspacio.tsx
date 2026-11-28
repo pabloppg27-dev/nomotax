@@ -12,10 +12,11 @@ import UploadZone from '../components/UploadZone'
 import MisNominas from '../components/MisNominas'
 import { PedirCambioIrpf } from '../components/SolicitudIrpf'
 import DescargaFichajes from '../components/DescargaFichajes'
+import MisAusencias from './MisAusencias'
 import { enDemo } from '../lib/demoFichaje'
 import { Badge, Card, Empty, Loading, confirmar, cx, notify } from '../components/ui'
 
-export const SECCIONES = ['tickets', 'nominas', 'documentos', 'ficha']
+export const SECCIONES = ['tickets', 'nominas', 'ausencias', 'documentos', 'ficha']
 
 type Doc = { id: string; tipo: string; nombre: string | null; path: string; created_at: string; anio?: number | null }
 
@@ -95,10 +96,11 @@ export default function MiEspacio() {
 
   if (!SECCIONES.includes(seccion ?? '')) return <Navigate to="/mi-espacio/tickets" replace />
 
-  const titulo = { tickets: 'Mis tickets de gasto', nominas: 'Mis nóminas', documentos: 'Mis documentos', ficha: 'Mi ficha' }[seccion as string]
+  const titulo = { tickets: 'Mis tickets de gasto', nominas: 'Mis nóminas', ausencias: 'Vacaciones y ausencias', documentos: 'Mis documentos', ficha: 'Mi ficha' }[seccion as string]
   const sub = {
     tickets: 'Haz una foto al ticket o sube el PDF: lo leemos solo y administración lo revisa.',
     nominas: `Tus nóminas en ${owner.nombre_comercial || owner.nombre}: elige el mes para ver el desglose.`,
+    ausencias: 'Pide vacaciones o un permiso y comunica una baja: la empresa lo aprueba aquí y queda registrado.',
     documentos: 'Contrato, alta en la Seguridad Social, certificado de retenciones para la renta y el resto de papeles que tiene la empresa de ti.',
     ficha: 'Los datos de tu contrato.',
   }[seccion as string]
@@ -169,6 +171,8 @@ export default function MiEspacio() {
         ) : (
           <MisNominas nominas={nominasVer} ejemplo={ejemplo} />
         ))}
+
+      {seccion === 'ausencias' && <MisAusencias ficha={fichaVer} />}
 
       {seccion === 'documentos' && (enDemo() || (trabajadorId && miembro?.fichaje)) && (
         <DescargaFichajes
