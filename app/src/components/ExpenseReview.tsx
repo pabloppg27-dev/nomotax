@@ -264,7 +264,11 @@ export default function ExpenseReview({
     >
       <div className="grid gap-6 md:grid-cols-[1fr_1.1fr]">
         <div className="min-w-0 md:sticky md:top-0 md:self-start">
-          <DocPreview path={gasto.file_path} />
+          {/* Envuelta: su h-full tomaba la altura de toda la columna (en Safari móvil) y el botón
+              «Leer de nuevo» quedaba encima del campo Proveedor */}
+          <div>
+            <DocPreview path={gasto.file_path} />
+          </div>
           {gasto.file_path && (
             <Button
               variant="secondary"
