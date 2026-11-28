@@ -66,5 +66,25 @@ writeFileSync(
     pie: 'Te llega porque llevas Laboral en Nova Hiring, S.L. · NomoTax',
   }),
 )
+writeFileSync(
+  `${out}/Muestra correo jornada - vacaciones aprobadas (trabajador).html`,
+  htmlAviso({
+    empresa, etiqueta: 'AUSENCIAS', titulo: 'Marc ha aprobado tus vacaciones',
+    parrafo: 'Pau, Marc Fortuny lo ha aprobado: del 21 al 31 de diciembre de 2026 no tienes que fichar. ¡Que las disfrutes!',
+    detalle: [['Tipo', 'Vacaciones'], ['Fechas', 'Del 21 al 31 de diciembre de 2026'], ['Días laborables', '8'], ['Comentario', 'Navidad en familia']],
+    boton: { href: 'https://clientes.nomotax.io/mi-espacio/ausencias', texto: 'Ver mis ausencias' },
+    pie: 'Nova Hiring, S.L. te avisa con NomoTax',
+  }),
+)
+writeFileSync(
+  `${out}/Muestra correo jornada - vacaciones aprobadas (propietario).html`,
+  htmlAviso({
+    empresa, etiqueta: 'AUSENCIAS', titulo: 'Vacaciones de Pau Raset Valls aprobadas',
+    parrafo: 'Marc Fortuny ha aprobado las vacaciones de Pau Raset Valls del 21 al 31 de diciembre de 2026. Pau ya lo sabe: le hemos avisado por correo.',
+    detalle: [['Tipo', 'Vacaciones'], ['Fechas', 'Del 21 al 31 de diciembre de 2026'], ['Días laborables', '8'], ['Comentario', 'Navidad en familia']],
+    boton: { href: 'https://clientes.nomotax.io/laboral/ausencias', texto: 'Ver en Laboral' },
+    pie: 'Te llega porque llevas Laboral en Nova Hiring, S.L. · NomoTax',
+  }),
+)
 console.log('✓ test-data/Muestra correo jornada - (trabajador incompleto | trabajador completo | propietario | aviso vacaciones).html')
 for (const i of equipo) console.log(`  ${i.nombre}: ${i.estado} · ${i.fichadoMin} de ${i.esperadoMin} min · sin fichar ${i.sinFichar} · sin salida ${i.sinSalida} · correcciones ${i.correcciones}`)
