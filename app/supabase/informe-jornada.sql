@@ -39,11 +39,12 @@ on conflict (owner_id) do update set informe_jornada = true;
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 
--- Lunes a las 07:00 de Madrid en invierno (08:00 en verano)
+-- Lunes a las 08:00 de Madrid todo el año: pg_cron va en UTC, así que se llama a las 06:00 y a las 07:00 UTC
+-- y la función solo envía en la que en Madrid son las 8 (las 07:00 UTC en invierno, las 06:00 en verano).
 select cron.unschedule('informe-jornada') where exists (select 1 from cron.job where jobname = 'informe-jornada');
 select cron.schedule(
   'informe-jornada',
-  '0 6 * * 1',
+  '0 6,7 * * 1',
   $$
   select net.http_post(
     url := 'https://oepixesrcjbpsqsjroam.supabase.co/functions/v1/jornada',

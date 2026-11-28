@@ -1537,6 +1537,12 @@ async function informe(admin, body) {
 	const prueba = body.prueba === true;
 	const paraPrueba = String(body.para ?? Deno.env.get("NOMOTAX_EMISOR_EMAIL") ?? "info@nomotax.io").trim();
 	if (prueba && !EMAIL.test(paraPrueba)) throw new Error("«para» no es un email válido");
+	const horaAhora = Number((/* @__PURE__ */ new Date()).toLocaleString("en-GB", {
+		hour: "2-digit",
+		hour12: false,
+		timeZone: "Europe/Madrid"
+	}));
+	if (!prueba && body.semana === void 0 && body.ahora !== true && horaAhora !== 8) return { omitido: `En Madrid son las ${horaAhora}: el informe sale a las 8` };
 	const lunes = typeof body.semana === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.semana) ? body.semana : lunesAnterior(diaMadrid(/* @__PURE__ */ new Date()));
 	if (diaSemana(lunes) !== 1) throw new Error(`${lunes} no es lunes`);
 	let ids;

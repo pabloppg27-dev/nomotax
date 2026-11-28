@@ -2,7 +2,7 @@
 // `node scripts/empaquetar-facturar.mjs jornada` genera index.ts (un solo archivo) y ese es el que se pega.
 // Al publicarla: Verify JWT DESACTIVADO (la llama el cron sin sesión; aquí se comprueba la clave o la sesión).
 //
-// 1) Informe semanal (cada lunes, cron de supabase/informe-jornada.sql, cabecera x-cron-secret = CRON_SECRET):
+// 1) Informe semanal (cada lunes a las 8:00 de Madrid, cron de supabase/informe-jornada.sql, cabecera x-cron-secret = CRON_SECRET):
 //      { "accion": "informe" }
 //    A cada trabajador con la semana incompleta (o bastante por debajo de su jornada), el resumen de su semana (lunes a domingo anterior, hora de Madrid):
 //    lo fichado frente a su jornada, días sin fichar o sin salida; vacaciones, permisos, bajas y festivos no
@@ -223,6 +223,11 @@ async function informe(admin: Cliente, body: Record<string, unknown>) {
   const prueba = body.prueba === true;
   const paraPrueba = String(body.para ?? Deno.env.get("NOMOTAX_EMISOR_EMAIL") ?? "info@nomotax.io").trim();
   if (prueba && !EMAIL.test(paraPrueba)) throw new Error("«para» no es un email válido");
+  // Programado (sin prueba ni semana): solo a las 8 de Madrid (el cron llama a las 6 y a las 7 UTC)
+  const horaAhora = Number(new Date().toLocaleString("en-GB", { hour: "2-digit", hour12: false, timeZone: "Europe/Madrid" }));
+  if (!prueba && body.semana === undefined && body.ahora !== true && horaAhora !== 8) {
+    return { omitido: `En Madrid son las ${horaAhora}: el informe sale a las 8` };
+  }
   const lunes = typeof body.semana === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.semana) ? body.semana : lunesAnterior(diaMadrid(new Date()));
   if (diaSemana(lunes) !== 1) throw new Error(`${lunes} no es lunes`);
 
