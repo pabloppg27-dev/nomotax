@@ -50,14 +50,15 @@ export default function MisAusencias({ ficha }: { ficha: Trabajador | null }) {
       <div className="space-y-4">
         <AvisoCalendario comunidad={cal.comunidad} anio={anio} />
         <TarjetaSaldo saldo={saldo} />
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-          <Button icon={<Umbrella className="size-4" />} onClick={() => setPedir('vacaciones')}>
+        {/* En fila solo cuando cada botón cabe entero (móvil y columna estrecha del ordenador: uno debajo de otro) */}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+          <Button className="w-full" icon={<Umbrella className="size-4" />} onClick={() => setPedir('vacaciones')}>
             Pedir vacaciones
           </Button>
-          <Button variant="secondary" icon={<CalendarCheck className="size-4" />} onClick={() => setPedir('permiso')}>
+          <Button className="w-full" variant="secondary" icon={<CalendarCheck className="size-4" />} onClick={() => setPedir('permiso')}>
             Pedir un permiso
           </Button>
-          <Button variant="secondary" icon={<Stethoscope className="size-4" />} onClick={() => setPedir('baja')}>
+          <Button className="w-full" variant="secondary" icon={<Stethoscope className="size-4" />} onClick={() => setPedir('baja')}>
             Comunicar una baja
           </Button>
         </div>
